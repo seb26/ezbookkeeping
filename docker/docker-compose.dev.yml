@@ -1,0 +1,49 @@
+name: ezbookkeeping-dev
+
+services:
+  ezbookkeeping:
+    image: docker.io/library/ezbookkeeping:dev
+    depends_on:
+      - db
+    ports:
+      - 8998:8080
+    environment:
+      ## CONFIGURATION
+      # - EBK_SERVER_DOMAIN=ezbookkeeping.yourdomain
+      - EBK_DATABASE_HOST=db:5432
+      - EBK_DATABASE_NAME=ezbookkeeping
+      - EBK_DATABASE_PASSWD=ebk_database_passwd
+      - EBK_DATABASE_TYPE=postgres
+      - EBK_DATABASE_USER=ezbookkeeping
+      - EBK_LOG_MODE=console file
+      - EBK_SECURITY_SECRET_KEY=ebk_security_secret_key
+      - EBK_SERVER_ENABLE_GZIP=true
+      ## SITE PREFERENCES
+      - EBK_USER_ENABLE_REGISTER=false
+      - EBK_USER_ENABLE_FORGET_PASSWORD=false
+      - EBK_EXCHANGE_RATES_DATA_SOURCE=reserve_bank_of_australia
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - storage:/ezbookkeeping/storage # make sure the UID:GID is 1000:1000
+      - log:/ezbookkeeping/log # make sure the UID:GID is 1000:1000
+  
+  db:
+    image: docker.io/library/postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ezbookkeeping
+      POSTGRES_USER: ezbookkeeping
+      POSTGRES_PASSWORD: ebk_database_passwd
+    volumes:
+      - db:/var/lib/postgresql/data
+    healthcheck:
+      test: pg_isready -q -t 2 -d $$POSTGRES_DB -U $$POSTGRES_USER
+      start_period: 20s
+      timeout: 30s
+      interval: 10s
+      retries: 5
+
+volumes:
+  db:
+  storage:
+  log:
