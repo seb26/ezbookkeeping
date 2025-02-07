@@ -159,6 +159,16 @@
                                     v-model="newProfile.firstDayOfWeek"
                                 />
                             </v-col>
+
+                            <v-col cols="12" md="6">
+                                <date-select
+                                    :disabled="loading || saving"
+                                    :label="tt('Fiscal Year Start Date')"
+                                    :hide-offset-dates="true"
+                                    :minDate="fiscalYearStartDateRangeMin"
+                                    :maxDate="fiscalYearStartDateRangeMax"
+                                    v-model="newProfile.fiscalYearStartDate" />
+                            </v-col>
                         </v-row>
                     </v-card-text>
 
@@ -331,6 +341,8 @@
 </template>
 
 <script setup lang="ts">
+import { FISCAL_YEAR_DEFAULT_START_DATE_VALUE } from '@/core/datetime';
+
 import ConfirmDialog from '@/components/desktop/ConfirmDialog.vue';
 import SnackBar from '@/components/desktop/SnackBar.vue';
 
@@ -408,6 +420,9 @@ const avatarProvider = ref<string | undefined>('');
 const avatarNoCacheId = ref<string>('');
 
 const currentUserAvatar = computed<string | null>(() => userStore.getUserAvatarUrl(avatarUrl.value, avatarNoCacheId.value));
+
+const fiscalYearStartDateRangeMin = FISCAL_YEAR_DEFAULT_START_DATE_VALUE.minUnixTime;
+const fiscalYearStartDateRangeMax = FISCAL_YEAR_DEFAULT_START_DATE_VALUE.maxUnixTime;
 
 function init(): void {
     loading.value = true;

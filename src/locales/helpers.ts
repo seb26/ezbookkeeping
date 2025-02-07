@@ -602,6 +602,10 @@ export function useI18n() {
         return t('default.firstDayOfWeek');
     }
 
+    function getDefaultFiscalYearStartDate(): string {
+        return t('default.fiscalYearStartDate');
+    }
+
     function getAllLanguageOptions(includeSystemDefault: boolean): LanguageOption[] {
         const ret: LanguageOption[] = [];
 

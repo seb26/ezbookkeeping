@@ -485,6 +485,11 @@ export function getAllMonthsStartAndEndUnixTimes(startYearMonth: YearMonth | str
     return allYearMonthTimes;
 }
 
+export function formatMonthDay(format: string, month: number, day: number): string {
+    const date = moment({ year: 2000, month: month - 1, day: day });
+    return date.format(format);
+}
+
 export function getDateTimeFormatType<T extends DateFormat | TimeFormat>(allFormatMap: Record<string, T>, allFormatArray: T[], formatTypeValue: number, languageDefaultTypeName: string, systemDefaultFormatType: T): T {
     if (formatTypeValue > LANGUAGE_DEFAULT_DATE_TIME_FORMAT_VALUE && allFormatArray[formatTypeValue - 1] && allFormatArray[formatTypeValue - 1].key) {
         return allFormatArray[formatTypeValue - 1];

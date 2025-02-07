@@ -10,6 +10,12 @@ export interface YearMonth {
     readonly month: number;
 }
 
+export interface YearMonthDay {
+    readonly year: number;
+    readonly month: number;
+    readonly day: number;
+}
+
 export interface YearMonthRange {
     readonly startYearMonth: YearMonth;
     readonly endYearMonth: YearMonth;
@@ -133,6 +139,26 @@ export class YearMonthUnixTime implements YearMonth, UnixTimeRange {
 
     public static of(yearMonth: YearMonth, minUnixTime: number, maxUnixTime: number): YearMonthUnixTime {
         return new YearMonthUnixTime(yearMonth.year, yearMonth.month, minUnixTime, maxUnixTime);
+    }
+}
+
+export class YearMonthDayUnixTime implements YearMonthDay, UnixTimeRange {
+    public readonly year: number;
+    public readonly month: number;
+    public readonly day: number;
+    public readonly minUnixTime: number;
+    public readonly maxUnixTime: number;
+
+    private constructor(year: number, month: number, day: number, minUnixTime: number, maxUnixTime: number) {
+        this.year = year;
+        this.month = month;
+        this.day = day;
+        this.minUnixTime = minUnixTime;
+        this.maxUnixTime = maxUnixTime;
+    }
+
+    public static of(yearMonthDay: YearMonthDay, minUnixTime: number, maxUnixTime: number): YearMonthDayUnixTime {
+        return new YearMonthDayUnixTime(yearMonthDay.year, yearMonthDay.month, yearMonthDay.day, minUnixTime, maxUnixTime);
     }
 }
 
@@ -516,3 +542,15 @@ export class DateRange implements TypeAndName {
         return dateRange?.isBillingCycle || false;
     }
 }
+
+export const FISCAL_YEAR_DEFAULT_START_DATE_VALUE: YearMonthDay = {
+    year: 2000,
+    month: 1,
+    day: 1
+};
+
+export const FISCAL_YEAR_START_DATE_RANGE: YearUnixTime = {
+    year: 2000,
+    minUnixTime: 946684800, // 1 January 2000
+    maxUnixTime: 978307199  // 31 December 2000
+};

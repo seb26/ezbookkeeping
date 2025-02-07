@@ -106,6 +106,7 @@ export function useUserProfilePageBase() {
             newProfile.value.firstDayOfWeek === oldProfile.value.firstDayOfWeek &&
             newProfile.value.longDateFormat === oldProfile.value.longDateFormat &&
             newProfile.value.shortDateFormat === oldProfile.value.shortDateFormat &&
+            newProfile.value.fiscalYearStartDate === oldProfile.value.fiscalYearStartDate &&
             newProfile.value.longTimeFormat === oldProfile.value.longTimeFormat &&
             newProfile.value.shortTimeFormat === oldProfile.value.shortTimeFormat &&
             newProfile.value.decimalSeparator === oldProfile.value.decimalSeparator &&

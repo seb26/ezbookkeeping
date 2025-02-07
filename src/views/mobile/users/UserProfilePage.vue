@@ -169,6 +169,7 @@
                             v-for="weekDay in allWeekDays">{{ weekDay.displayName }}</option>
                 </select>
             </f7-list-item>
+
         </f7-list>
 
         <f7-list form strong inset dividers class="margin-vertical" v-if="!loading">

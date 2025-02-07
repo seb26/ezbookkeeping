@@ -14,6 +14,7 @@ export class User {
     public language: string;
     public defaultCurrency: string;
     public firstDayOfWeek: number;
+    public fiscalYearStartDate: number;
 
     public defaultAccountId: string = '';
     public transactionEditScope: number = 1;
@@ -41,6 +42,7 @@ export class User {
         this.language = user.language;
         this.defaultCurrency = user.defaultCurrency;
         this.firstDayOfWeek = user.firstDayOfWeek;
+        this.fiscalYearStartDate = user.fiscalYearStartDate;
         this.defaultAccountId = user.defaultAccountId;
         this.transactionEditScope = user.transactionEditScope;
         this.longDateFormat = user.longDateFormat;
@@ -79,6 +81,7 @@ export class User {
             language: this.language,
             defaultCurrency: this.defaultCurrency,
             firstDayOfWeek: this.firstDayOfWeek,
+            fiscalYearStartDate: this.fiscalYearStartDate,
             longDateFormat: this.longDateFormat,
             shortDateFormat: this.shortDateFormat,
             longTimeFormat: this.longTimeFormat,
@@ -96,6 +99,7 @@ export class User {
         const user = new User(userInfo.language, userInfo.defaultCurrency, userInfo.firstDayOfWeek);
         user.defaultAccountId = userInfo.defaultAccountId;
         user.transactionEditScope = userInfo.transactionEditScope;
+        user.fiscalYearStartDate = userInfo.fiscalYearStartDate;
         user.longDateFormat = userInfo.longDateFormat;
         user.shortDateFormat = userInfo.shortDateFormat;
         user.longTimeFormat = userInfo.longTimeFormat;
@@ -128,6 +132,7 @@ export interface UserBasicInfo {
     readonly firstDayOfWeek: number;
     readonly longDateFormat: number;
     readonly shortDateFormat: number;
+    readonly fiscalYearStartDate: number;
     readonly longTimeFormat: number;
     readonly shortTimeFormat: number;
     readonly decimalSeparator: number;
@@ -176,6 +181,7 @@ export interface UserProfileUpdateRequest {
     readonly language?: string;
     readonly defaultCurrency?: string;
     readonly firstDayOfWeek?: number;
+    readonly fiscalYearStartDate?: number;
     readonly longDateFormat?: number;
     readonly shortDateFormat?: number;
     readonly longTimeFormat?: number;
@@ -208,6 +214,7 @@ export const EMPTY_USER_BASIC_INFO: UserBasicInfo = {
     language: '',
     defaultCurrency: '',
     firstDayOfWeek: -1,
+    fiscalYearStartDate: 0,
     longDateFormat: LongDateFormat.Default.type,
     shortDateFormat: ShortDateFormat.Default.type,
     longTimeFormat: LongTimeFormat.Default.type,

@@ -1,6 +1,9 @@
 package core
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 // WeekDay represents week day
 type WeekDay byte
@@ -158,5 +161,34 @@ func (f ShortTimeFormat) String() string {
 		return "Invalid"
 	default:
 		return fmt.Sprintf("Invalid(%d)", int(f))
+	}
+}
+
+// FiscalYearStartDate represents the start date of the fiscal year as an int64
+type FiscalYearStartDate int64
+
+// Fiscal year defaults
+const (
+	FISCAL_YEAR_START_DATE_DEFAULT FiscalYearStartDate = 946684800 // 1 January 2000
+	FISCAL_YEAR_START_DATE_MAX     FiscalYearStartDate = 978307200 // 31 December 2000
+	FISCAL_YEAR_START_DATE_INVALID FiscalYearStartDate = -1
+)
+
+// String returns a textual representation of the fiscal year start date
+func (f FiscalYearStartDate) String() string {
+	switch f {
+	case FISCAL_YEAR_START_DATE_DEFAULT:
+		return "Default"
+	case FISCAL_YEAR_START_DATE_MAX:
+		return "Max"
+	case FISCAL_YEAR_START_DATE_INVALID:
+		return "Invalid"
+	default:
+		if f >= 946684800 && f <= 978307200 {
+			t := time.Unix(int64(f), 0).UTC()
+			return t.Format("02 January")
+		} else {
+			return fmt.Sprintf("Invalid(%d)", int64(f))
+		}
 	}
 }

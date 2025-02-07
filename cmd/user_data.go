@@ -891,6 +891,7 @@ func printUserInfo(user *models.User) {
 	fmt.Printf("[Language] %s\n", user.Language)
 	fmt.Printf("[DefaultCurrency] %s\n", user.DefaultCurrency)
 	fmt.Printf("[FirstDayOfWeek] %s (%d)\n", user.FirstDayOfWeek, user.FirstDayOfWeek)
+	fmt.Printf("[FiscalYearStartDate] %s\n", user.FiscalYearStartDate)
 	fmt.Printf("[LongDateFormat] %s (%d)\n", user.LongDateFormat, user.LongDateFormat)
 	fmt.Printf("[ShortDateFormat] %s (%d)\n", user.ShortDateFormat, user.ShortDateFormat)
 	fmt.Printf("[LongTimeFormat] %s (%d)\n", user.LongTimeFormat, user.LongTimeFormat)
