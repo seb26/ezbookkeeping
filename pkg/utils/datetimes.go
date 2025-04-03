@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mayswind/ezbookkeeping/pkg/core"
 	"github.com/mayswind/ezbookkeeping/pkg/errs"
 )
 
@@ -339,6 +340,21 @@ func GetTransactionTimeRangeByYearMonth(year int32, month int32) (int64, int64, 
 	maxTransactionTime := GetMinTransactionTimeFromUnixTime(endMaxUnixTime.Unix()) - 1
 
 	return minTransactionTime, maxTransactionTime, nil
+}
+
+// GetFiscalYearStartDateFromUnixTime returns the fiscal year start date from the given unix time
+func GetFiscalYearStartDateFromUnixTime(unixTime int64) (core.FiscalYearStartDateType, error) {
+	date := parseFromUnixTime(unixTime)
+	monthDay, err := core.NewFiscalYearStartDateType(
+		uint8(date.Month()),
+		uint8(date.Day()),
+	)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return monthDay, nil
 }
 
 // parseFromUnixTime parses a unix time and returns a golang time struct
