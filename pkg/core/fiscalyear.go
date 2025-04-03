@@ -11,8 +11,8 @@ type FiscalYearStartDateType uint16
 
 // Fiscal Year Start Date Type
 const (
-	FISCAL_YEAR_START_DATE_TYPE_DEFAULT FiscalYearStartDateType = 101 // January 1st
-	FISCAL_YEAR_START_DATE_TYPE_INVALID FiscalYearStartDateType = 1232
+	FISCAL_YEAR_START_DATE_TYPE_DEFAULT FiscalYearStartDateType = 0x0101 // January 1st
+	FISCAL_YEAR_START_DATE_TYPE_INVALID FiscalYearStartDateType = 0x0D01 // Invalid (month 13, day 1)
 )
 
 // NewFiscalYearStartDateType creates a new FiscalYearStartDateType from month and day values
@@ -27,8 +27,13 @@ func NewFiscalYearStartDateType(month uint8, day uint8) (FiscalYearStartDateType
 
 // GetMonthDay extracts the month and day from FiscalYearStartDateType
 func (f FiscalYearStartDateType) GetMonthDay() (uint8, uint8, error) {
-	month := uint8(uint16(f) >> 8)
-	day := uint8(uint16(f) & 0xFF)
+	if f == 0 || f >= FISCAL_YEAR_START_DATE_TYPE_INVALID {
+		return 0, 0, errs.ErrFormatInvalid
+	}
+
+	// Extract month and day (month in high byte, day in low byte)
+	month := uint8(f >> 8)
+	day := uint8(f & 0xFF)
 
 	return validateMonthDay(month, day)
 }
