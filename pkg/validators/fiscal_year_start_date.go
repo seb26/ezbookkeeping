@@ -13,24 +13,9 @@ func ValidateFiscalYearStartDate(fl validator.FieldLevel) bool {
 		return false
 	}
 
-	month := uint8(uint16(date) >> 8)
-	day := uint8(uint16(date) & 0xFF)
-
-	if month < 1 || month > 12 || day < 1 {
-		return false
-	}
-
-	maxDays := uint8(31)
-	switch month {
-	case 1, 3, 5, 7, 8, 10, 12: // January, March, May, July, August, October, December
-		maxDays = 31
-	case 4, 6, 9, 11: // April, June, September, November
-		maxDays = 30
-	case 2: // February
-		maxDays = 29 // Allowing 29 for leap years
-	}
-
-	return day <= maxDays
+	// Use the core functionality to validate
+	_, _, err := date.GetMonthDay()
+	return err == nil
 }
 
 // RegisterFiscalYearStartDateValidator registers the fiscal year start date validator

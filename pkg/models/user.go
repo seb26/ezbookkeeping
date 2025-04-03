@@ -188,7 +188,7 @@ type UserProfileUpdateRequest struct {
 	Language             string                        `json:"language" binding:"omitempty,min=2,max=16"`
 	DefaultCurrency      string                        `json:"defaultCurrency" binding:"omitempty,len=3,validCurrency"`
 	FirstDayOfWeek       *core.WeekDay                 `json:"firstDayOfWeek" binding:"omitempty,min=0,max=6"`
-	FiscalYearStartDate  *core.FiscalYearStartDateType `json:"fiscalYearStartDate" binding:"omitempty,min=101,max=1231,validFiscalYearStartDate"`
+	FiscalYearStartDate  *core.FiscalYearStartDateType `json:"fiscalYearStartDate" binding:"omitempty,validFiscalYearStartDate"`
 	LongDateFormat       *core.LongDateFormat          `json:"longDateFormat" binding:"omitempty,min=0,max=3"`
 	ShortDateFormat      *core.ShortDateFormat         `json:"shortDateFormat" binding:"omitempty,min=0,max=3"`
 	LongTimeFormat       *core.LongTimeFormat          `json:"longTimeFormat" binding:"omitempty,min=0,max=3"`
