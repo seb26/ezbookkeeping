@@ -1,6 +1,6 @@
 export class FiscalYearFormat {
     public static readonly DefaultUint16 = 0x0101;
-    public static readonly DefaultString = "01/01";
+    public static readonly DefaultString = "01-01";
     public static readonly Default = FiscalYearFormat.of(1, 1);
 
     public readonly month: number;
@@ -15,44 +15,6 @@ export class FiscalYearFormat {
         return new FiscalYearFormat(month, day);
     }
 
-    /**
-     * Create a FiscalYearFormat from a date string in MM/dd format
-     * @param dateString Date string in MM/dd format (e.g. "01/01" for January 1st)
-     * @returns FiscalYearFormat instance or null if invalid
-     */
-    public static fromDateString(dateString: string): FiscalYearFormat | null {
-        if (!dateString || !dateString.includes('/')) {
-            return null;
-        }
-
-        const parts = dateString.split('/');
-        if (parts.length !== 2) {
-            return null;
-        }
-
-        const month = parseInt(parts[0], 10);
-        const day = parseInt(parts[1], 10);
-
-        if (isNaN(month) || isNaN(day)) {
-            return null;
-        }
-
-        try {
-            const [validMonth, validDay] = FiscalYearFormat.validateMonthDay(month, day);
-            return FiscalYearFormat.of(validMonth, validDay);
-        } catch (error) {
-            return null;
-        }
-    }
-
-    /**
-     * Convert to a date string in MM/dd format
-     * @returns Date string in MM/dd format (e.g. "01/01" for January 1st)
-     */
-    public toDateString(): string {
-        return `${this.month.toString().padStart(2, '0')}/${this.day.toString().padStart(2, '0')}`;
-    }
-
     public isValid(): boolean {
         try {
             FiscalYearFormat.validateMonthDay(this.month, this.day);
@@ -62,11 +24,8 @@ export class FiscalYearFormat {
         }
     }
 
-    public toString(): string {
-        if (!this.isValid()) {
-            return "Invalid";
-        }
-        return this.toDateString();
+    public isDefault(): boolean {
+        return this.month === 1 && this.day === 1;
     }
 
     /**
@@ -96,6 +55,44 @@ export class FiscalYearFormat {
      */
     public toUint16(): number {
         return (this.month << 8) | this.day;
+    }
+
+    /**
+     * Create a FiscalYearFormat from a month/day string
+     * @param monthDayString MM-dd string (e.g. "04-01" = 1 April)
+     * @returns FiscalYearFormat instance or null if invalid
+     */
+    public static fromMonthDayString(monthDayString: string): FiscalYearFormat | null {
+        if (!monthDayString || !monthDayString.includes('-')) {
+            return null;
+        }
+
+        const parts = monthDayString.split('-');
+        if (parts.length !== 2) {
+            return null;
+        }
+
+        const month = parseInt(parts[0], 10);
+        const day = parseInt(parts[1], 10);
+
+        if (isNaN(month) || isNaN(day)) {
+            return null;
+        }
+
+        try {
+            const [validMonth, validDay] = FiscalYearFormat.validateMonthDay(month, day);
+            return FiscalYearFormat.of(validMonth, validDay);
+        } catch (error) {
+            return null;
+        }
+    }
+
+    public toMonthDayString(): string {
+        return `${this.month.toString().padStart(2, '0')}-${this.day.toString().padStart(2, '0')}`;
+    }
+
+    public toString(): string {
+        return this.toMonthDayString();
     }
 
     private static validateMonthDay(month: number, day: number): [number, number] {

@@ -44,7 +44,7 @@ func (f FiscalYearFormatType) String() string {
 	if err != nil {
 		return "Invalid"
 	}
-	return fmt.Sprintf("%02d/%02d", month, day)
+	return fmt.Sprintf("%02d-%02d", month, day)
 }
 
 // validateMonthDay validates a month and day and returns them if valid
