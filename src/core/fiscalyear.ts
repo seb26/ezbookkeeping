@@ -112,7 +112,7 @@ export class FiscalYearFormat {
                 maxDays = 30;
                 break;
             case 2: // February
-                maxDays = 29; // Allowing 29 for leap years
+                maxDays = 28; // Disallow fiscal year start on leap day
                 break;
         }
 

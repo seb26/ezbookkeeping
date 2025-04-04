@@ -60,7 +60,7 @@ func validateMonthDay(month uint8, day uint8) (uint8, uint8, error) {
 	case 4, 6, 9, 11: // April, June, September, November
 		maxDays = 30
 	case 2: // February
-		maxDays = 29 // Allowing 29 for leap years
+		maxDays = 28 // Disallow fiscal year start on leap day
 	}
 
 	if day > maxDays {
