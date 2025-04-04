@@ -8,17 +8,17 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type fiscalYearStartDateContainer struct {
-	FiscalYearStartDate core.FiscalYearStartDateType `validate:"validFiscalYearStartDate"`
+type fiscalYearFormatContainer struct {
+	FiscalYearFormat core.FiscalYearFormatType `validate:"validFiscalYearFormat"`
 }
 
-func TestValidateFiscalYearStartDate_ValidValues(t *testing.T) {
+func TestValidateFiscalYearFormat_ValidValues(t *testing.T) {
 	validate := validator.New()
-	validate.RegisterValidation("validFiscalYearStartDate", ValidateFiscalYearStartDate)
+	validate.RegisterValidation("validFiscalYearFormat", ValidateFiscalYearFormat)
 
 	testCases := []struct {
 		name  string
-		value core.FiscalYearStartDateType
+		value core.FiscalYearFormatType
 	}{
 		{"January 1st", 0x0101},   // January 1st
 		{"December 31st", 0x0C1F}, // December 31st
@@ -29,20 +29,20 @@ func TestValidateFiscalYearStartDate_ValidValues(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			container := fiscalYearStartDateContainer{FiscalYearStartDate: tc.value}
+			container := fiscalYearFormatContainer{FiscalYearFormat: tc.value}
 			err := validate.Struct(container)
 			assert.Nil(t, err)
 		})
 	}
 }
 
-func TestValidateFiscalYearStartDate_InvalidValues(t *testing.T) {
+func TestValidateFiscalYearFormat_InvalidValues(t *testing.T) {
 	validate := validator.New()
-	validate.RegisterValidation("validFiscalYearStartDate", ValidateFiscalYearStartDate)
+	validate.RegisterValidation("validFiscalYearFormat", ValidateFiscalYearFormat)
 
 	testCases := []struct {
 		name  string
-		value core.FiscalYearStartDateType
+		value core.FiscalYearFormatType
 	}{
 		{"Zero value", 0},             // Zero value
 		{"Month 0", 0x0001},           // Month 0 (invalid)
@@ -60,7 +60,7 @@ func TestValidateFiscalYearStartDate_InvalidValues(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			container := fiscalYearStartDateContainer{FiscalYearStartDate: tc.value}
+			container := fiscalYearFormatContainer{FiscalYearFormat: tc.value}
 			err := validate.Struct(container)
 			assert.NotNil(t, err)
 		})

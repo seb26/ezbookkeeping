@@ -342,10 +342,10 @@ func GetTransactionTimeRangeByYearMonth(year int32, month int32) (int64, int64, 
 	return minTransactionTime, maxTransactionTime, nil
 }
 
-// GetFiscalYearStartDateFromUnixTime returns the fiscal year start date from the given unix time
-func GetFiscalYearStartDateFromUnixTime(unixTime int64) (core.FiscalYearStartDateType, error) {
+// GetFiscalYearFormatFromUnixTime returns the fiscal year start date from the given unix time
+func GetFiscalYearFormatFromUnixTime(unixTime int64) (core.FiscalYearFormatType, error) {
 	date := parseFromUnixTime(unixTime)
-	monthDay, err := core.NewFiscalYearStartDateType(
+	monthDay, err := core.NewFiscalYearFormatType(
 		uint8(date.Month()),
 		uint8(date.Day()),
 	)

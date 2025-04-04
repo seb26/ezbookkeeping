@@ -6,28 +6,28 @@ import (
 	"github.com/mayswind/ezbookkeeping/pkg/errs"
 )
 
-// FiscalYearStartDateType represents the fiscal year start date as a uint16 (month: high byte, day: low byte)
-type FiscalYearStartDateType uint16
+// FiscalYearFormatType represents the fiscal year start date as a uint16 (month: high byte, day: low byte)
+type FiscalYearFormatType uint16
 
 // Fiscal Year Start Date Type
 const (
-	FISCAL_YEAR_START_DATE_TYPE_DEFAULT FiscalYearStartDateType = 0x0101 // January 1st
-	FISCAL_YEAR_START_DATE_TYPE_INVALID FiscalYearStartDateType = 0x0D01 // Invalid (month 13, day 1)
+	FISCAL_YEAR_FORMAT_TYPE_DEFAULT FiscalYearFormatType = 0x0101 // January 1st
+	FISCAL_YEAR_FORMAT_TYPE_INVALID FiscalYearFormatType = 0x0D01 // Invalid (month 13, day 1)
 )
 
-// NewFiscalYearStartDateType creates a new FiscalYearStartDateType from month and day values
-func NewFiscalYearStartDateType(month uint8, day uint8) (FiscalYearStartDateType, error) {
+// NewFiscalYearFormatType creates a new FiscalYearFormatType from month and day values
+func NewFiscalYearFormatType(month uint8, day uint8) (FiscalYearFormatType, error) {
 	month, day, err := validateMonthDay(month, day)
 	if err != nil {
 		return 0, err
 	}
 
-	return FiscalYearStartDateType(uint16(month)<<8 | uint16(day)), nil
+	return FiscalYearFormatType(uint16(month)<<8 | uint16(day)), nil
 }
 
-// GetMonthDay extracts the month and day from FiscalYearStartDateType
-func (f FiscalYearStartDateType) GetMonthDay() (uint8, uint8, error) {
-	if f == 0 || f >= FISCAL_YEAR_START_DATE_TYPE_INVALID {
+// GetMonthDay extracts the month and day from FiscalYearType
+func (f FiscalYearFormatType) GetMonthDay() (uint8, uint8, error) {
+	if f == 0 || f >= FISCAL_YEAR_FORMAT_TYPE_INVALID {
 		return 0, 0, errs.ErrFormatInvalid
 	}
 
@@ -38,8 +38,8 @@ func (f FiscalYearStartDateType) GetMonthDay() (uint8, uint8, error) {
 	return validateMonthDay(month, day)
 }
 
-// String returns a string representation of FiscalYearStartDateType in MM/DD format
-func (f FiscalYearStartDateType) String() string {
+// String returns a string representation of FiscalYearFormatType in MM/DD format
+func (f FiscalYearFormatType) String() string {
 	month, day, err := f.GetMonthDay()
 	if err != nil {
 		return "Invalid"

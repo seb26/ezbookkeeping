@@ -98,7 +98,7 @@ func startWebServer(c *core.CliContext) error {
 		_ = v.RegisterValidation("validCurrency", validators.ValidCurrency)
 		_ = v.RegisterValidation("validHexRGBColor", validators.ValidHexRGBColor)
 		_ = v.RegisterValidation("validAmountFilter", validators.ValidAmountFilter)
-		_ = v.RegisterValidation("validFiscalYearStartDate", validators.ValidateFiscalYearStartDate)
+		_ = v.RegisterValidation("validFiscalYearFormat", validators.ValidateFiscalYearFormat)
 	}
 
 	router.NoRoute(bindApi(api.Default.ApiNotFound))
