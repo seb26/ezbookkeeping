@@ -48,9 +48,15 @@ export function useFiscalYearStartSelectionBase(props: FiscalYearStartSelectionB
         );
     });
 
+    const disabledDates = (date: Date) => {
+        // Disable February 29 (leap day)
+        return date.getMonth() === 1 && date.getDate() === 29; 
+    };
+
     return {
       // computed states
       displayName,
+      disabledDates,
       // functions
       getterModelValue,
       setterModelValue,

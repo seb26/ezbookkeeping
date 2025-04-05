@@ -13,7 +13,7 @@
         </template>
 
         <template #no-data>
-            <vue-date-picker inline vertical auto-apply
+            <vue-date-picker inline vertical auto-apply hide-offset-dates disable-year-select
                              ref="datepicker"
                              month-name-format="long"
                              model-type="MM-dd"
@@ -22,6 +22,7 @@
                              :dark="isDarkMode"
                              :week-start="firstDayOfWeek"
                              :day-names="dayNames"
+                             :disabled-dates="disabledDates"
                              v-model="selectedDate"
                              >
                 <template #month="{ text }">
@@ -62,10 +63,9 @@ const emit = defineEmits<{
 
 const { getAllMinWeekdayNames, getMonthShortName } = useI18n();
 const userStore = useUserStore();
-const { getCurrentFiscalYearStart } = useI18n();
 const baseProps = computed<FiscalYearStartSelectionBaseProps>(() => ({ modelValue: props.modelValue || userStore.currentUserFiscalYearStart || FiscalYearStart.DefaultNumber }));
 const baseSelectionFunctions = useFiscalYearStartSelectionBase(baseProps.value);
-const { getterModelValue, setterModelValue } = baseSelectionFunctions;
+const { getterModelValue, setterModelValue, disabledDates } = baseSelectionFunctions;
 
 const displayName = computed(() => {
     return useFiscalYearStartSelectionBase({ modelValue: props.modelValue || userStore.currentUserFiscalYearStart || FiscalYearStart.DefaultNumber }).displayName.value;
