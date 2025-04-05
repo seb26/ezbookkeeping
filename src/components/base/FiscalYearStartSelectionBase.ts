@@ -6,16 +6,33 @@ import { useI18n } from '@/locales/helpers.ts';
 
 import { formatMonthDay } from '@/lib/datetime';
 
+import { useUserStore } from '@/stores/user.ts';
+
 export interface FiscalYearStartSelectionBaseProps {
     modelValue?: number;
 }
 
-export function useFiscalYearStartSelectionBase(props: FiscalYearStartSelectionBaseProps) {
-    const { getCurrentFiscalYearStart, getLocalizedLongMonthDayFormat } = useI18n();
+export interface FiscalYearStartSelectionBaseEmits {
+    (e: 'update:modelValue', value: number): void;
+}
 
-    function getterModelValue(input: number | undefined): string {
-        if (input !== 0 && input !== undefined) {
-            const fy = FiscalYearStart.fromNumber(input);
+export function useFiscalYearStartSelectionBase(props: FiscalYearStartSelectionBaseProps, emit?: FiscalYearStartSelectionBaseEmits) {
+    const { getCurrentFiscalYearStart, getLocalizedLongMonthDayFormat } = useI18n();
+    const userStore = useUserStore();
+
+    const getDefaultValue = (): number => {
+        return userStore.currentUserFiscalYearStart || FiscalYearStart.DefaultNumber;
+    };
+
+    const effectiveModelValue = computed<number>(() => {
+        return props.modelValue !== undefined ? props.modelValue : getDefaultValue();
+    });
+
+    function getterModelValue(input?: number): string {
+        const valueToUse = input !== undefined ? input : effectiveModelValue.value;
+        
+        if (valueToUse !== 0 && valueToUse !== undefined) {
+            const fy = FiscalYearStart.fromNumber(valueToUse);
             if (fy) {
                 return fy.toMonthDashDayString();
             }
@@ -34,8 +51,8 @@ export function useFiscalYearStartSelectionBase(props: FiscalYearStartSelectionB
     const displayName = computed<string>(() => {
         let fy = getCurrentFiscalYearStart();
 
-        if (props.modelValue !== 0 && props.modelValue !== undefined) {
-            const testFy = FiscalYearStart.fromNumber(props.modelValue);
+        if (effectiveModelValue.value !== 0 && effectiveModelValue.value !== undefined) {
+            const testFy = FiscalYearStart.fromNumber(effectiveModelValue.value);
             if (testFy) {
                 fy = testFy;
             }
@@ -53,13 +70,33 @@ export function useFiscalYearStartSelectionBase(props: FiscalYearStartSelectionB
         return date.getMonth() === 1 && date.getDate() === 29; 
     };
 
+    const selectedDate = computed<string>({
+        get: () => getterModelValue(),
+        set: (value: string) => {
+            if (emit) {
+                const numericValue = setterModelValue(value);
+                emit('update:modelValue', numericValue);
+            }
+        }
+    });
+
+    const initializeWithDefaultValue = () => {
+        if (emit && props.modelValue === undefined) {
+            emit('update:modelValue', getDefaultValue());
+        }
+    };
+
     return {
-      // computed states
-      displayName,
-      disabledDates,
-      // functions
-      getterModelValue,
-      setterModelValue,
+        // computed states
+        displayName,
+        disabledDates,
+        effectiveModelValue,
+        selectedDate,
+        // functions
+        getterModelValue,
+        setterModelValue,
+        initializeWithDefaultValue,
+        getDefaultValue
     }
 }
 

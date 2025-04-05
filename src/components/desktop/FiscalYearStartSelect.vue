@@ -44,55 +44,40 @@ import { ThemeType } from '@/core/theme.ts';
 import { arrangeArrayWithNewStartIndex } from '@/lib/common.ts';
 import {
     type FiscalYearStartSelectionBaseProps,
+    type FiscalYearStartSelectionBaseEmits,
     useFiscalYearStartSelectionBase
 } from '@/components/base/FiscalYearStartSelectionBase.ts';
 import { useI18n } from '@/locales/helpers.ts';
-import { FiscalYearStart } from '@/core/fiscalyear';
 
-const props = defineProps({
-    modelValue: Number,
-    disabled: Boolean,
-    readonly: Boolean,
-    clearable: Boolean,
-    label: String
-});
+interface FiscalYearStartSelectProps extends FiscalYearStartSelectionBaseProps {
+    disabled?: boolean;
+    readonly?: boolean;
+    clearable?: boolean;
+    label?: string;
+}
 
-const emit = defineEmits<{
-    (e: 'update:modelValue', value: number): void;
-}>();
+const props = defineProps<FiscalYearStartSelectProps>();
+const emit = defineEmits<FiscalYearStartSelectionBaseEmits>();
 
 const { getAllMinWeekdayNames, getMonthShortName } = useI18n();
 const userStore = useUserStore();
-const baseProps = computed<FiscalYearStartSelectionBaseProps>(() => ({ modelValue: props.modelValue || userStore.currentUserFiscalYearStart || FiscalYearStart.DefaultNumber }));
-const baseSelectionFunctions = useFiscalYearStartSelectionBase(baseProps.value);
-const { getterModelValue, setterModelValue, disabledDates } = baseSelectionFunctions;
-
-const displayName = computed(() => {
-    return useFiscalYearStartSelectionBase({ modelValue: props.modelValue || userStore.currentUserFiscalYearStart || FiscalYearStart.DefaultNumber }).displayName.value;
-});
-
 const theme = useTheme();
+
 const isDarkMode = computed<boolean>(() => theme.global.name.value === ThemeType.Dark);
 const firstDayOfWeek = computed<number>(() => userStore.currentUserFirstDayOfWeek);
 const dayNames = computed<string[]>(() => arrangeArrayWithNewStartIndex(getAllMinWeekdayNames(), firstDayOfWeek.value));
 
-const selectedDate = computed<string>({
-    get: () => {
-        return getterModelValue(props.modelValue || userStore.currentUserFiscalYearStart || FiscalYearStart.DefaultNumber);
-    },
-    set: (value: string) => {
-        const numericValue = setterModelValue(value);
-        emit('update:modelValue', numericValue);
-    }
-});
+// Get all base functionality
+const {
+    displayName,
+    disabledDates,
+    selectedDate,
+    initializeWithDefaultValue
+} = useFiscalYearStartSelectionBase(props, emit);
 
 // Initialize the component with the correct value
 onMounted(() => {
-    if (!props.modelValue) {
-        // If no value is provided, use the user store value or default
-        const initialValue = userStore.currentUserFiscalYearStart || FiscalYearStart.DefaultNumber;
-        emit('update:modelValue', initialValue);
-    }
+    initializeWithDefaultValue();
 });
 </script>
 
