@@ -66,9 +66,9 @@ export const useUserStore = defineStore('user', () => {
         return isNumber(userInfo.firstDayOfWeek) && WeekDay.valueOf(userInfo.firstDayOfWeek) ? userInfo.firstDayOfWeek : settingsStore.localeDefaultSettings.firstDayOfWeek;
     });
 
-    const currentUserFiscalYearFormat = computed<number>(() => {
+    const currentUserFiscalYearStart = computed<number>(() => {
         const userInfo = currentUserBasicInfo.value || EMPTY_USER_BASIC_INFO;
-        return userInfo.fiscalYearFormat;
+        return userInfo.fiscalYearStart;
     });
 
     const currentUserLongDateFormat = computed<number>(() => {
@@ -321,7 +321,7 @@ export const useUserStore = defineStore('user', () => {
         currentUserLanguage,
         currentUserDefaultCurrency,
         currentUserFirstDayOfWeek,
-        currentUserFiscalYearFormat,
+        currentUserFiscalYearStart,
         currentUserLongDateFormat,
         currentUserShortDateFormat,
         currentUserLongTimeFormat,

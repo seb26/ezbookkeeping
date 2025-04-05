@@ -1,7 +1,7 @@
-export class FiscalYearFormat {
-    public static readonly DefaultUint16 = 0x0101;
+export class FiscalYearStart {
+    public static readonly DefaultNumber = 0x0101;
     public static readonly DefaultString = "01-01";
-    public static readonly Default = FiscalYearFormat.of(1, 1);
+    public static readonly Default = FiscalYearStart.of(1, 1);
 
     public readonly month: number;
     public readonly day: number;
@@ -11,13 +11,17 @@ export class FiscalYearFormat {
         this.day = day;
     }
 
-    public static of(month: number, day: number): FiscalYearFormat {
-        return new FiscalYearFormat(month, day);
+    public static of(month: number, day: number): FiscalYearStart {
+        return new FiscalYearStart(month, day);
     }
 
+    /**
+     * Validate the month and day
+     * @returns true if the month and day are valid, false otherwise
+     */
     public isValid(): boolean {
         try {
-            FiscalYearFormat.validateMonthDay(this.month, this.day);
+            FiscalYearStart.validateMonthDay(this.month, this.day);
             return true;
         } catch (error) {
             return false;
