@@ -47,6 +47,10 @@ import {
 } from '@/core/currency.ts';
 
 import {
+    FiscalYearStart
+} from '@/core/fiscalyear.ts';
+
+import {
     PresetAmountColor
 } from '@/core/color.ts';
 
@@ -130,7 +134,8 @@ import {
     getDateTimeFormatType,
     getRecentMonthDateRanges,
     isDateRangeMatchFullYears,
-    isDateRangeMatchFullMonths
+    isDateRangeMatchFullMonths,
+    formatMonthDay
 } from '@/lib/datetime.ts';
 
 import {
@@ -601,6 +606,10 @@ export function useI18n() {
 
     function getDefaultFirstDayOfWeek(): string {
         return t('default.firstDayOfWeek');
+    }
+
+    function getDefaultFiscalYearStart(): string {
+        return t('default.fiscalYearStart');
     }
 
     function getAllLanguageOptions(includeSystemDefault: boolean): LanguageOption[] {
@@ -1241,6 +1250,17 @@ export function useI18n() {
         return joinMultiText(finalWeekdayNames);
     }
 
+    function getCurrentFiscalYearStart(): FiscalYearStart {
+        let fiscalYearStart = FiscalYearStart.fromNumber(userStore.currentUserFiscalYearStart);
+        if ( fiscalYearStart ) {
+            return fiscalYearStart;
+        }
+        if ( !fiscalYearStart ) {
+            fiscalYearStart = FiscalYearStart.fromMonthDashDayString(t('default.fiscalYearStart'));
+        }
+        return FiscalYearStart.Default
+    }
+
     function getCurrentDecimalSeparator(): string {
         let decimalSeparatorType = DecimalSeparator.valueOf(userStore.currentUserDecimalSeparator);
 
@@ -1660,6 +1680,7 @@ export function useI18n() {
         // get localization default type
         getDefaultCurrency,
         getDefaultFirstDayOfWeek,
+        getDefaultFiscalYearStart,
         // get all localized info of specified type
         getAllLanguageOptions,
         getAllEnableDisableOptions,
@@ -1710,6 +1731,8 @@ export function useI18n() {
         getWeekdayLongName,
         getMultiMonthdayShortNames,
         getMultiWeekdayLongNames,
+        getLocalizedLongMonthDayFormat,
+        getCurrentFiscalYearStart,
         getCurrentDecimalSeparator,
         getCurrentDigitGroupingSymbol,
         getCurrentDigitGroupingType,

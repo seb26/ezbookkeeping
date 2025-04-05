@@ -33,21 +33,95 @@ export class FiscalYearStart {
     }
 
     /**
-     * Create a FiscalYearFormat from a uint16 value (two bytes - month high, day low)
-     * @param value uint16 value (month in high byte, day in low byte)
-     * @returns FiscalYearFormat instance or null if invalid
+     * Validate a month and day
+     * @param month - The month to validate
+     * @param day - The day to validate
+     * @returns true if the month and day are valid, false otherwise
      */
-    public static fromUint16(value: number): FiscalYearFormat | null {
+    public static validateMonthDay(month: number, day: number): [number, number] {
+        return validateMonthDay(month, day);
+    }
+
+    /**
+     * Create a FiscalYearStart from a month and day
+     * @param month - The month to create the FiscalYearStart from
+     * @param day - The day to create the FiscalYearStart from
+     * @returns FiscalYearStart instance
+     */
+    public static strictFromMonthDayValues(month: number, day: number): FiscalYearStart {
+        return FiscalYearStart.of(month, day);
+    }
+
+    /**
+     * Create a FiscalYearStart from a uint16 value (two bytes - month high, day low)
+     * @param value uint16 value (month in high byte, day in low byte)
+     * @returns FiscalYearStart instance
+     */
+    public static strictFromNumber(value: number): FiscalYearStart {
         if (value < 0 || value > 0xFFFF) {
-            return null;
+            throw new Error("Invalid uint16 value");
         }
 
         const month = (value >> 8) & 0xFF;  // high byte
         const day = value & 0xFF;           // low byte
 
         try {
-            const [validMonth, validDay] = FiscalYearFormat.validateMonthDay(month, day);
-            return FiscalYearFormat.of(validMonth, validDay);
+            const [validMonth, validDay] = validateMonthDay(month, day);
+            return FiscalYearStart.of(validMonth, validDay);
+        } catch (error) {
+            throw new Error("Invalid uint16 value");
+        }
+    }
+
+    /**
+     * Create a FiscalYearStart from a month/day string
+     * @param input MM-dd string (e.g. "04-01" = 1 April)
+     * @returns FiscalYearStart instance
+     */
+    public static strictFromMonthDashDayString(input: string): FiscalYearStart {
+        if (!input || !input.includes('-')) {
+            throw new Error("Invalid input string");
+        }
+
+        const parts = input.split('-');
+        if (parts.length !== 2) {
+            throw new Error("Invalid input string");
+        }
+
+        const month = parseInt(parts[0], 10);
+        const day = parseInt(parts[1], 10);
+
+        if (isNaN(month) || isNaN(day)) {
+            throw new Error("Invalid input string");
+        }
+
+        try {
+            const [validMonth, validDay] = validateMonthDay(month, day);
+            return FiscalYearStart.of(validMonth, validDay);
+        } catch (error) {
+            throw new Error("Invalid input string");
+        }
+    }
+
+    public static fromMonthDashDayString(input: string): FiscalYearStart | null {
+        try {
+            return FiscalYearStart.strictFromMonthDashDayString(input);
+        } catch (error) {
+            return null;
+        }
+    }
+
+    public static fromNumber(value: number): FiscalYearStart | null {
+        try {
+            return FiscalYearStart.strictFromNumber(value);
+        } catch (error) {
+            return null;
+        }
+    }
+
+    public static fromMonthDayValues(month: number, day: number): FiscalYearStart | null {
+        try {
+            return FiscalYearStart.strictFromMonthDayValues(month, day);
         } catch (error) {
             return null;
         }
@@ -57,70 +131,48 @@ export class FiscalYearStart {
      * Convert to a uint16 value (two bytes - month high, day low)
      * @returns uint16 value (month in high byte, day in low byte)
      */
-    public toUint16(): number {
+    public toNumber(): number {
         return (this.month << 8) | this.day;
     }
 
-    /**
-     * Create a FiscalYearFormat from a month/day string
-     * @param monthDayString MM-dd string (e.g. "04-01" = 1 April)
-     * @returns FiscalYearFormat instance or null if invalid
-     */
-    public static fromMonthDayString(monthDayString: string): FiscalYearFormat | null {
-        if (!monthDayString || !monthDayString.includes('-')) {
-            return null;
-        }
-
-        const parts = monthDayString.split('-');
-        if (parts.length !== 2) {
-            return null;
-        }
-
-        const month = parseInt(parts[0], 10);
-        const day = parseInt(parts[1], 10);
-
-        if (isNaN(month) || isNaN(day)) {
-            return null;
-        }
-
-        try {
-            const [validMonth, validDay] = FiscalYearFormat.validateMonthDay(month, day);
-            return FiscalYearFormat.of(validMonth, validDay);
-        } catch (error) {
-            return null;
-        }
-    }
-
-    public toMonthDayString(): string {
+    public toMonthDashDayString(): string {
         return `${this.month.toString().padStart(2, '0')}-${this.day.toString().padStart(2, '0')}`;
     }
 
+    public toMonthDayValues(): [string, string] {
+        return [
+            `${this.month.toString().padStart(2, '0')}`,
+            `${this.day.toString().padStart(2, '0')}`
+        ]
+    }
+
     public toString(): string {
-        return this.toMonthDayString();
+        return this.toMonthDashDayString();
     }
 
-    private static validateMonthDay(month: number, day: number): [number, number] {
-        if (month < 1 || month > 12 || day < 1) {
-            throw new Error("Invalid month or day");
-        }
+}
 
-        let maxDays = 31;
-        switch (month) {
-            case 1: case 3: case 5: case 7: case 8: case 10: case 12: // January, March, May, July, August, October, December
-                maxDays = 31;
-                break;
-            case 4: case 6: case 9: case 11: // April, June, September, November
-                maxDays = 30;
-                break;
-            case 2: // February
-                maxDays = 28; // Disallow fiscal year start on leap day
-                break;
-        }
-
-        if (day > maxDays) {
-            throw new Error("Invalid day for given month");
-        }
-
-        return [month, day];
+function validateMonthDay(month: number, day: number): [number, number] {
+    if (month < 1 || month > 12 || day < 1) {
+        throw new Error("Invalid month or day");
     }
+
+    let maxDays = 31;
+    switch (month) {
+        case 1: case 3: case 5: case 7: case 8: case 10: case 12: // January, March, May, July, August, October, December
+            maxDays = 31;
+            break;
+        case 4: case 6: case 9: case 11: // April, June, September, November
+            maxDays = 30;
+            break;
+        case 2: // February
+            maxDays = 28; // Disallow fiscal year start on leap day
+            break;
+    }
+
+    if (day > maxDays) {
+        throw new Error("Invalid day for given month");
+    }
+
+    return [month, day];
 }
