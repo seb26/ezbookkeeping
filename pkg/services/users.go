@@ -289,8 +289,8 @@ func (s *UserService) UpdateUser(c core.Context, user *models.User, modifyUserLa
 		updateCols = append(updateCols, "first_day_of_week")
 	}
 
-	if core.FISCAL_YEAR_FORMAT_TYPE_DEFAULT <= user.FiscalYearFormat && user.FiscalYearFormat < core.FISCAL_YEAR_FORMAT_TYPE_INVALID {
-		updateCols = append(updateCols, "fiscal_year_format")
+	if core.FISCAL_YEAR_START_DEFAULT <= user.FiscalYearStart && user.FiscalYearStart < core.FISCAL_YEAR_START_INVALID {
+		updateCols = append(updateCols, "fiscal_year_start")
 	}
 
 	if core.LONG_DATE_FORMAT_DEFAULT <= user.LongDateFormat && user.LongDateFormat <= core.LONG_DATE_FORMAT_D_M_YYYY {

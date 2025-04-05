@@ -82,7 +82,7 @@ export class User {
             language: this.language,
             defaultCurrency: this.defaultCurrency,
             firstDayOfWeek: this.firstDayOfWeek,
-            fiscalYearFormat: this.fiscalYearStart,
+            fiscalYearStart: this.fiscalYearStart,
             longDateFormat: this.longDateFormat,
             shortDateFormat: this.shortDateFormat,
             longTimeFormat: this.longTimeFormat,
@@ -182,7 +182,7 @@ export interface UserProfileUpdateRequest {
     readonly language?: string;
     readonly defaultCurrency?: string;
     readonly firstDayOfWeek?: number;
-    readonly fiscalYearFormat?: number;
+    readonly fiscalYearStart?: number;
     readonly longDateFormat?: number;
     readonly shortDateFormat?: number;
     readonly longTimeFormat?: number;

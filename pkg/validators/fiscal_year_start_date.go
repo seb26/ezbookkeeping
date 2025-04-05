@@ -6,9 +6,9 @@ import (
 	"github.com/mayswind/ezbookkeeping/pkg/core"
 )
 
-// ValidateFiscalYearFormat validates if a fiscal year start date is valid
-func ValidateFiscalYearFormat(fl validator.FieldLevel) bool {
-	date, ok := fl.Field().Interface().(core.FiscalYearFormatType)
+// ValidateFiscalYearStart validates if a fiscal year start date is valid
+func ValidateFiscalYearStart(fl validator.FieldLevel) bool {
+	date, ok := fl.Field().Interface().(core.FiscalYearStart)
 	if !ok {
 		return false
 	}
@@ -18,9 +18,9 @@ func ValidateFiscalYearFormat(fl validator.FieldLevel) bool {
 	return err == nil
 }
 
-// RegisterFiscalYearFormatValidator registers the fiscal year start date validator
-func RegisterFiscalYearFormatValidator() {
+// RegisterFiscalYearStartValidator registers the fiscal year start date validator
+func RegisterFiscalYearStartValidator() {
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
-		v.RegisterValidation("validFiscalYearFormat", ValidateFiscalYearFormat)
+		v.RegisterValidation("validFiscalYearStart", ValidateFiscalYearStart)
 	}
 }

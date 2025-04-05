@@ -6,28 +6,28 @@ import (
 	"github.com/mayswind/ezbookkeeping/pkg/errs"
 )
 
-// FiscalYearFormatType represents the fiscal year start date as a uint16 (month: high byte, day: low byte)
-type FiscalYearFormatType uint16
+// FiscalYearStart represents the fiscal year start date as a uint16 (month: high byte, day: low byte)
+type FiscalYearStart uint16
 
 // Fiscal Year Start Date Type
 const (
-	FISCAL_YEAR_FORMAT_TYPE_DEFAULT FiscalYearFormatType = 0x0101 // January 1st
-	FISCAL_YEAR_FORMAT_TYPE_INVALID FiscalYearFormatType = 0x0D01 // Invalid (month 13, day 1)
+	FISCAL_YEAR_START_DEFAULT FiscalYearStart = 0x0101 // January 1st
+	FISCAL_YEAR_START_INVALID FiscalYearStart = 0x0D01 // Invalid (month 13, day 1)
 )
 
-// NewFiscalYearFormatType creates a new FiscalYearFormatType from month and day values
-func NewFiscalYearFormatType(month uint8, day uint8) (FiscalYearFormatType, error) {
+// NewFiscalYearStart creates a new FiscalYearStart from month and day values
+func NewFiscalYearStart(month uint8, day uint8) (FiscalYearStart, error) {
 	month, day, err := validateMonthDay(month, day)
 	if err != nil {
 		return 0, err
 	}
 
-	return FiscalYearFormatType(uint16(month)<<8 | uint16(day)), nil
+	return FiscalYearStart(uint16(month)<<8 | uint16(day)), nil
 }
 
 // GetMonthDay extracts the month and day from FiscalYearType
-func (f FiscalYearFormatType) GetMonthDay() (uint8, uint8, error) {
-	if f == 0 || f >= FISCAL_YEAR_FORMAT_TYPE_INVALID {
+func (f FiscalYearStart) GetMonthDay() (uint8, uint8, error) {
+	if f == 0 || f >= FISCAL_YEAR_START_INVALID {
 		return 0, 0, errs.ErrFormatInvalid
 	}
 
@@ -38,8 +38,8 @@ func (f FiscalYearFormatType) GetMonthDay() (uint8, uint8, error) {
 	return validateMonthDay(month, day)
 }
 
-// String returns a string representation of FiscalYearFormatType in MM/DD format
-func (f FiscalYearFormatType) String() string {
+// String returns a string representation of FiscalYearStart in MM/DD format
+func (f FiscalYearStart) String() string {
 	month, day, err := f.GetMonthDay()
 	if err != nil {
 		return "Invalid"

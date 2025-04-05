@@ -8,17 +8,17 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type fiscalYearFormatContainer struct {
-	FiscalYearFormat core.FiscalYearFormatType `validate:"validFiscalYearFormat"`
+type fiscalYearStartContainer struct {
+	FiscalYearStart core.FiscalYearStart `validate:"validFiscalYearStart"`
 }
 
-func TestValidateFiscalYearFormat_ValidValues(t *testing.T) {
+func TestValidateFiscalYearStart_ValidValues(t *testing.T) {
 	validate := validator.New()
-	validate.RegisterValidation("validFiscalYearFormat", ValidateFiscalYearFormat)
+	validate.RegisterValidation("validFiscalYearStart", ValidateFiscalYearStart)
 
 	testCases := []struct {
 		name  string
-		value core.FiscalYearFormatType
+		value core.FiscalYearStart
 	}{
 		{"January 1st", 0x0101},   // January 1st
 		{"December 31st", 0x0C1F}, // December 31st
@@ -29,20 +29,20 @@ func TestValidateFiscalYearFormat_ValidValues(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			container := fiscalYearFormatContainer{FiscalYearFormat: tc.value}
+			container := fiscalYearStartContainer{FiscalYearStart: tc.value}
 			err := validate.Struct(container)
 			assert.Nil(t, err)
 		})
 	}
 }
 
-func TestValidateFiscalYearFormat_InvalidValues(t *testing.T) {
+func TestValidateFiscalYearStart_InvalidValues(t *testing.T) {
 	validate := validator.New()
-	validate.RegisterValidation("validFiscalYearFormat", ValidateFiscalYearFormat)
+	validate.RegisterValidation("validFiscalYearStart", ValidateFiscalYearStart)
 
 	testCases := []struct {
 		name  string
-		value core.FiscalYearFormatType
+		value core.FiscalYearStart
 	}{
 		{"Zero value", 0},             // Zero value
 		{"Month 0", 0x0001},           // Month 0 (invalid)
@@ -60,7 +60,7 @@ func TestValidateFiscalYearFormat_InvalidValues(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			container := fiscalYearFormatContainer{FiscalYearFormat: tc.value}
+			container := fiscalYearStartContainer{FiscalYearStart: tc.value}
 			err := validate.Struct(container)
 			assert.NotNil(t, err)
 		})

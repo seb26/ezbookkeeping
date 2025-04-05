@@ -7,11 +7,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNewFiscalYearFormatType_ValidMonthDay(t *testing.T) {
+func TestNewFiscalYearStart_ValidMonthDay(t *testing.T) {
 	testCases := []struct {
 		month    uint8
 		day      uint8
-		expected FiscalYearFormatType
+		expected FiscalYearStart
 	}{
 		{1, 1, 0x0101},   // January 1st
 		{12, 31, 0x0C1F}, // December 31st
@@ -21,13 +21,13 @@ func TestNewFiscalYearFormatType_ValidMonthDay(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		fiscal, err := NewFiscalYearFormatType(tc.month, tc.day)
+		fiscal, err := NewFiscalYearStart(tc.month, tc.day)
 		assert.Nil(t, err)
 		assert.Equal(t, tc.expected, fiscal)
 	}
 }
 
-func TestNewFiscalYearFormatType_InvalidMonthDay(t *testing.T) {
+func TestNewFiscalYearStart_InvalidMonthDay(t *testing.T) {
 	testCases := []struct {
 		month uint8
 		day   uint8
@@ -46,15 +46,15 @@ func TestNewFiscalYearFormatType_InvalidMonthDay(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		fiscal, err := NewFiscalYearFormatType(tc.month, tc.day)
-		assert.Equal(t, FiscalYearFormatType(0), fiscal)
+		fiscal, err := NewFiscalYearStart(tc.month, tc.day)
+		assert.Equal(t, FiscalYearStart(0), fiscal)
 		assert.Equal(t, errs.ErrFormatInvalid, err)
 	}
 }
 
-func TestGetMonthDay_ValidFiscalYearFormat(t *testing.T) {
+func TestGetMonthDay_ValidFiscalYearStart(t *testing.T) {
 	testCases := []struct {
-		fiscalYear FiscalYearFormatType
+		fiscalYear FiscalYearStart
 		month      uint8
 		day        uint8
 	}{
@@ -73,9 +73,9 @@ func TestGetMonthDay_ValidFiscalYearFormat(t *testing.T) {
 	}
 }
 
-func TestGetMonthDay_InvalidFiscalYearFormat(t *testing.T) {
+func TestGetMonthDay_InvalidFiscalYearStart(t *testing.T) {
 	testCases := []struct {
-		fiscalYear FiscalYearFormatType
+		fiscalYear FiscalYearStart
 	}{
 		{0x0000}, // 0/0 (invalid)
 		{0x0D01}, // Month 13 (invalid)
@@ -99,9 +99,9 @@ func TestGetMonthDay_InvalidFiscalYearFormat(t *testing.T) {
 	}
 }
 
-func TestFiscalYearFormatType_String(t *testing.T) {
+func TestFiscalYearStart_String(t *testing.T) {
 	testCases := []struct {
-		fiscalYear FiscalYearFormatType
+		fiscalYear FiscalYearStart
 		expected   string
 	}{
 		{0x0101, "01/01"},   // January 1st
@@ -119,10 +119,10 @@ func TestFiscalYearFormatType_String(t *testing.T) {
 	}
 }
 
-func TestFiscalYearFormatConstants(t *testing.T) {
+func TestFiscalYearStartConstants(t *testing.T) {
 	// Default should be January 1st (0x0101)
-	assert.Equal(t, FiscalYearFormatType(0x0101), FISCAL_YEAR_FORMAT_TYPE_DEFAULT)
+	assert.Equal(t, FiscalYearStart(0x0101), FISCAL_YEAR_START_DEFAULT)
 
 	// Invalid should be higher than any valid value
-	assert.Equal(t, FiscalYearFormatType(0x0D01), FISCAL_YEAR_FORMAT_TYPE_INVALID)
+	assert.Equal(t, FiscalYearStart(0x0D01), FISCAL_YEAR_START_INVALID)
 }
