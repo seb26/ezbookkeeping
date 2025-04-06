@@ -1,24 +1,64 @@
-export class FiscalYearStart {
+import type { TypeAndName } from './base.ts';
+
+export class FiscalYearStart implements TypeAndName {
     public static readonly DefaultNumber = 0x0101;
     public static readonly DefaultString = "01-01";
-    public static readonly Default = FiscalYearStart.of(1, 1);
+    public static readonly Default = new FiscalYearStart(1, 1);
 
-    public readonly month: number;
-    public readonly day: number;
+    public readonly type: number;
+    public readonly name: string;
+    
+    private readonly month: number;
+    private readonly day: number;
+    
+    public get Month(): number { return this.month; }
+    public get Day(): number { return this.day; }
 
     private constructor(month: number, day: number) {
-        this.month = month;
-        this.day = day;
+        const [validMonth, validDay] = validateMonthDay(month, day);
+        this.month = validMonth;
+        this.day = validDay;
+        this.type = (validMonth << 8) | validDay;
+        
+        this.name = `Y-${month}-${day}`;
     }
 
     public static of(month: number, day: number): FiscalYearStart {
         return new FiscalYearStart(month, day);
     }
 
-    /**
-     * Validate the month and day
-     * @returns true if the month and day are valid, false otherwise
-     */
+    public static valueOf(type: number): FiscalYearStart | undefined {
+        try {
+            return FiscalYearStart.strictFromNumber(type);
+        } catch (error) {
+            return undefined;
+        }
+    }
+
+    public static parse(typeName: string): FiscalYearStart | undefined {
+        try {
+            return FiscalYearStart.strictFromMonthDashDayString(typeName);
+        } catch (error) {
+            return undefined;
+        }
+    }
+
+    public static isValidType(type: number): boolean {
+        if (type < 0x0101 || type > 0x1231) {
+            return false;
+        }
+        
+        const month = (type >> 8) & 0xFF;
+        const day = type & 0xFF;
+        
+        try {
+            validateMonthDay(month, day);
+            return true;
+        } catch (error) {
+            return false;
+        }
+    }
+
     public isValid(): boolean {
         try {
             FiscalYearStart.validateMonthDay(this.month, this.day);
@@ -32,22 +72,10 @@ export class FiscalYearStart {
         return this.month === 1 && this.day === 1;
     }
 
-    /**
-     * Validate a month and day
-     * @param month - The month to validate
-     * @param day - The day to validate
-     * @returns true if the month and day are valid, false otherwise
-     */
     public static validateMonthDay(month: number, day: number): [number, number] {
         return validateMonthDay(month, day);
     }
 
-    /**
-     * Create a FiscalYearStart from a month and day
-     * @param month - The month to create the FiscalYearStart from
-     * @param day - The day to create the FiscalYearStart from
-     * @returns FiscalYearStart instance
-     */
     public static strictFromMonthDayValues(month: number, day: number): FiscalYearStart {
         return FiscalYearStart.of(month, day);
     }
@@ -126,13 +154,13 @@ export class FiscalYearStart {
             return null;
         }
     }
-
+    
     /**
      * Convert to a uint16 value (two bytes - month high, day low)
      * @returns uint16 value (month in high byte, day in low byte)
      */
     public toNumber(): number {
-        return (this.month << 8) | this.day;
+        return this.type;
     }
 
     public toMonthDashDayString(): string {
@@ -149,7 +177,6 @@ export class FiscalYearStart {
     public toString(): string {
         return this.toMonthDashDayString();
     }
-
 }
 
 function validateMonthDay(month: number, day: number): [number, number] {
@@ -159,13 +186,16 @@ function validateMonthDay(month: number, day: number): [number, number] {
 
     let maxDays = 31;
     switch (month) {
-        case 1: case 3: case 5: case 7: case 8: case 10: case 12: // January, March, May, July, August, October, December
+        // January, March, May, July, August, October, December
+        case 1: case 3: case 5: case 7: case 8: case 10: case 12: 
             maxDays = 31;
             break;
-        case 4: case 6: case 9: case 11: // April, June, September, November
+        // April, June, September, November
+        case 4: case 6: case 9: case 11: 
             maxDays = 30;
             break;
-        case 2: // February
+        // February
+        case 2: 
             maxDays = 28; // Disallow fiscal year start on leap day
             break;
     }
