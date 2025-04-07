@@ -27,20 +27,23 @@ export class FiscalYearStart implements TypeAndName {
         return new FiscalYearStart(month, day);
     }
 
-    public static valueOf(type: number): FiscalYearStart | undefined {
-        try {
-            return FiscalYearStart.strictFromNumber(type);
-        } catch (error) {
-            return undefined;
-        }
+    public static valueOf(type: number): FiscalYearStart {
+        return FiscalYearStart.strictFromNumber(type);
+    }
+
+    public static valuesFromNumber(type: number): number[] {
+        return FiscalYearStart.strictFromNumber(type).values();
+    }
+
+    public values(): number[] {
+        return [
+            this.month,
+            this.day
+        ];
     }
 
     public static parse(typeName: string): FiscalYearStart | undefined {
-        try {
-            return FiscalYearStart.strictFromMonthDashDayString(typeName);
-        } catch (error) {
-            return undefined;
-        }
+        return FiscalYearStart.strictFromMonthDashDayString(typeName);
     }
 
     public static isValidType(type: number): boolean {
