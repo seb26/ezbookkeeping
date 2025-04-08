@@ -124,7 +124,7 @@ def generate_test_cases_getFiscalYearStartUnixTime():
             for samplePeriod in samplePeriodData:
                 sampleFYStart = datetime.datetime.strptime(samplePeriod['start'], '%Y-%m-%d').replace(tzinfo=datetime.timezone.utc)
                 sampleFYStartUnixTime = int(sampleFYStart.timestamp())  
-                sampleFYStartUnixTimeISO = sampleFYStart.isoformat().replace('+00:00', '.000Z')
+                sampleFYStartUnixTimeISO = sampleFYStart.isoformat().replace('+00:00', 'Z')
                 sampleFYEnd = datetime.datetime.strptime(samplePeriod['end'], '%Y-%m-%d').replace(hour=23, minute=59, second=59, microsecond=999999, tzinfo=datetime.timezone.utc)
                 if sampleFYStart <= testDate <= sampleFYEnd:
                     substring.append(
@@ -153,7 +153,7 @@ def generate_test_cases_getFiscalYearEndUnixTime():
                 sampleFYStart = datetime.datetime.strptime(samplePeriod['start'], '%Y-%m-%d').replace(tzinfo=datetime.timezone.utc)
                 sampleFYEnd = datetime.datetime.strptime(samplePeriod['end'], '%Y-%m-%d').replace(hour=23, minute=59, second=59, microsecond=999999, tzinfo=datetime.timezone.utc)
                 sampleFYEndUnixTime = int(sampleFYEnd.timestamp())
-                sampleFYEndUnixTimeISO = sampleFYEnd.isoformat().replace('.999999+00:00', '.000Z')
+                sampleFYEndUnixTimeISO = sampleFYEnd.isoformat().replace('.999999+00:00', 'Z')
                 if sampleFYStart <= testDate <= sampleFYEnd:
                     substring.append(
                         EXPECTED_SUBSTRING.format(
