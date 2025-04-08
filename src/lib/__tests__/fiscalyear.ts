@@ -1,6 +1,6 @@
 // Unit tests for fiscal year functions
 import moment from 'moment-timezone';
-import { describe, expect, test } from '@jest/globals';
+import { describe, expect, test, beforeAll } from '@jest/globals';
 
 // Import all the fiscal year functions from the lib
 import {
@@ -12,6 +12,11 @@ import {
 
 import { formatUnixTime } from '@/lib/datetime.ts';
 import { FiscalYearStart } from '@/core/fiscalyear.ts';
+
+// Set test environment timezone to UTC, since the test data constants are in UTC
+beforeAll(() => {
+    moment.tz.setDefault('UTC');
+});
 
 // UTILITIES
 function formatUnixTimeISO(unixTime: number): string {
