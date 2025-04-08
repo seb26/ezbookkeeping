@@ -4,22 +4,10 @@ import { describe, expect, test } from '@jest/globals';
 
 // Import all the fiscal year functions from the lib
 import {
+    getFiscalYearFromUnixTime,
     getFiscalYearStartUnixTime,
     getFiscalYearEndUnixTime,
-    getFiscalYearFromUnixTime,
-    getCurrentFiscalYear,
-    isInFiscalYear,
-    getFiscalYearUnixTime,
-    getFiscalYearToDateUnixTimes,
-    getPreviousFiscalYearToDateUnixTimes,
-    spanMultipleFiscalYears,
-    getFiscalYearsInDateRange,
-    getThisFiscalYearFirstUnixTime,
-    getThisFiscalYearLastUnixTime,
-    isStartOfFiscalYear,
-    formatFiscalYear,
-    getNextFiscalYearStartUnixTime,
-    isEndOfFiscalYear
+    getFiscalYearUnixTimeRange
 } from '@/lib/fiscalyear.ts';
 
 import { formatUnixTime } from '@/lib/datetime.ts';
@@ -30,6 +18,9 @@ function formatUnixTimeISO(unixTime: number): string {
     return formatUnixTime(unixTime, 'YYYY-MM-DD[T]HH:mm:ss[Z]');
 }
 
+function getTestTitleFormat(testFiscalYearStartId: string, testCaseDateString: string): string {
+    return `FY_START: ${testFiscalYearStartId.padStart(10, ' ')}; DATE: ${moment(testCaseDateString).format('MMMM D, YYYY')}`;
+}
 
 // FISCAL YEAR START CONFIGURATION
 type FiscalYearStartConfig = {
@@ -38,9 +29,18 @@ type FiscalYearStartConfig = {
 };
 
 const FISCAL_YEAR_STARTS: Record<string, FiscalYearStartConfig> = {
-    'January 1': { id: 'January 1', value: 0x0101 },
-    'April 1': { id: 'April 1', value: 0x0401 },
-    'October 1': { id: 'October 1', value: 0x0A01 },
+    'January 1': {
+        id: 'January 1',
+        value: 0x0101,
+    },
+    'April 1': {
+        id: 'April 1',
+        value: 0x0401,
+    },
+    'October 1': {
+        id: 'October 1',
+        value: 0x0A01,
+    },
 };
 
 // VALIDATE FISCAL YEAR START
@@ -53,13 +53,15 @@ describe('validateFiscalYearStart', () => {
 });
 
 // FISCAL YEAR FROM UNIX TIME
-const FISCAL_YEAR_FROM_UNIX_TIME_TEST_CASES: {
+type FiscalYearFromUnixTimeTestCase = {
     date: string;
     unixTime: number;
     expected: {
         [fiscalYearStart: string]: number;
     };
-}[] = [
+};
+
+const FISCAL_YEAR_FROM_UNIX_TIME_TEST_CASES: FiscalYearFromUnixTimeTestCase[] = [
     { date: '2022-01-01', unixTime: 1640995200, expected: { 'January 1': 2022, 'April 1': 2022, 'October 1': 2022 } },
     { date: '2022-03-31', unixTime: 1648684800, expected: { 'January 1': 2022, 'April 1': 2022, 'October 1': 2022 } },
     { date: '2022-04-01', unixTime: 1648771200, expected: { 'January 1': 2022, 'April 1': 2023, 'October 1': 2022 } },
@@ -89,8 +91,7 @@ const FISCAL_YEAR_FROM_UNIX_TIME_TEST_CASES: {
 describe('getFiscalYearFromUnixTime', () => {
     Object.values(FISCAL_YEAR_STARTS).forEach((testFiscalYearStart) => {
         FISCAL_YEAR_FROM_UNIX_TIME_TEST_CASES.forEach((testCase) => {
-            const dateLong = moment(testCase.date).format('MMMM D, YYYY');
-            test(`returns correct fiscal year for FY_START: ${testFiscalYearStart.id.padStart(10, ' ')} and DATE: ${dateLong}`, () => {
+            test(`returns correct fiscal year for ${getTestTitleFormat(testFiscalYearStart.id, testCase.date)}`, () => {
                 const fiscalYear = getFiscalYearFromUnixTime(testCase.unixTime, testFiscalYearStart.value);
                 const expected = testCase.expected[testFiscalYearStart.id];
                 
@@ -102,7 +103,7 @@ describe('getFiscalYearFromUnixTime', () => {
 
 
 // FISCAL YEAR START UNIX TIME
-const FISCAL_YEAR_START_UNIX_TIME_TEST_CASES: {
+type FiscalYearStartUnixTimeTestCase = {
     date: string;
     unixTime: number;
     expected: {
@@ -111,7 +112,9 @@ const FISCAL_YEAR_START_UNIX_TIME_TEST_CASES: {
             unixTimeISO: string;
         };
     };
-}[] = [
+}
+
+const FISCAL_YEAR_START_UNIX_TIME_TEST_CASES: FiscalYearStartUnixTimeTestCase[] = [
     { date: '2022-01-01', unixTime: 1640995200, expected: { 'January 1': { unixTime: 1640995200, unixTimeISO: '2022-01-01T00:00:00Z' }, 'April 1': { unixTime: 1617235200, unixTimeISO: '2021-04-01T00:00:00Z' }, 'October 1': { unixTime: 1633046400, unixTimeISO: '2021-10-01T00:00:00Z' } } },
     { date: '2022-03-31', unixTime: 1648684800, expected: { 'January 1': { unixTime: 1640995200, unixTimeISO: '2022-01-01T00:00:00Z' }, 'April 1': { unixTime: 1617235200, unixTimeISO: '2021-04-01T00:00:00Z' }, 'October 1': { unixTime: 1633046400, unixTimeISO: '2021-10-01T00:00:00Z' } } },
     { date: '2022-04-01', unixTime: 1648771200, expected: { 'January 1': { unixTime: 1640995200, unixTimeISO: '2022-01-01T00:00:00Z' }, 'April 1': { unixTime: 1648771200, unixTimeISO: '2022-04-01T00:00:00Z' }, 'October 1': { unixTime: 1633046400, unixTimeISO: '2021-10-01T00:00:00Z' } } },
@@ -141,8 +144,7 @@ const FISCAL_YEAR_START_UNIX_TIME_TEST_CASES: {
 describe('getFiscalYearStartUnixTime', () => {
     Object.values(FISCAL_YEAR_STARTS).forEach((testFiscalYearStart) => {
         FISCAL_YEAR_START_UNIX_TIME_TEST_CASES.forEach((testCase) => {
-            const dateLong = moment(testCase.date).format('MMMM D, YYYY');
-            test(`returns correct start unix time for FY_START: ${testFiscalYearStart.id.padStart(10, ' ')} and DATE: ${dateLong}`, () => {
+            test(`returns correct start unix time for ${getTestTitleFormat(testFiscalYearStart.id, testCase.date)}`, () => {
                 const startUnixTime = getFiscalYearStartUnixTime(testCase.unixTime, testFiscalYearStart.value);
                 const expected = testCase.expected[testFiscalYearStart.id];
                 const unixTimeISO = formatUnixTimeISO(startUnixTime);
@@ -155,7 +157,7 @@ describe('getFiscalYearStartUnixTime', () => {
 
 
 // FISCAL YEAR END UNIX TIME
-const FISCAL_YEAR_END_UNIX_TIME_TEST_CASES: {
+type FiscalYearEndUnixTimeTestCase = {
     date: string;
     unixTime: number;
     expected: {
@@ -164,7 +166,9 @@ const FISCAL_YEAR_END_UNIX_TIME_TEST_CASES: {
             unixTimeISO: string;
         };
     };
-}[] = [
+}
+
+const FISCAL_YEAR_END_UNIX_TIME_TEST_CASES: FiscalYearEndUnixTimeTestCase[] = [
     { date: '2022-01-01', unixTime: 1640995200, expected: { 'January 1': { unixTime: 1672531199, unixTimeISO: '2022-12-31T23:59:59Z' }, 'April 1': { unixTime: 1648771199, unixTimeISO: '2022-03-31T23:59:59Z' }, 'October 1': { unixTime: 1664582399, unixTimeISO: '2022-09-30T23:59:59Z' } } },
     { date: '2022-03-31', unixTime: 1648684800, expected: { 'January 1': { unixTime: 1672531199, unixTimeISO: '2022-12-31T23:59:59Z' }, 'April 1': { unixTime: 1648771199, unixTimeISO: '2022-03-31T23:59:59Z' }, 'October 1': { unixTime: 1664582399, unixTimeISO: '2022-09-30T23:59:59Z' } } },
     { date: '2022-04-01', unixTime: 1648771200, expected: { 'January 1': { unixTime: 1672531199, unixTimeISO: '2022-12-31T23:59:59Z' }, 'April 1': { unixTime: 1680307199, unixTimeISO: '2023-03-31T23:59:59Z' }, 'October 1': { unixTime: 1664582399, unixTimeISO: '2022-09-30T23:59:59Z' } } },
@@ -194,14 +198,61 @@ const FISCAL_YEAR_END_UNIX_TIME_TEST_CASES: {
 describe('getFiscalYearEndUnixTime', () => {
     Object.values(FISCAL_YEAR_STARTS).forEach((testFiscalYearStart) => {
         FISCAL_YEAR_END_UNIX_TIME_TEST_CASES.forEach((testCase) => {
-            const dateLong = moment(testCase.date).format('MMMM D, YYYY');
-            test(`returns correct end unix time for FY_START: ${testFiscalYearStart.id.padStart(10, ' ')} and DATE: ${dateLong}`, () => {
+            test(`returns correct end unix time for ${getTestTitleFormat(testFiscalYearStart.id, testCase.date)}`, () => {
                 const endUnixTime = getFiscalYearEndUnixTime(testCase.unixTime, testFiscalYearStart.value);
                 const expected = testCase.expected[testFiscalYearStart.id];
                 const unixTimeISO = formatUnixTimeISO(endUnixTime);
                 
                 expect({ unixTime: endUnixTime, ISO: unixTimeISO }).toStrictEqual({ unixTime: expected.unixTime, ISO: expected.unixTimeISO });
             
+            });
+        });
+    });
+});
+
+// GET FISCAL YEAR UNIX TIME RANGE
+type GetFiscalYearUnixTimeRangeTestCase = {
+    date: string;
+    expected: {
+        [fiscalYearStart: string]: {
+            fiscalYear: number;
+            minUnixTime: number;
+            maxUnixTime: number;
+        }
+    }
+}
+
+const GET_FISCAL_YEAR_UNIX_TIME_RANGE_TEST_CASES: GetFiscalYearUnixTimeRangeTestCase[] = [
+    { date: '2023-07-15',
+        expected: {
+            'January 1': { fiscalYear: 2023, minUnixTime: 1672531200, maxUnixTime: 1704067199 },
+            'April 1':   { fiscalYear: 2024, minUnixTime: 1680307200, maxUnixTime: 1711929599 },
+            'October 1': { fiscalYear: 2023, minUnixTime: 1664582400, maxUnixTime: 1696118399 }
+        }
+    },
+    { date: '2024-01-10',
+        expected: {
+            'January 1': { fiscalYear: 2024, minUnixTime: 1704067200, maxUnixTime: 1735689599 },
+            'April 1':   { fiscalYear: 2024, minUnixTime: 1680307200, maxUnixTime: 1711929599 },
+            'October 1': { fiscalYear: 2024, minUnixTime: 1696118400, maxUnixTime: 1727740799 }
+        }
+    },
+    { date: '2024-10-15',
+        expected: {
+            'January 1': { fiscalYear: 2024, minUnixTime: 1704067200, maxUnixTime: 1735689599 },
+            'April 1':   { fiscalYear: 2025, minUnixTime: 1711929600, maxUnixTime: 1743465599 },
+            'October 1': { fiscalYear: 2025, minUnixTime: 1727740800, maxUnixTime: 1759276799 }
+        }
+    },
+];
+
+describe('getFiscalYearUnixTimeRange', () => {
+    Object.values(FISCAL_YEAR_STARTS).forEach((testFiscalYearStart) => {
+        GET_FISCAL_YEAR_UNIX_TIME_RANGE_TEST_CASES.forEach((testCase) => {
+            test(`returns correct fiscal year unix time range for ${getTestTitleFormat(testFiscalYearStart.id, testCase.date)}`, () => {
+                const testCaseUnixTime = moment(testCase.date).unix();
+                const fiscalYearUnixTimeRange = getFiscalYearUnixTimeRange(testCaseUnixTime, testFiscalYearStart.value);
+                expect(fiscalYearUnixTimeRange).toStrictEqual(testCase.expected[testFiscalYearStart.id]);
             });
         });
     });
