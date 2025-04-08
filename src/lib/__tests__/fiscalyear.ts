@@ -43,30 +43,73 @@ function getTestTitleFormat(testFiscalYearStartId: string, testCaseDateString: s
 // FISCAL YEAR START CONFIGURATION
 type FiscalYearStartConfig = {
     id: string;
+    monthDateString: string;
     value: number;
 };
 
-const FISCAL_YEAR_STARTS: Record<string, FiscalYearStartConfig> = {
+const TEST_FISCAL_YEAR_START_PRESETS: Record<string, FiscalYearStartConfig> = {
     'January 1': {
         id: 'January 1',
+        monthDateString: '01-01',
         value: 0x0101,
     },
     'April 1': {
         id: 'April 1',
+        monthDateString: '04-01',
         value: 0x0401,
     },
     'October 1': {
         id: 'October 1',
+        monthDateString: '10-01',
         value: 0x0A01,
     },
 };
 
-// VALIDATE FISCAL YEAR START
+// VALIDATE FISCAL YEAR START PRESETS
 describe('validateFiscalYearStart', () => {
-    Object.values(FISCAL_YEAR_STARTS).forEach((testFiscalYearStart) => {
-        test(`should return true for valid fiscal year start: ${testFiscalYearStart.id}`, () => {
+    Object.values(TEST_FISCAL_YEAR_START_PRESETS).forEach((testFiscalYearStart) => {
+        test(`should return true if fiscal year start value (uint16) is valid: id: ${testFiscalYearStart.id}; value: 0x${testFiscalYearStart.value.toString(16)}`, () => {
             expect(FiscalYearStart.isValidType(testFiscalYearStart.value)).toBe(true);
         });
+
+        test(`returns same month-date string for valid fiscal year start value: id: ${testFiscalYearStart.id}; value: 0x${testFiscalYearStart.value.toString(16)}`, () => {
+            const fiscalYearStart = FiscalYearStart.strictFromNumber(testFiscalYearStart.value);
+            expect(fiscalYearStart.toString()).toStrictEqual(testFiscalYearStart.monthDateString);
+        });
+    });
+});
+
+const TestCase_invalidFiscalYearValues = [
+    0x0000, // Smallest uint16
+    0x0100, // January 00
+    0x0132, // January 32
+    0x0931, // September 31
+    0x0A00, // October 00
+    0x1001, // October 01 if "0xMMDD" was erroneously used
+    0x1232, // December 32,
+    0xFFFF, // Largest uint16
+]
+
+describe('validateFiscalYearStartInvalidValues', () => {
+    TestCase_invalidFiscalYearValues.forEach((testCase) => {
+        test(`should return false if fiscal year start value (uint16) is invalid: value: 0x${testCase.toString(16)}`, () => {
+            expect(FiscalYearStart.isValidType(testCase)).toBe(false);
+        });
+    });
+});
+
+// VALIDATE LEAP DAY FEBRUARY 29 IS NOT VALID
+describe('validateFiscalYearStartLeapDay', () => {
+    test(`should return false if fiscal year start value (uint16) for February 29 is invalid: value: 0x0229}`, () => {
+        expect(FiscalYearStart.isValidType(0x0229)).toBe(false);
+    });
+
+    test(`should return error if fiscal year month-day string "02-29" is used to create fiscal year start object`, () => {
+        expect(() => FiscalYearStart.strictFromMonthDashDayString('02-29')).toThrow();
+    });
+
+    test(`should return error if integers "02" and "29" are used to create fiscal year start object`, () => {
+        expect(() => FiscalYearStart.validateMonthDay(2, 29)).toThrow();
     });
 });
 
