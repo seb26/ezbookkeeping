@@ -1,38 +1,27 @@
-import type { TypeAndName } from './base.ts';
-
-export class FiscalYearStart implements TypeAndName {
-    public static readonly DefaultNumber = 0x0101;
-    public static readonly DefaultString = "01-01";
+export class FiscalYearStart {
     public static readonly Default = new FiscalYearStart(1, 1);
 
-    public readonly type: number;
-    public readonly name: string;
-    
-    private readonly month: number;
-    private readonly day: number;
-    
-    public get Month(): number { return this.month; }
-    public get Day(): number { return this.day; }
+    public readonly day: number;
+    public readonly month: number;
+    public readonly value: number;
 
     private constructor(month: number, day: number) {
         const [validMonth, validDay] = validateMonthDay(month, day);
-        this.month = validMonth;
         this.day = validDay;
-        this.type = (validMonth << 8) | validDay;
-        
-        this.name = `Y-${month}-${day}`;
+        this.month = validMonth;
+        this.value = (validMonth << 8) | validDay;
     }
 
     public static of(month: number, day: number): FiscalYearStart {
         return new FiscalYearStart(month, day);
     }
 
-    public static valueOf(type: number): FiscalYearStart {
-        return FiscalYearStart.strictFromNumber(type);
+    public static valueOf(value: number): FiscalYearStart {
+        return FiscalYearStart.strictFromNumber(value);
     }
 
-    public static valuesFromNumber(type: number): number[] {
-        return FiscalYearStart.strictFromNumber(type).values();
+    public static valuesFromNumber(value: number): number[] {
+        return FiscalYearStart.strictFromNumber(value).values();
     }
 
     public values(): number[] {
@@ -42,17 +31,17 @@ export class FiscalYearStart implements TypeAndName {
         ];
     }
 
-    public static parse(typeName: string): FiscalYearStart | undefined {
-        return FiscalYearStart.strictFromMonthDashDayString(typeName);
+    public static parse(valueString: string): FiscalYearStart | undefined {
+        return FiscalYearStart.strictFromMonthDashDayString(valueString);
     }
 
-    public static isValidType(type: number): boolean {
-        if (type < 0x0101 || type > 0x1231) {
+    public static isValidType(value: number): boolean {
+        if (value < 0x0101 || value > 0x0C1F) {
             return false;
         }
         
-        const month = (type >> 8) & 0xFF;
-        const day = type & 0xFF;
+        const month = (value >> 8) & 0xFF;
+        const day = value & 0xFF;
         
         try {
             validateMonthDay(month, day);
@@ -156,14 +145,6 @@ export class FiscalYearStart implements TypeAndName {
         } catch (error) {
             return null;
         }
-    }
-    
-    /**
-     * Convert to a uint16 value (two bytes - month high, day low)
-     * @returns uint16 value (month in high byte, day in low byte)
-     */
-    public toNumber(): number {
-        return this.type;
     }
 
     public toMonthDashDayString(): string {

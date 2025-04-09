@@ -78,45 +78,8 @@ export function getFiscalYearStartUnixTime(unixTime: number, fiscalYearStart: nu
 
 // Get fiscal year end date for a specific year
 export function getFiscalYearEndUnixTime(unixTime: number, fiscalYearStart: number): number {
-    const date = moment.unix(unixTime);
-    // For January 1 fiscal year start, fiscal year end time is always December 31 in the input calendar year
-    if (fiscalYearStart === 0x0101) {
-        const result = moment().set({
-            year: date.year(),
-            month: 11, // 0-index
-            date: 31,
-            hour: 23,
-            minute: 59,
-            second: 59,
-            millisecond: 999,
-        });
-        return result.unix();
-    }
-
-    const [fiscalYearStartMonth, fiscalYearStartDay] = FiscalYearStart.strictFromNumber(fiscalYearStart).values();
-    const month = date.month() + 1; // 1-index
-    const day = date.date();
-    const year = date.year();
-    
-    // For other fiscal year starts:
-    // If input time comes before the fiscal year start day in the calendar year,
-    // the relevant fiscal year has a start date in Calendar Year = Input Year, and end date in Calendar Year = Input Year + 1.
-    // If input time comes on or after the fiscal year start day in the calendar year,
-    // the relevant fiscal year has a start date in Calendar Year = Input Year - 1, and end date in Calendar Year = Input Year.
-    let endYear = year;
-    if (month > fiscalYearStartMonth || (month === fiscalYearStartMonth && day >= fiscalYearStartDay)) {
-        endYear = year + 1;
-    }
-
-    return moment().set({
-        year: endYear,
-        month: fiscalYearStartMonth - 1, // 0-index
-        date: fiscalYearStartDay,
-        hour: 0,
-        minute: 0,
-        second: 0,
-        millisecond: 0,
-    }).subtract(1, 'second').unix();
+    const fiscalYearStartTime = moment.unix(getFiscalYearStartUnixTime(unixTime, fiscalYearStart));
+    return fiscalYearStartTime.add(1, 'year').subtract(1, 'second').unix();
 }
 
 // Get current fiscal year
