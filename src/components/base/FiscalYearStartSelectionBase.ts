@@ -13,7 +13,7 @@ export interface FiscalYearStartSelectionBaseEmits {
 }
 
 export function useFiscalYearStartSelectionBase(props: FiscalYearStartSelectionBaseProps, emit?: FiscalYearStartSelectionBaseEmits) {
-    const { getCurrentFiscalYearStart, formatMonthDayToLongDate } = useI18n();
+    const { getCurrentFiscalYearStart, formatMonthDayToLongDay } = useI18n();
 
     const effectiveModelValue = computed<number>(() => {
         return props.modelValue !== undefined ? props.modelValue : getCurrentFiscalYearStart().value;
@@ -50,7 +50,7 @@ export function useFiscalYearStartSelectionBase(props: FiscalYearStartSelectionB
         }
         
         const monthDay = fy.toMonthDashDayString();
-        return formatMonthDayToLongDate(monthDay);
+        return formatMonthDayToLongDay(monthDay);
     });
 
     const disabledDates = (date: Date) => {

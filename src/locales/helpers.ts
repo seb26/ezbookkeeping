@@ -1339,7 +1339,7 @@ export function useI18n() {
         return formatDate(date, getLocalizedLongDateFormat());
     }
 
-    function formatMonthDayToLongDate(monthDay: string): string {
+    function formatMonthDayToLongDay(monthDay: string): string {
         return formatMonthDay(monthDay, getLocalizedLongMonthDayFormat());
     }
 
@@ -1763,7 +1763,7 @@ export function useI18n() {
         formatUnixTimeToLongTime: (unixTime: number, utcOffset?: number, currentUtcOffset?: number) => formatUnixTime(unixTime, getLocalizedLongTimeFormat(), utcOffset, currentUtcOffset),
         formatUnixTimeToShortTime: (unixTime: number, utcOffset?: number, currentUtcOffset?: number) => formatUnixTime(unixTime, getLocalizedShortTimeFormat(), utcOffset, currentUtcOffset),
         formatDateToLongDate,
-        formatMonthDayToLongDate,
+        formatMonthDayToLongDay,
         formatYearQuarter,
         formatDateRange,
         getTimezoneDifferenceDisplayText,
