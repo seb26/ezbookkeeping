@@ -1184,7 +1184,7 @@
         "oldPassword": "Current Password",
         "defaultCurrency": "Default Currency",
         "firstDayOfWeek": "First Day of Week",
-        "FiscalYearStart": "Fiscal Year Start Date",
+        "fiscalYearStart": "Fiscal Year Start Date",
         "transactionEditScope": "Editable Transaction Range",
         "name": "Name",
         "category": "Category",

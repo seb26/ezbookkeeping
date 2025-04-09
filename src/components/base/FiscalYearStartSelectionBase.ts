@@ -4,10 +4,6 @@ import { FiscalYearStart } from '@/core/fiscalyear.ts';
 
 import { useI18n } from '@/locales/helpers.ts';
 
-import { formatMonthDay } from '@/lib/datetime.ts';
-
-import { useUserStore } from '@/stores/user.ts';
-
 export interface FiscalYearStartSelectionBaseProps {
     modelValue?: number;
 }
@@ -17,15 +13,10 @@ export interface FiscalYearStartSelectionBaseEmits {
 }
 
 export function useFiscalYearStartSelectionBase(props: FiscalYearStartSelectionBaseProps, emit?: FiscalYearStartSelectionBaseEmits) {
-    const { getCurrentFiscalYearStart, getLocalizedLongMonthDayFormat } = useI18n();
-    const userStore = useUserStore();
-
-    const getDefaultValue = (): number => {
-        return userStore.currentUserFiscalYearStart || FiscalYearStart.DefaultNumber;
-    };
+    const { getCurrentFiscalYearStart, formatMonthDayToLongDate } = useI18n();
 
     const effectiveModelValue = computed<number>(() => {
-        return props.modelValue !== undefined ? props.modelValue : getDefaultValue();
+        return props.modelValue !== undefined ? props.modelValue : getCurrentFiscalYearStart().value;
     });
 
     function getterModelValue(input?: number): string {
@@ -41,11 +32,11 @@ export function useFiscalYearStartSelectionBase(props: FiscalYearStartSelectionB
     }
 
     function setterModelValue(input: string): number {
-        const fy = FiscalYearStart.fromMonthDashDayString(input);
-        if (fy) {
-            return fy.toNumber();
+        const fyString = FiscalYearStart.fromMonthDashDayString(input);
+        if (fyString) {
+            return fyString.value;
         }
-        return getCurrentFiscalYearStart().toNumber();
+        return getCurrentFiscalYearStart().value;
     }
     
     const displayName = computed<string>(() => {
@@ -59,10 +50,7 @@ export function useFiscalYearStartSelectionBase(props: FiscalYearStartSelectionB
         }
         
         const monthDay = fy.toMonthDashDayString();
-        return formatMonthDay(
-            monthDay,
-            getLocalizedLongMonthDayFormat(),
-        );
+        return formatMonthDayToLongDate(monthDay);
     });
 
     const disabledDates = (date: Date) => {
@@ -71,7 +59,12 @@ export function useFiscalYearStartSelectionBase(props: FiscalYearStartSelectionB
     };
 
     const selectedDate = computed<string>({
-        get: () => getterModelValue(),
+        get: () => {
+            if (props.modelValue === undefined) {
+                return getCurrentFiscalYearStart().toMonthDashDayString();
+            }
+            return getterModelValue();
+        },
         set: (value: string) => {
             if (emit) {
                 const numericValue = setterModelValue(value);
@@ -79,12 +72,6 @@ export function useFiscalYearStartSelectionBase(props: FiscalYearStartSelectionB
             }
         }
     });
-
-    const initializeWithDefaultValue = () => {
-        if (emit && props.modelValue === undefined) {
-            emit('update:modelValue', getDefaultValue());
-        }
-    };
 
     return {
         // computed states
@@ -95,17 +82,5 @@ export function useFiscalYearStartSelectionBase(props: FiscalYearStartSelectionB
         // functions
         getterModelValue,
         setterModelValue,
-        initializeWithDefaultValue,
-        getDefaultValue
     }
 }
-
-
-
-//toUIDate(input: number): string {
-//return FiscalYearStart.fromUint16(input).toMonthDashDayString();
-//}
-//
-//toUserProfileFormat(input: string): number {
-//return FiscalYearStart.fromMonthDashDayString(input).toUint16();
-//}

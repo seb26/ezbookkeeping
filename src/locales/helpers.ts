@@ -134,7 +134,8 @@ import {
     getDateTimeFormatType,
     getRecentMonthDateRanges,
     isDateRangeMatchFullYears,
-    isDateRangeMatchFullMonths
+    isDateRangeMatchFullMonths,
+    formatMonthDay
 } from '@/lib/datetime.ts';
 
 import {
@@ -1249,15 +1250,16 @@ export function useI18n() {
         return joinMultiText(finalWeekdayNames);
     }
 
+    // Returns FiscalYearStart object, to facilitate diverse uses and conversions
     function getCurrentFiscalYearStart(): FiscalYearStart {
         let fiscalYearStart = FiscalYearStart.fromNumber(userStore.currentUserFiscalYearStart);
         if ( fiscalYearStart ) {
             return fiscalYearStart;
         }
         if ( !fiscalYearStart ) {
-            fiscalYearStart = FiscalYearStart.fromMonthDashDayString(t('default.fiscalYearStart'));
+            fiscalYearStart = FiscalYearStart.fromMonthDashDayString(getDefaultFiscalYearStart());
         }
-        return FiscalYearStart.Default
+        return FiscalYearStart.Default;
     }
 
     function getCurrentDecimalSeparator(): string {
@@ -1335,6 +1337,10 @@ export function useI18n() {
 
     function formatDateToLongDate(date: string): string {
         return formatDate(date, getLocalizedLongDateFormat());
+    }
+
+    function formatMonthDayToLongDate(monthDay: string): string {
+        return formatMonthDay(monthDay, getLocalizedLongMonthDayFormat());
     }
 
     function formatYearQuarter(year: number, quarter: number): string {
@@ -1730,7 +1736,6 @@ export function useI18n() {
         getWeekdayLongName,
         getMultiMonthdayShortNames,
         getMultiWeekdayLongNames,
-        getLocalizedLongMonthDayFormat,
         getCurrentFiscalYearStart,
         getCurrentDecimalSeparator,
         getCurrentDigitGroupingSymbol,
@@ -1758,6 +1763,7 @@ export function useI18n() {
         formatUnixTimeToLongTime: (unixTime: number, utcOffset?: number, currentUtcOffset?: number) => formatUnixTime(unixTime, getLocalizedLongTimeFormat(), utcOffset, currentUtcOffset),
         formatUnixTimeToShortTime: (unixTime: number, utcOffset?: number, currentUtcOffset?: number) => formatUnixTime(unixTime, getLocalizedShortTimeFormat(), utcOffset, currentUtcOffset),
         formatDateToLongDate,
+        formatMonthDayToLongDate,
         formatYearQuarter,
         formatDateRange,
         getTimezoneDifferenceDisplayText,

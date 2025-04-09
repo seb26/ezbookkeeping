@@ -145,8 +145,6 @@
 
                             <v-col cols="12" md="6">
                                 <fiscal-year-start-select
-                                    item-title="displayName"
-                                    item-value="type"
                                     persistent-placeholder
                                     :disabled="loading || saving"
                                     :label="tt('Fiscal Year Start Date')"

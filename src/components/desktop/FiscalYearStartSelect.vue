@@ -5,7 +5,7 @@
         :disabled="disabled"
         :clearable="modelValue ? clearable : false"
         :label="label"
-        :menu-props="{ contentClass: 'date-select-menu' }"
+        :menu-props="{ contentClass: 'fiscal-year-start-select-menu' }"
         v-model="selectedDate"
     >
         <template #selection>
@@ -72,21 +72,16 @@ const {
     displayName,
     disabledDates,
     selectedDate,
-    initializeWithDefaultValue
 } = useFiscalYearStartSelectionBase(props, emit);
 
-// Initialize the component with the correct value
-onMounted(() => {
-    initializeWithDefaultValue();
-});
 </script>
 
 <style>
-.date-select-menu {
+.fiscal-year-start-select-menu {
     max-height: inherit !important;
 }
 
-.date-select-menu .dp__menu {
+.fiscal-year-start-select-menu .dp__menu {
     border: 0;
 }
 </style>
