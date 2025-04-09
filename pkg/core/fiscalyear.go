@@ -11,10 +11,10 @@ type FiscalYearStart uint16
 
 // Fiscal Year Start Date Type
 const (
+	FISCAL_YEAR_START_INVALID FiscalYearStart = 0x0000 // Invalid
 	FISCAL_YEAR_START_DEFAULT FiscalYearStart = 0x0101 // January 1
 	FISCAL_YEAR_START_MIN     FiscalYearStart = 0x0101 // January 1
 	FISCAL_YEAR_START_MAX     FiscalYearStart = 0x0C1F // December 31
-	FISCAL_YEAR_START_INVALID FiscalYearStart = 0x0000 // Invalid
 )
 
 // NewFiscalYearStart creates a new FiscalYearStart from month and day values
