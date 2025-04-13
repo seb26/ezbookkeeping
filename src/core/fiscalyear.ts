@@ -212,16 +212,16 @@ export class FiscalYearUnixTime implements UnixTimeRange {
 
 export const LANGUAGE_DEFAULT_FISCAL_YEAR_FORMAT_VALUE: number = 0;
 
-export type FiscalYearFormatTypeName = 'StartYYYY-EndYYYY' | 'StartYYYY-EndYY' | 'StartYY-EndYY' | 'EndYYYY' | 'EndYY';
+export type FiscalYearFormatTypeName = 'StartYYYY_EndYYYY' | 'StartYYYY_EndYY' | 'StartYY_EndYY' | 'EndYYYY' | 'EndYY';
 
 export class FiscalYearFormat implements TypeAndName {
     private static readonly allInstances: FiscalYearFormat[] = [];
     private static readonly allInstancesByType: Record<number, FiscalYearFormat> = {};
     private static readonly allInstancesByTypeName: Record<string, FiscalYearFormat> = {};
 
-    public static readonly StartYYYY_EndYYYY = new FiscalYearFormat(1, 'StartYYYY-EndYYYY');
-    public static readonly StartYYYY_EndYY = new FiscalYearFormat(2, 'StartYYYY-EndYY');
-    public static readonly StartYY_EndYY = new FiscalYearFormat(3, 'StartYY-EndYY');
+    public static readonly StartYYYY_EndYYYY = new FiscalYearFormat(1, 'StartYYYY_EndYYYY');
+    public static readonly StartYYYY_EndYY = new FiscalYearFormat(2, 'StartYYYY_EndYY');
+    public static readonly StartYY_EndYY = new FiscalYearFormat(3, 'StartYY_EndYY');
     public static readonly EndYYYY = new FiscalYearFormat(4, 'EndYYYY');
     public static readonly EndYY = new FiscalYearFormat(5, 'EndYY');
 

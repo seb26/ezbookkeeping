@@ -17,7 +17,7 @@
         "currency": "USD",
         "firstDayOfWeek": "Sunday",
         "fiscalYearStart": "01-01",
-        "fiscalYearFormat": "StartYYYY-EndYYYY",
+        "fiscalYearFormat": "StartYYYY_EndYYYY",
         "longDateFormat": "MMDDYYYY",
         "shortDateFormat": "MMDDYYYY",
         "longTimeFormat": "HHMMSSA",
@@ -235,9 +235,9 @@
         }
     },
     "fiscalYear": {
-        "StartYYYY-EndYYYY": "FY {StartYYYY}-{EndYYYY}",
-        "StartYYYY-EndYY": "FY {StartYYYY}-{EndYY}",
-        "StartYY-EndYY": "FY {StartYY}-{EndYY}",
+        "StartYYYY_EndYYYY": "FY {StartYYYY}-{EndYYYY}",
+        "StartYYYY_EndYY": "FY {StartYYYY}-{EndYY}",
+        "StartYY_EndYY": "FY {StartYY}-{EndYY}",
         "EndYYYY": "FY {EndYYYY}",
         "EndYY": "FY {EndYY}"
     },
