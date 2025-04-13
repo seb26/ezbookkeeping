@@ -1312,6 +1312,9 @@ export function useI18n() {
         if ( !fiscalYearStart ) {
             fiscalYearStart = FiscalYearStart.fromMonthDashDayString(getDefaultFiscalYearStart());
         }
+        if ( fiscalYearStart ) {
+            return fiscalYearStart;
+        }
         return FiscalYearStart.Default;
     }
 
