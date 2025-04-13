@@ -17,6 +17,7 @@
         "currency": "USD",
         "firstDayOfWeek": "Sunday",
         "fiscalYearStart": "01-01",
+        "fiscalYearFormat": "StartYYYY-EndYYYY",
         "longDateFormat": "MMDDYYYY",
         "shortDateFormat": "MMDDYYYY",
         "longTimeFormat": "HHMMSSA",
@@ -232,6 +233,16 @@
             "30": "30th",
             "31": "31th"
         }
+    },
+    "fiscalYear": {
+        "format": "FY {format}",
+        "StartYYYY-EndYYYY": "{yearStart.long}-{yearEnd.long}",
+        "StartYYYY-EndYY": "{yearStart.long}-{yearEnd.short}",
+        "StartYY-EndYY": "{yearStart.short}-{yearEnd.short}",
+        "StartYYYY": "{yearStart.long}",
+        "StartYY": "{yearStart.short}",
+        "EndYYYY": "{yearEnd.long}",
+        "EndYY": "{yearEnd.short}"
     },
     "numeral": {
         "Dot": "Dot",
@@ -1785,6 +1796,7 @@
     "Aggregate by Month": "Aggregate by Month",
     "Aggregate by Quarter": "Aggregate by Quarter",
     "Aggregate by Year": "Aggregate by Year",
+    "Aggregate by Fiscal Year": "Aggregate by Fiscal Year",
     "Filter Accounts": "Filter Accounts",
     "Filter Transaction Categories": "Filter Transaction Categories",
     "Filter Transaction Tags": "Filter Transaction Tags",

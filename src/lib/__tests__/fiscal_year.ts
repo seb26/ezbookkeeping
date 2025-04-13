@@ -10,7 +10,7 @@ import {
     getFiscalYearStartUnixTime,
     getFiscalYearEndUnixTime,
     getFiscalYearUnixTimeRange
-} from '@/lib/fiscalyear.ts';
+} from '@/lib/datetime.ts';
 
 import { formatUnixTime } from '@/lib/datetime.ts';
 import { FiscalYearStart } from '@/core/fiscalyear.ts';
@@ -24,7 +24,7 @@ beforeAll(() => {
 
 function importTestData(datasetName: string): any[] {
     const data = JSON.parse(
-        fs.readFileSync(path.join(__dirname, 'fiscalyear.data.json'), 'utf8')
+        fs.readFileSync(path.join(__dirname, 'fiscal_year.data.json'), 'utf8')
     );
     if (!data || typeof data[datasetName] === 'undefined') {
         throw new Error(`${datasetName} is undefined or missing in the data object.`);

@@ -4,7 +4,7 @@ import { CurrencyDisplayType } from '@/core/currency.ts';
 import { PresetAmountColor } from '@/core/color.ts';
 import type { LocalizedPresetCategory } from '@/core/category.ts';
 import { TransactionEditScopeType } from '@/core/transaction.ts';
-import { FiscalYearStart } from '@/core/fiscalyear';
+import { FiscalYearFormat, FiscalYearStart } from '@/core/fiscalyear';
 
 export class User {
     public username: string = '';
@@ -131,6 +131,7 @@ export interface UserBasicInfo {
     readonly language: string;
     readonly defaultCurrency: string;
     readonly fiscalYearStart: number;
+    readonly fiscalYearFormat: number;
     readonly firstDayOfWeek: number;
     readonly longDateFormat: number;
     readonly shortDateFormat: number;
@@ -215,7 +216,8 @@ export const EMPTY_USER_BASIC_INFO: UserBasicInfo = {
     language: '',
     defaultCurrency: '',
     firstDayOfWeek: -1,
-    fiscalYearStart: FiscalYearStart.DefaultNumber,
+    fiscalYearStart: FiscalYearStart.Default.value,
+    fiscalYearFormat: FiscalYearFormat.Default.type,
     longDateFormat: LongDateFormat.Default.type,
     shortDateFormat: ShortDateFormat.Default.type,
     longTimeFormat: LongTimeFormat.Default.type,

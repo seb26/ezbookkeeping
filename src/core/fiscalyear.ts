@@ -1,3 +1,6 @@
+import type { TypeAndDisplayName } from '@/core/base.ts';
+import type { UnixTimeRange } from './datetime';
+
 export class FiscalYearStart {
     public static readonly Default = new FiscalYearStart(1, 1);
 
@@ -189,4 +192,62 @@ function validateMonthDay(month: number, day: number): [number, number] {
     }
 
     return [month, day];
+}
+
+export class FiscalYearUnixTime implements UnixTimeRange {
+    public readonly fiscalYear: number;
+    public readonly minUnixTime: number;
+    public readonly maxUnixTime: number;
+
+    private constructor(fiscalYear: number, minUnixTime: number, maxUnixTime: number) {
+        this.fiscalYear = fiscalYear;
+        this.minUnixTime = minUnixTime;
+        this.maxUnixTime = maxUnixTime;
+    }
+
+    public static of(fiscalYear: number, minUnixTime: number, maxUnixTime: number): FiscalYearUnixTime {
+        return new FiscalYearUnixTime(fiscalYear, minUnixTime, maxUnixTime);
+    }
+}
+
+export const LANGUAGE_DEFAULT_FISCAL_YEAR_FORMAT_VALUE: number = 0;
+
+export type FiscalYearFormatTypeName = 'StartYYYY-EndYYYY' | 'StartYYYY-EndYY' | 'StartYY-EndYY' | 'StartYYYY' | 'StartYY' | 'EndYYYY' | 'EndYY';
+
+export class FiscalYearFormat implements TypeAndDisplayName {
+    private static readonly allInstances: FiscalYearFormat[] = [];
+    private static readonly allInstancesByType: Record<number, FiscalYearFormat> = {};
+    private static readonly allInstancesByTypeName: Record<string, FiscalYearFormat> = {};
+
+    public static readonly StartYYYY_EndYYYY = new FiscalYearFormat(0, 'StartYYYY-EndYYYY', '{yearStart.long}-{yearEnd.long}');
+    public static readonly StartYYYY_EndYY = new FiscalYearFormat(1, 'StartYYYY-EndYY', '{yearStart.long}-{yearEnd.short}');
+    public static readonly StartYY_EndYY = new FiscalYearFormat(2, 'StartYY-EndYY', '{yearStart.short}-{yearEnd.short}');
+    public static readonly StartYYYY = new FiscalYearFormat(3, 'StartYYYY', '{yearStart.long}');
+    public static readonly StartYY = new FiscalYearFormat(4, 'StartYY', '{yearStart.short}');
+    public static readonly EndYYYY = new FiscalYearFormat(5, 'EndYYYY', '{yearEnd.long}');
+    public static readonly EndYY = new FiscalYearFormat(6, 'EndYY', '{yearEnd.short}');
+
+    public static readonly Default = FiscalYearFormat.EndYYYY;
+
+    public readonly type: number;
+    public readonly typeName: FiscalYearFormatTypeName;
+    public readonly displayName: string;
+
+    private constructor(type: number, typeName: FiscalYearFormatTypeName, displayName: string) {
+        this.type = type;
+        this.typeName = typeName;
+        this.displayName = displayName;
+    }
+
+    public static values(): FiscalYearFormat[] {
+        return FiscalYearFormat.allInstances;
+    }
+
+    public static all(): Record<FiscalYearFormatTypeName, FiscalYearFormat> {
+        return FiscalYearFormat.allInstancesByTypeName;
+    }
+
+    public static valueOf(type: number): FiscalYearFormat | undefined {
+        return FiscalYearFormat.allInstancesByType[type];
+    }
 }
