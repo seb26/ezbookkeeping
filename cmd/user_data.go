@@ -900,6 +900,7 @@ func printUserInfo(user *models.User) {
 	fmt.Printf("[ShortDateFormat] %s (%d)\n", user.ShortDateFormat, user.ShortDateFormat)
 	fmt.Printf("[LongTimeFormat] %s (%d)\n", user.LongTimeFormat, user.LongTimeFormat)
 	fmt.Printf("[ShortTimeFormat] %s (%d)\n", user.ShortTimeFormat, user.ShortTimeFormat)
+	fmt.Printf("[FiscalYearFormat] %s (%d)\n", user.FiscalYearFormat, user.FiscalYearFormat)
 	fmt.Printf("[DecimalSeparator] %s (%d)\n", user.DecimalSeparator, user.DecimalSeparator)
 	fmt.Printf("[DigitGroupingSymbol] %s (%d)\n", user.DigitGroupingSymbol, user.DigitGroupingSymbol)
 	fmt.Printf("[DigitGrouping] %s (%d)\n", user.DigitGrouping, user.DigitGrouping)

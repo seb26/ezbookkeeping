@@ -99,6 +99,7 @@ type User struct {
 	ShortDateFormat      core.ShortDateFormat     `xorm:"TINYINT"`
 	LongTimeFormat       core.LongTimeFormat      `xorm:"TINYINT"`
 	ShortTimeFormat      core.ShortTimeFormat     `xorm:"TINYINT"`
+	FiscalYearFormat     core.FiscalYearFormat    `xorm:"TINYINT"`
 	DecimalSeparator     core.DecimalSeparator    `xorm:"TINYINT"`
 	DigitGroupingSymbol  core.DigitGroupingSymbol `xorm:"TINYINT"`
 	DigitGrouping        core.DigitGroupingType   `xorm:"TINYINT"`
@@ -132,6 +133,7 @@ type UserBasicInfo struct {
 	ShortDateFormat      core.ShortDateFormat     `json:"shortDateFormat"`
 	LongTimeFormat       core.LongTimeFormat      `json:"longTimeFormat"`
 	ShortTimeFormat      core.ShortTimeFormat     `json:"shortTimeFormat"`
+	FiscalYearFormat     core.FiscalYearFormat    `json:"fiscalYearFormat"`
 	DecimalSeparator     core.DecimalSeparator    `json:"decimalSeparator"`
 	DigitGroupingSymbol  core.DigitGroupingSymbol `json:"digitGroupingSymbol"`
 	DigitGrouping        core.DigitGroupingType   `json:"digitGrouping"`
@@ -193,6 +195,7 @@ type UserProfileUpdateRequest struct {
 	ShortDateFormat      *core.ShortDateFormat     `json:"shortDateFormat" binding:"omitempty,min=0,max=3"`
 	LongTimeFormat       *core.LongTimeFormat      `json:"longTimeFormat" binding:"omitempty,min=0,max=3"`
 	ShortTimeFormat      *core.ShortTimeFormat     `json:"shortTimeFormat" binding:"omitempty,min=0,max=3"`
+	FiscalYearFormat     *core.FiscalYearFormat    `json:"fiscalYearFormat" binding:"omitempty,min=0,max=5"`
 	DecimalSeparator     *core.DecimalSeparator    `json:"decimalSeparator" binding:"omitempty,min=0,max=3"`
 	DigitGroupingSymbol  *core.DigitGroupingSymbol `json:"digitGroupingSymbol" binding:"omitempty,min=0,max=4"`
 	DigitGrouping        *core.DigitGroupingType   `json:"digitGrouping" binding:"omitempty,min=0,max=2"`
@@ -273,6 +276,7 @@ func (u *User) ToUserBasicInfo(avatarProvider core.UserAvatarProviderType, avata
 		ShortDateFormat:      u.ShortDateFormat,
 		LongTimeFormat:       u.LongTimeFormat,
 		ShortTimeFormat:      u.ShortTimeFormat,
+		FiscalYearFormat:     u.FiscalYearFormat,
 		DecimalSeparator:     u.DecimalSeparator,
 		DigitGroupingSymbol:  u.DigitGroupingSymbol,
 		DigitGrouping:        u.DigitGrouping,

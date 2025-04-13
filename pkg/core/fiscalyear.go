@@ -71,3 +71,39 @@ func validateMonthDay(month uint8, day uint8) (uint8, uint8, error) {
 
 	return month, day, nil
 }
+
+// FiscalYearFormat represents the fiscal year format as a uint8
+type FiscalYearFormat uint8
+
+// Fiscal Year Format Type Name
+const (
+	FISCAL_YEAR_FORMAT_DEFAULT           FiscalYearFormat = 0
+	FISCAL_YEAR_FORMAT_STARTYYYY_ENDYYYY FiscalYearFormat = 1
+	FISCAL_YEAR_FORMAT_STARTYYYY_ENDYY   FiscalYearFormat = 2
+	FISCAL_YEAR_FORMAT_STARTYY_ENDYY     FiscalYearFormat = 3
+	FISCAL_YEAR_FORMAT_ENDYYYY           FiscalYearFormat = 4
+	FISCAL_YEAR_FORMAT_ENDYY             FiscalYearFormat = 5
+	FISCAL_YEAR_FORMAT_INVALID           FiscalYearFormat = 255 // Invalid
+)
+
+// String returns a textual representation of the long date format enum
+func (f FiscalYearFormat) String() string {
+	switch f {
+	case FISCAL_YEAR_FORMAT_DEFAULT:
+		return "Default"
+	case FISCAL_YEAR_FORMAT_STARTYYYY_ENDYYYY:
+		return "StartYYYY-EndYYYY"
+	case FISCAL_YEAR_FORMAT_STARTYYYY_ENDYY:
+		return "StartYYYY-EndYY"
+	case FISCAL_YEAR_FORMAT_STARTYY_ENDYY:
+		return "StartYY-EndYY"
+	case FISCAL_YEAR_FORMAT_ENDYYYY:
+		return "EndYYYY"
+	case FISCAL_YEAR_FORMAT_ENDYY:
+		return "EndYY"
+	case FISCAL_YEAR_FORMAT_INVALID:
+		return "Invalid"
+	default:
+		return fmt.Sprintf("Invalid(%d)", int(f))
+	}
+}

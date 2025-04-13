@@ -394,6 +394,15 @@ func (a *UsersApi) UserUpdateProfileHandler(c *core.WebContext) (any, *errs.Erro
 		userNew.ShortTimeFormat = core.SHORT_TIME_FORMAT_INVALID
 	}
 
+	if userUpdateReq.FiscalYearFormat != nil && *userUpdateReq.FiscalYearFormat != user.FiscalYearFormat {
+		user.FiscalYearFormat = *userUpdateReq.FiscalYearFormat
+		userNew.FiscalYearFormat = *userUpdateReq.FiscalYearFormat
+		modifyProfileBasicInfo = true
+		anythingUpdate = true
+	} else {
+		userNew.FiscalYearFormat = core.FISCAL_YEAR_FORMAT_INVALID
+	}
+
 	if userUpdateReq.DecimalSeparator != nil && *userUpdateReq.DecimalSeparator != user.DecimalSeparator {
 		user.DecimalSeparator = *userUpdateReq.DecimalSeparator
 		userNew.DecimalSeparator = *userUpdateReq.DecimalSeparator
