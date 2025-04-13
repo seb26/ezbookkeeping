@@ -71,11 +71,6 @@ export const useUserStore = defineStore('user', () => {
         return userInfo.fiscalYearStart;
     });
 
-    const currentUserFiscalYearFormat = computed<number>(() => {
-        const userInfo = currentUserBasicInfo.value || EMPTY_USER_BASIC_INFO;
-        return userInfo.fiscalYearFormat;
-    });
-
     const currentUserLongDateFormat = computed<number>(() => {
         const userInfo = currentUserBasicInfo.value || EMPTY_USER_BASIC_INFO;
         return userInfo.longDateFormat;
@@ -94,6 +89,11 @@ export const useUserStore = defineStore('user', () => {
     const currentUserShortTimeFormat = computed<number>(() => {
         const userInfo = currentUserBasicInfo.value || EMPTY_USER_BASIC_INFO;
         return userInfo.shortTimeFormat;
+    });
+
+    const currentUserFiscalYearFormat = computed<number>(() => {
+        const userInfo = currentUserBasicInfo.value || EMPTY_USER_BASIC_INFO;
+        return userInfo.fiscalYearFormat;
     });
 
     const currentUserDecimalSeparator = computed<number>(() => {
@@ -327,11 +327,11 @@ export const useUserStore = defineStore('user', () => {
         currentUserDefaultCurrency,
         currentUserFirstDayOfWeek,
         currentUserFiscalYearStart,
-        currentUserFiscalYearFormat,
         currentUserLongDateFormat,
         currentUserShortDateFormat,
         currentUserLongTimeFormat,
         currentUserShortTimeFormat,
+        currentUserFiscalYearFormat,
         currentUserDecimalSeparator,
         currentUserDigitGroupingSymbol,
         currentUserDigitGrouping,

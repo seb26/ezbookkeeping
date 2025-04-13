@@ -895,8 +895,6 @@ export function isDateRangeMatchOneMonth(minTime: number, maxTime: number): bool
     return isDateRangeMatchFullMonths(minTime, maxTime);
 }
 
-
-
 export function getFiscalYearFromUnixTime(unixTime: number, fiscalYearStart: number): number {
     const date = moment.unix(unixTime);
     

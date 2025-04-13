@@ -235,14 +235,11 @@
         }
     },
     "fiscalYear": {
-        "format": "FY {format}",
-        "StartYYYY-EndYYYY": "{yearStart.long}-{yearEnd.long}",
-        "StartYYYY-EndYY": "{yearStart.long}-{yearEnd.short}",
-        "StartYY-EndYY": "{yearStart.short}-{yearEnd.short}",
-        "StartYYYY": "{yearStart.long}",
-        "StartYY": "{yearStart.short}",
-        "EndYYYY": "{yearEnd.long}",
-        "EndYY": "{yearEnd.short}"
+        "StartYYYY-EndYYYY": "FY {StartYYYY}-{EndYYYY}",
+        "StartYYYY-EndYY": "FY {StartYYYY}-{EndYY}",
+        "StartYY-EndYY": "FY {StartYY}-{EndYY}",
+        "EndYYYY": "FY {EndYYYY}",
+        "EndYY": "FY {EndYY}"
     },
     "numeral": {
         "Dot": "Dot",
@@ -1453,6 +1450,7 @@
     "Short Date Format": "Short Date Format",
     "Long Time Format": "Long Time Format",
     "Short Time Format": "Short Time Format",
+    "Fiscal Year Format": "Fiscal Year Format",
     "Decimal Separator": "Decimal Separator",
     "Digit Grouping Symbol": "Digit Grouping Symbol",
     "Digit Grouping": "Digit Grouping",

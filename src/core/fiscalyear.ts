@@ -1,4 +1,4 @@
-import type { TypeAndDisplayName } from '@/core/base.ts';
+import type { TypeAndDisplayName, TypeAndName } from '@/core/base.ts';
 import type { UnixTimeRange } from './datetime';
 
 export class FiscalYearStart {
@@ -212,31 +212,31 @@ export class FiscalYearUnixTime implements UnixTimeRange {
 
 export const LANGUAGE_DEFAULT_FISCAL_YEAR_FORMAT_VALUE: number = 0;
 
-export type FiscalYearFormatTypeName = 'StartYYYY-EndYYYY' | 'StartYYYY-EndYY' | 'StartYY-EndYY' | 'StartYYYY' | 'StartYY' | 'EndYYYY' | 'EndYY';
+export type FiscalYearFormatTypeName = 'StartYYYY-EndYYYY' | 'StartYYYY-EndYY' | 'StartYY-EndYY' | 'EndYYYY' | 'EndYY';
 
-export class FiscalYearFormat implements TypeAndDisplayName {
+export class FiscalYearFormat implements TypeAndName {
     private static readonly allInstances: FiscalYearFormat[] = [];
     private static readonly allInstancesByType: Record<number, FiscalYearFormat> = {};
     private static readonly allInstancesByTypeName: Record<string, FiscalYearFormat> = {};
 
-    public static readonly StartYYYY_EndYYYY = new FiscalYearFormat(0, 'StartYYYY-EndYYYY', '{yearStart.long}-{yearEnd.long}');
-    public static readonly StartYYYY_EndYY = new FiscalYearFormat(1, 'StartYYYY-EndYY', '{yearStart.long}-{yearEnd.short}');
-    public static readonly StartYY_EndYY = new FiscalYearFormat(2, 'StartYY-EndYY', '{yearStart.short}-{yearEnd.short}');
-    public static readonly StartYYYY = new FiscalYearFormat(3, 'StartYYYY', '{yearStart.long}');
-    public static readonly StartYY = new FiscalYearFormat(4, 'StartYY', '{yearStart.short}');
-    public static readonly EndYYYY = new FiscalYearFormat(5, 'EndYYYY', '{yearEnd.long}');
-    public static readonly EndYY = new FiscalYearFormat(6, 'EndYY', '{yearEnd.short}');
+    public static readonly StartYYYY_EndYYYY = new FiscalYearFormat(1, 'StartYYYY-EndYYYY');
+    public static readonly StartYYYY_EndYY = new FiscalYearFormat(2, 'StartYYYY-EndYY');
+    public static readonly StartYY_EndYY = new FiscalYearFormat(3, 'StartYY-EndYY');
+    public static readonly EndYYYY = new FiscalYearFormat(4, 'EndYYYY');
+    public static readonly EndYY = new FiscalYearFormat(5, 'EndYY');
 
-    public static readonly Default = FiscalYearFormat.EndYYYY;
+    public static readonly Default = FiscalYearFormat.StartYYYY_EndYYYY;
 
     public readonly type: number;
-    public readonly typeName: FiscalYearFormatTypeName;
-    public readonly displayName: string;
+    public readonly name: FiscalYearFormatTypeName;
 
-    private constructor(type: number, typeName: FiscalYearFormatTypeName, displayName: string) {
+    private constructor(type: number, name: FiscalYearFormatTypeName) {
         this.type = type;
-        this.typeName = typeName;
-        this.displayName = displayName;
+        this.name = name;
+        
+        FiscalYearFormat.allInstances.push(this);
+        FiscalYearFormat.allInstancesByType[type] = this;
+        FiscalYearFormat.allInstancesByTypeName[name] = this;
     }
 
     public static values(): FiscalYearFormat[] {
@@ -250,4 +250,10 @@ export class FiscalYearFormat implements TypeAndDisplayName {
     public static valueOf(type: number): FiscalYearFormat | undefined {
         return FiscalYearFormat.allInstancesByType[type];
     }
+}
+
+export interface LocalizedFiscalYearFormat extends TypeAndDisplayName {
+    readonly type: number;
+    readonly format: string;
+    readonly displayName: string;
 }

@@ -210,6 +210,19 @@
                                     v-model="newProfile.shortTimeFormat"
                                 />
                             </v-col>
+
+                            <v-col cols="12" md="6">
+                                <v-select
+                                    item-title="displayName"
+                                    item-value="type"
+                                    persistent-placeholder
+                                    :disabled="loading || saving"
+                                    :label="tt('Fiscal Year Format')"
+                                    :placeholder="tt('Fiscal Year Format')"
+                                    :items="allFiscalYearFormats"
+                                    v-model="newProfile.fiscalYearFormat"
+                                />
+                            </v-col>
                         </v-row>
                     </v-card-text>
 
@@ -366,6 +379,7 @@ const {
     allShortDateFormats,
     allLongTimeFormats,
     allShortTimeFormats,
+    allFiscalYearFormats,
     allDecimalSeparators,
     allDigitGroupingSymbols,
     allDigitGroupingTypes,

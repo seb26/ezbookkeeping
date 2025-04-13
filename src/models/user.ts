@@ -19,6 +19,7 @@ export class User {
     public defaultAccountId: string = '';
     public transactionEditScope: number = 1;
     public fiscalYearStart: number = 0;
+    public fiscalYearFormat: number = 0;
     public longDateFormat: number = 0;
     public shortDateFormat: number = 0;
     public longTimeFormat: number = 0;
@@ -50,6 +51,7 @@ export class User {
         this.shortDateFormat = user.shortDateFormat;
         this.longTimeFormat = user.longTimeFormat;
         this.shortTimeFormat = user.shortTimeFormat;
+        this.fiscalYearFormat = user.fiscalYearFormat;
         this.decimalSeparator = user.decimalSeparator;
         this.digitGroupingSymbol = user.digitGroupingSymbol;
         this.digitGrouping = user.digitGrouping;
@@ -87,6 +89,7 @@ export class User {
             shortDateFormat: this.shortDateFormat,
             longTimeFormat: this.longTimeFormat,
             shortTimeFormat: this.shortTimeFormat,
+            fiscalYearFormat: this.fiscalYearFormat,
             decimalSeparator: this.decimalSeparator,
             digitGroupingSymbol: this.digitGroupingSymbol,
             digitGrouping: this.digitGrouping,
@@ -105,6 +108,7 @@ export class User {
         user.shortDateFormat = userInfo.shortDateFormat;
         user.longTimeFormat = userInfo.longTimeFormat;
         user.shortTimeFormat = userInfo.shortTimeFormat;
+        user.fiscalYearFormat = userInfo.fiscalYearFormat;
         user.decimalSeparator = userInfo.decimalSeparator;
         user.digitGroupingSymbol = userInfo.digitGroupingSymbol;
         user.digitGrouping = userInfo.digitGrouping;
@@ -131,12 +135,12 @@ export interface UserBasicInfo {
     readonly language: string;
     readonly defaultCurrency: string;
     readonly fiscalYearStart: number;
-    readonly fiscalYearFormat: number;
     readonly firstDayOfWeek: number;
     readonly longDateFormat: number;
     readonly shortDateFormat: number;
     readonly longTimeFormat: number;
     readonly shortTimeFormat: number;
+    readonly fiscalYearFormat: number;
     readonly decimalSeparator: number;
     readonly digitGroupingSymbol: number;
     readonly digitGrouping: number;
@@ -188,6 +192,7 @@ export interface UserProfileUpdateRequest {
     readonly shortDateFormat?: number;
     readonly longTimeFormat?: number;
     readonly shortTimeFormat?: number;
+    readonly fiscalYearFormat?: number;
     readonly decimalSeparator?: number;
     readonly digitGroupingSymbol?: number;
     readonly digitGrouping?: number;
@@ -217,11 +222,11 @@ export const EMPTY_USER_BASIC_INFO: UserBasicInfo = {
     defaultCurrency: '',
     firstDayOfWeek: -1,
     fiscalYearStart: FiscalYearStart.Default.value,
-    fiscalYearFormat: FiscalYearFormat.Default.type,
     longDateFormat: LongDateFormat.Default.type,
     shortDateFormat: ShortDateFormat.Default.type,
     longTimeFormat: LongTimeFormat.Default.type,
     shortTimeFormat: ShortTimeFormat.Default.type,
+    fiscalYearFormat: FiscalYearFormat.Default.type,
     decimalSeparator: DecimalSeparator.LanguageDefaultType,
     digitGroupingSymbol: DigitGroupingSymbol.LanguageDefaultType,
     digitGrouping: DigitGroupingType.LanguageDefaultType,
