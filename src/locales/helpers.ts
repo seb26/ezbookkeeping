@@ -511,7 +511,7 @@ export function useI18n() {
     function getLocalizedFiscalYearFormat(): string {
         const languageDefaultTypeName = t('default.fiscalYearFormat');
         const formatType = getFiscalYearFormatType(FiscalYearFormat.all(), FiscalYearFormat.values(), userStore.currentUserFiscalYearFormat, languageDefaultTypeName, FiscalYearFormat.Default);
-        return t(`fiscalYear.${formatType.name}`);
+        return t(`format.fiscalYear.${formatType.name}`);
     }
 
     function getNumberFormatOptions(currencyCode?: string): NumberFormatOptions {
@@ -1419,7 +1419,7 @@ export function useI18n() {
             EndYY: formatUnixTime(fiscalYearUnixTimeRange.maxUnixTime, "YY"),
         };
         
-        return t('fiscalYear.' + format, yearFormatValues);
+        return t('format.fiscalYear.' + format, yearFormatValues);
     }
 
     function formatDateRange(dateType: number, startTime: number, endTime: number): string {

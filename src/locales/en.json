@@ -84,6 +84,13 @@
             "q3": "{year}Q3",
             "q4": "{year}Q4"
         },
+        "fiscalYear": {
+            "StartYYYY_EndYYYY": "FY {StartYYYY}-{EndYYYY}",
+            "StartYYYY_EndYY": "FY {StartYYYY}-{EndYY}",
+            "StartYY_EndYY": "FY {StartYY}-{EndYY}",
+            "EndYYYY": "FY {EndYYYY}",
+            "EndYY": "FY {EndYY}"
+        },
         "misc": {
             "multiTextJoinSeparator": ", ",
             "hoursBehindDefaultTimezone": "{hours} hour(s) behind default timezone",
@@ -233,13 +240,6 @@
             "30": "30th",
             "31": "31th"
         }
-    },
-    "fiscalYear": {
-        "StartYYYY_EndYYYY": "FY {StartYYYY}-{EndYYYY}",
-        "StartYYYY_EndYY": "FY {StartYYYY}-{EndYY}",
-        "StartYY_EndYY": "FY {StartYY}-{EndYY}",
-        "EndYYYY": "FY {EndYYYY}",
-        "EndYY": "FY {EndYY}"
     },
     "numeral": {
         "Dot": "Dot",
