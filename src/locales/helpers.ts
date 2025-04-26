@@ -1413,10 +1413,10 @@ export function useI18n() {
     function formatFiscalYearFormat(unixTime: number, format: string): string {
         const fiscalYearUnixTimeRange = getFiscalYearUnixTimeRange(unixTime, getCurrentFiscalYearStart().value);
         const yearFormatValues = {
-            StartYYYY: formatUnixTime(fiscalYearUnixTimeRange.minUnixTime, "YYYY"),
-            StartYY: formatUnixTime(fiscalYearUnixTimeRange.minUnixTime, "YY"),
-            EndYYYY: formatUnixTime(fiscalYearUnixTimeRange.maxUnixTime, "YYYY"),
-            EndYY: formatUnixTime(fiscalYearUnixTimeRange.maxUnixTime, "YY"),
+            StartYYYY: formatUnixTime(fiscalYearUnixTimeRange.minUnixTime, 'YYYY'),
+            StartYY: formatUnixTime(fiscalYearUnixTimeRange.minUnixTime, 'YY'),
+            EndYYYY: formatUnixTime(fiscalYearUnixTimeRange.maxUnixTime, 'YYYY'),
+            EndYY: formatUnixTime(fiscalYearUnixTimeRange.maxUnixTime, 'YY'),
         };
         
         return t('format.fiscalYear.' + format, yearFormatValues);

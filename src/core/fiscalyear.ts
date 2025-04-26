@@ -82,7 +82,7 @@ export class FiscalYearStart {
      */
     public static strictFromNumber(value: number): FiscalYearStart {
         if (value < 0 || value > 0xFFFF) {
-            throw new Error("Invalid uint16 value");
+            throw new Error('Invalid uint16 value');
         }
 
         const month = (value >> 8) & 0xFF;  // high byte
@@ -92,7 +92,7 @@ export class FiscalYearStart {
             const [validMonth, validDay] = validateMonthDay(month, day);
             return FiscalYearStart.of(validMonth, validDay);
         } catch (error) {
-            throw new Error("Invalid uint16 value");
+            throw new Error('Invalid uint16 value');
         }
     }
 
@@ -103,26 +103,26 @@ export class FiscalYearStart {
      */
     public static strictFromMonthDashDayString(input: string): FiscalYearStart {
         if (!input || !input.includes('-')) {
-            throw new Error("Invalid input string");
+            throw new Error('Invalid input string');
         }
 
         const parts = input.split('-');
         if (parts.length !== 2) {
-            throw new Error("Invalid input string");
+            throw new Error('Invalid input string');
         }
 
         const month = parseInt(parts[0], 10);
         const day = parseInt(parts[1], 10);
 
         if (isNaN(month) || isNaN(day)) {
-            throw new Error("Invalid input string");
+            throw new Error('Invalid input string');
         }
 
         try {
             const [validMonth, validDay] = validateMonthDay(month, day);
             return FiscalYearStart.of(validMonth, validDay);
         } catch (error) {
-            throw new Error("Invalid input string");
+            throw new Error('Invalid input string');
         }
     }
 
@@ -168,7 +168,7 @@ export class FiscalYearStart {
 
 function validateMonthDay(month: number, day: number): [number, number] {
     if (month < 1 || month > 12 || day < 1) {
-        throw new Error("Invalid month or day");
+        throw new Error('Invalid month or day');
     }
 
     let maxDays = 31;
@@ -188,7 +188,7 @@ function validateMonthDay(month: number, day: number): [number, number] {
     }
 
     if (day > maxDays) {
-        throw new Error("Invalid day for given month");
+        throw new Error('Invalid day for given month');
     }
 
     return [month, day];
