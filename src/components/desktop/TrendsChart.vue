@@ -69,7 +69,7 @@ const emit = defineEmits<{
 }>();
 
 const theme = useTheme();
-const { tt, formatUnixTimeToShortYear, formatYearQuarter, formatUnixTimeToShortYearMonth, formatAmountWithCurrency } = useI18n();
+const { tt, formatUnixTimeToShortYear, formatYearQuarter, formatUnixTimeToShortYearMonth, formatUnixTimeToFiscalYear, formatAmountWithCurrency } = useI18n();
 const { allDateRanges, getItemName, getColor } = useTrendsChartBase(props);
 
 const userStore = useUserStore();
@@ -121,6 +121,8 @@ const allDisplayDateRanges = computed<string[]>(() => {
 
         if (props.dateAggregationType === ChartDateAggregationType.Year.type) {
             allDisplayDateRanges.push(formatUnixTimeToShortYear(dateRange.minUnixTime));
+        } else if (props.dateAggregationType === ChartDateAggregationType.FiscalYear.type && 'fiscalYear' in dateRange) {
+            allDisplayDateRanges.push(formatUnixTimeToFiscalYear(dateRange.fiscalYear));
         } else if (props.dateAggregationType === ChartDateAggregationType.Quarter.type && 'quarter' in dateRange) {
             allDisplayDateRanges.push(formatYearQuarter(dateRange.year, dateRange.quarter));
         } else { // if (props.dateAggregationType === ChartDateAggregationType.Month.type) {
@@ -168,6 +170,8 @@ const allSeries = computed<TrendsChartDataItem[]>(() => {
 
             if (props.dateAggregationType === ChartDateAggregationType.Year.type) {
                 dateRangeKey = dateRange.year.toString();
+            } else if (props.dateAggregationType === ChartDateAggregationType.FiscalYear.type && 'fiscalYear' in dateRange) {
+                dateRangeKey = 
             } else if (props.dateAggregationType === ChartDateAggregationType.Quarter.type && 'quarter' in dateRange) {
                 dateRangeKey = `${dateRange.year}-${dateRange.quarter}`;
             } else if (props.dateAggregationType === ChartDateAggregationType.Month.type && 'month' in dateRange) {
