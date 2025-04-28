@@ -1494,5 +1494,95 @@
                 }
             }
         }
+    ],
+    "test_cases_getAllFiscalYearsStartAndEndUnixTimes": [
+        {
+            "startYearMonth": "2024-01",
+            "endYearMonth": "2026-12",
+            "fiscalYearStart": "07-01",
+            "fiscalYearStartId": "July 1",
+            "expected": [
+                {
+                    "year": 2024,
+                    "minUnixTime": 1704067200,
+                    "maxUnixTime": 1719791999
+                },
+                {
+                    "year": 2025,
+                    "minUnixTime": 1719792000,
+                    "maxUnixTime": 1751327999
+                },
+                {
+                    "year": 2026,
+                    "minUnixTime": 1751328000,
+                    "maxUnixTime": 1782863999
+                },
+                {
+                    "year": 2027,
+                    "minUnixTime": 1782864000,
+                    "maxUnixTime": 1798761599
+                }
+            ]
+        },
+        {
+            "startYearMonth": "2024-01",
+            "endYearMonth": "2024-12",
+            "fiscalYearStart": "07-01",
+            "fiscalYearStartId": "July 1",
+            "expected": [
+                {
+                    "year": 2024,
+                    "minUnixTime": 1704067200,
+                    "maxUnixTime": 1719791999
+                },
+                {
+                    "year": 2025,
+                    "minUnixTime": 1719792000,
+                    "maxUnixTime": 1735689599
+                }
+            ]
+        },
+        {
+            "startYearMonth": "2024-01",
+            "endYearMonth": "2024-12",
+            "fiscalYearStart": "01-01",
+            "fiscalYearStartId": "January 1",
+            "expected": [
+                {
+                    "year": 2024,
+                    "minUnixTime": 1704067200,
+                    "maxUnixTime": 1735689599
+                }
+            ]
+        }
+    ],
+    "test_cases_getFiscalYearRangeFromYear": [
+        {
+            "year": 2023,
+            "fiscalYearStart": "07-01",
+            "expected": {
+                "year": 2023,
+                "minUnixTime": 1672531200,
+                "maxUnixTime": 1688255999
+            }
+        },
+        {
+            "year": 2024,
+            "fiscalYearStart": "07-01",
+            "expected": {
+                "year": 2024,
+                "minUnixTime": 1688169600,
+                "maxUnixTime": 1719791999
+            }
+        },
+        {
+            "year": 2024,
+            "fiscalYearStart": "01-01",
+            "expected": {
+                "year": 2024,
+                "minUnixTime": 1704067200,
+                "maxUnixTime": 1735689599
+            }
+        }
     ]
 }

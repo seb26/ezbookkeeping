@@ -9,11 +9,13 @@ import {
     getFiscalYearFromUnixTime,
     getFiscalYearStartUnixTime,
     getFiscalYearEndUnixTime,
-    getFiscalYearUnixTimeRange
+    getFiscalYearUnixTimeRange,
+    getAllFiscalYearsStartAndEndUnixTimes,
+    getFiscalYearRangeFromYear
 } from '@/lib/datetime.ts';
 
 import { formatUnixTime } from '@/lib/datetime.ts';
-import { FiscalYearStart } from '@/core/fiscalyear.ts';
+import { FiscalYearStart, FiscalYearUnixTime } from '@/core/fiscalyear.ts';
 
 // Set test environment timezone to UTC, since the test data constants are in UTC
 beforeAll(() => {
@@ -36,8 +38,12 @@ function formatUnixTimeISO(unixTime: number): string {
     return formatUnixTime(unixTime, 'YYYY-MM-DD[T]HH:mm:ss[Z]');
 }
 
-function getTestTitleFormat(testFiscalYearStartId: string, testCaseDateString: string): string {
+function getTestTitleFormatDate(testFiscalYearStartId: string, testCaseDateString: string): string {
     return `FY_START: ${testFiscalYearStartId.padStart(10, ' ')}; DATE: ${moment(testCaseDateString).format('MMMM D, YYYY')}`;
+}
+
+function getTestTitleFormatString(testFiscalYearStartId: string, testCaseString: string): string {
+    return `FY_START: ${testFiscalYearStartId.padStart(10, ' ')}; ${testCaseString}`;
 }
 
 // FISCAL YEAR START CONFIGURATION
@@ -133,7 +139,7 @@ TEST_CASES_GET_FISCAL_YEAR_FROM_UNIX_TIME = importTestData('test_cases_getFiscal
 describe('getFiscalYearFromUnixTime', () => {
     Object.values(TEST_FISCAL_YEAR_START_PRESETS).forEach((testFiscalYearStart) => {
         TEST_CASES_GET_FISCAL_YEAR_FROM_UNIX_TIME.forEach((testCase) => {
-            test(`returns correct fiscal year for ${getTestTitleFormat(testFiscalYearStart.id, testCase.date)}`, () => {
+            test(`returns correct fiscal year for ${getTestTitleFormatDate(testFiscalYearStart.id, testCase.date)}`, () => {
                 const testCaseUnixTime = moment(testCase.date).unix();
                 const fiscalYear = getFiscalYearFromUnixTime(testCaseUnixTime, testFiscalYearStart.value);
                 const expected = testCase.expected[testFiscalYearStart.id];
@@ -161,7 +167,7 @@ TEST_CASES_GET_FISCAL_YEAR_START_UNIX_TIME = importTestData('test_cases_getFisca
 describe('getFiscalYearStartUnixTime', () => {
     Object.values(TEST_FISCAL_YEAR_START_PRESETS).forEach((testFiscalYearStart) => {
         TEST_CASES_GET_FISCAL_YEAR_START_UNIX_TIME.forEach((testCase) => {
-            test(`returns correct start unix time for ${getTestTitleFormat(testFiscalYearStart.id, testCase.date)}`, () => {
+            test(`returns correct start unix time for ${getTestTitleFormatDate(testFiscalYearStart.id, testCase.date)}`, () => {
                 const testCaseUnixTime = moment(testCase.date).unix();
                 const startUnixTime = getFiscalYearStartUnixTime(testCaseUnixTime, testFiscalYearStart.value);
                 const expected = testCase.expected[testFiscalYearStart.id];
@@ -191,7 +197,7 @@ TEST_CASES_GET_FISCAL_YEAR_END_UNIX_TIME = importTestData('test_cases_getFiscalY
 describe('getFiscalYearEndUnixTime', () => {
     Object.values(TEST_FISCAL_YEAR_START_PRESETS).forEach((testFiscalYearStart) => {
         TEST_CASES_GET_FISCAL_YEAR_END_UNIX_TIME.forEach((testCase) => {
-            test(`returns correct end unix time for ${getTestTitleFormat(testFiscalYearStart.id, testCase.date)}`, () => {
+            test(`returns correct end unix time for ${getTestTitleFormatDate(testFiscalYearStart.id, testCase.date)}`, () => {
                 const testCaseUnixTime = moment(testCase.date).unix();
                 const endUnixTime = getFiscalYearEndUnixTime(testCaseUnixTime, testFiscalYearStart.value);
                 const expected = testCase.expected[testFiscalYearStart.id];
@@ -208,11 +214,7 @@ describe('getFiscalYearEndUnixTime', () => {
 type TestCase_getFiscalYearUnixTimeRange = {
     date: string;
     expected: {
-        [fiscalYearStart: string]: {
-            fiscalYear: number;
-            minUnixTime: number;
-            maxUnixTime: number;
-        }
+        [fiscalYearStart: string]: FiscalYearUnixTime[]
     }
 }
 
@@ -222,7 +224,7 @@ TEST_CASES_GET_FISCAL_YEAR_UNIX_TIME_RANGE = importTestData('test_cases_getFisca
 describe('getFiscalYearUnixTimeRange', () => {
     Object.values(TEST_FISCAL_YEAR_START_PRESETS).forEach((testFiscalYearStart) => {
         TEST_CASES_GET_FISCAL_YEAR_UNIX_TIME_RANGE.forEach((testCase) => {
-            test(`returns correct fiscal year unix time range for ${getTestTitleFormat(testFiscalYearStart.id, testCase.date)}`, () => {
+            test(`returns correct fiscal year unix time range for ${getTestTitleFormatDate(testFiscalYearStart.id, testCase.date)}`, () => {
                 const testCaseUnixTime = moment(testCase.date).unix();
                 const fiscalYearUnixTimeRange = getFiscalYearUnixTimeRange(testCaseUnixTime, testFiscalYearStart.value);
                 expect(fiscalYearUnixTimeRange).toStrictEqual(testCase.expected[testFiscalYearStart.id]);
@@ -230,3 +232,60 @@ describe('getFiscalYearUnixTimeRange', () => {
         });
     });
 });
+
+// GET ALL FISCAL YEAR START AND END UNIX TIMES
+type TestCase_getAllFiscalYearsStartAndEndUnixTimes = {
+    startYearMonth: string;
+    endYearMonth: string;
+    fiscalYearStart: string;
+    fiscalYearStartId: string;
+    expected: FiscalYearUnixTime[]
+}
+
+let TEST_CASES_GET_ALL_FISCAL_YEARS_START_AND_END_UNIX_TIMES: TestCase_getAllFiscalYearsStartAndEndUnixTimes[];
+TEST_CASES_GET_ALL_FISCAL_YEARS_START_AND_END_UNIX_TIMES = importTestData('test_cases_getAllFiscalYearsStartAndEndUnixTimes') as TestCase_getAllFiscalYearsStartAndEndUnixTimes[];
+
+describe('getAllFiscalYearsStartAndEndUnixTimes', () => {
+    TEST_CASES_GET_ALL_FISCAL_YEARS_START_AND_END_UNIX_TIMES.forEach((testCase) => {
+        const fiscalYearStart = FiscalYearStart.strictFromMonthDashDayString(testCase.fiscalYearStart);
+        test(`returns correct fiscal year start and end unix times for ${getTestTitleFormatString(testCase.fiscalYearStartId, `${testCase.startYearMonth} to ${testCase.endYearMonth}`)}`, () => {
+            const fiscalYearStartAndEndUnixTimes = getAllFiscalYearsStartAndEndUnixTimes(testCase.startYearMonth, testCase.endYearMonth, fiscalYearStart.value);
+            
+            // Convert results to include ISO strings for better test output
+            const resultWithISO = fiscalYearStartAndEndUnixTimes.map(data => ({
+                ...data,
+                minUnixTimeISO: formatUnixTimeISO(data.minUnixTime),
+                maxUnixTimeISO: formatUnixTimeISO(data.maxUnixTime)
+            }));
+            
+            // Convert expected to include ISO strings
+            const expectedWithISO = testCase.expected.map(data => ({
+                ...data,
+                minUnixTimeISO: formatUnixTimeISO(data.minUnixTime),
+                maxUnixTimeISO: formatUnixTimeISO(data.maxUnixTime)
+            }));
+            
+            expect(resultWithISO).toStrictEqual(expectedWithISO);
+        });
+    });
+});
+
+// GET FISCAL YEAR RANGE FROM YEAR
+type TestCase_getFiscalYearRangeFromYear = {
+    year: number;
+    fiscalYearStart: string;
+    expected: FiscalYearUnixTime;
+}
+
+let TEST_CASES_GET_FISCAL_YEAR_RANGE_FROM_YEAR: TestCase_getFiscalYearRangeFromYear[];
+TEST_CASES_GET_FISCAL_YEAR_RANGE_FROM_YEAR = importTestData('test_cases_getFiscalYearRangeFromYear') as TestCase_getFiscalYearRangeFromYear[];
+
+describe('getFiscalYearRangeFromYear', () => {
+    TEST_CASES_GET_FISCAL_YEAR_RANGE_FROM_YEAR.forEach((testCase) => {
+        const fiscalYearStart = FiscalYearStart.strictFromMonthDashDayString(testCase.fiscalYearStart);
+        test(`returns correct fiscal year unix time range for input year integer ${testCase.year} and FY_START: ${testCase.fiscalYearStart}`, () => {
+            const fiscalYearRange = getFiscalYearRangeFromYear(testCase.year, fiscalYearStart.value);
+            expect(fiscalYearRange).toStrictEqual(testCase.expected);
+        });
+    });
+}); 
