@@ -430,6 +430,64 @@ export function getAllYearsStartAndEndUnixTimes(startYearMonth: YearMonth | stri
     return allYearTimes;
 }
 
+export function getAllFiscalYearsStartAndEndUnixTimes(startYearMonth: YearMonth | string, endYearMonth: YearMonth | string, fiscalYearStart: number): FiscalYearUnixTime[] {
+    // user selects date range: start=2024-01 and end=2026-12
+    // result should be 4x FiscalYearUnixTime made up of:
+    // - 2024-01->2024-06 (FY 24) - input start year-month->end of fiscal year in which the input start year-month falls
+    // - 2024-07->2025-06 (FY 25) - complete fiscal year
+    // - 2025-07->2026-06 (FY 26) - complete fiscal year
+    // - 2026-07->2026-12 (FY 27) - start of fiscal year->end of fiscal year in which the input end year-month falls
+
+    const allFiscalYearTimes: FiscalYearUnixTime[] = [];
+    const range = getStartEndYearMonthRange(startYearMonth, endYearMonth);
+
+    if (!range) {
+        return allFiscalYearTimes;
+    }
+
+    const inputStartUnixTime = getYearMonthFirstUnixTime(range.startYearMonth);
+    const inputEndUnixTime = getYearMonthLastUnixTime(range.endYearMonth);
+    const fiscalYearStartMonth = FiscalYearStart.strictFromNumber(fiscalYearStart).month;
+    
+    // Loop over 1 year before and 1 year after the input date range
+    // to include fiscal years that start in the previous calendar year.
+    for (let year = range.startYearMonth.year - 1; year <= range.endYearMonth.year + 1; year++) {
+        const thisYearMonthUnixTime = getYearMonthFirstUnixTime({ year: year, month: fiscalYearStartMonth });
+        const fiscalStartTime = getFiscalYearStartUnixTime(thisYearMonthUnixTime, fiscalYearStart);
+        const fiscalEndTime = getFiscalYearEndUnixTime(thisYearMonthUnixTime, fiscalYearStart);
+    
+        const fiscalYear = getFiscalYearFromUnixTime(fiscalStartTime, fiscalYearStart);
+        
+        if (fiscalStartTime <= inputEndUnixTime && fiscalEndTime >= inputStartUnixTime) {
+            let minUnixTime = fiscalStartTime;
+            let maxUnixTime = fiscalEndTime;
+            
+            // Cap the min and max unix times to the input date range
+            if (minUnixTime < inputStartUnixTime) {
+                minUnixTime = inputStartUnixTime;
+            }
+            
+            if (maxUnixTime > inputEndUnixTime) {
+                maxUnixTime = inputEndUnixTime;
+            }
+            
+            const fiscalYearTime: FiscalYearUnixTime = {
+                year: fiscalYear,
+                minUnixTime: minUnixTime,
+                maxUnixTime: maxUnixTime,
+            };
+            
+            allFiscalYearTimes.push(fiscalYearTime);
+        }
+        
+        if (fiscalStartTime > inputEndUnixTime) {
+            break;
+        }
+    }
+
+    return allFiscalYearTimes;
+}
+
 export function getAllQuartersStartAndEndUnixTimes(startYearMonth: YearMonth | string, endYearMonth: YearMonth | string): YearQuarterUnixTime[] {
     const allYearQuarterTimes: YearQuarterUnixTime[] = [];
     const range = getStartEndYearMonthRange(startYearMonth, endYearMonth);
@@ -970,8 +1028,37 @@ export function getFiscalYearUnixTimeRange(unixTime: number, fiscalYearStart: nu
     const start = getFiscalYearStartUnixTime(unixTime, fiscalYearStart);
     const end = getFiscalYearEndUnixTime(unixTime, fiscalYearStart);
     return {
-        fiscalYear: getFiscalYearFromUnixTime(unixTime, fiscalYearStart),
+        year: getFiscalYearFromUnixTime(unixTime, fiscalYearStart),
         minUnixTime: start,
         maxUnixTime: end,
     };
 }
+
+export function getFiscalYearRangeFromYear(year: number, fiscalYearStart: number): FiscalYearUnixTime {
+    let fiscalYear = year - 1;
+
+    if ( fiscalYearStart === 0x0101) {
+        fiscalYear = year;
+    }
+
+    const fiscalYearStartObj = FiscalYearStart.strictFromNumber(fiscalYearStart);
+
+    const fiscalYearStartUnixTime = moment().set({
+        year: fiscalYear,
+        month: fiscalYearStartObj.month - 1, // 0-index
+        date: fiscalYearStartObj.day,
+        hour: 0,
+        minute: 0,
+        second: 0,
+    }).unix();
+
+    const fiscalYearEndUnixTime = getFiscalYearEndUnixTime(fiscalYearStartUnixTime, fiscalYearStart);
+
+    return {
+        year: fiscalYear,
+        minUnixTime: fiscalYearStartUnixTime,
+        maxUnixTime: fiscalYearEndUnixTime,
+    };
+}
+
+

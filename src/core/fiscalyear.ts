@@ -195,12 +195,12 @@ function validateMonthDay(month: number, day: number): [number, number] {
 }
 
 export class FiscalYearUnixTime implements UnixTimeRange {
-    public readonly fiscalYear: number;
+    public readonly year: number;
     public readonly minUnixTime: number;
     public readonly maxUnixTime: number;
 
     private constructor(fiscalYear: number, minUnixTime: number, maxUnixTime: number) {
-        this.fiscalYear = fiscalYear;
+        this.year = fiscalYear;
         this.minUnixTime = minUnixTime;
         this.maxUnixTime = maxUnixTime;
     }
