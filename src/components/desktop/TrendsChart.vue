@@ -28,7 +28,8 @@ import {
 import {
     getYearMonthFirstUnixTime,
     getYearMonthLastUnixTime,
-    getDateTypeByDateRange
+    getDateTypeByDateRange,
+    getFiscalYearFromUnixTime
 } from '@/lib/datetime.ts';
 import {
     sortStatisticsItems
@@ -69,7 +70,7 @@ const emit = defineEmits<{
 }>();
 
 const theme = useTheme();
-const { tt, formatUnixTimeToShortYear, formatYearQuarter, formatUnixTimeToShortYearMonth, formatUnixTimeToFiscalYear, formatAmountWithCurrency } = useI18n();
+const { tt, formatUnixTimeToShortYear, formatYearQuarter, formatUnixTimeToShortYearMonth, formatUnixTimeToFiscalYear, formatYearToFiscalYear, formatAmountWithCurrency } = useI18n();
 const { allDateRanges, getItemName, getColor } = useTrendsChartBase(props);
 
 const userStore = useUserStore();
@@ -121,8 +122,8 @@ const allDisplayDateRanges = computed<string[]>(() => {
 
         if (props.dateAggregationType === ChartDateAggregationType.Year.type) {
             allDisplayDateRanges.push(formatUnixTimeToShortYear(dateRange.minUnixTime));
-        } else if (props.dateAggregationType === ChartDateAggregationType.FiscalYear.type && 'fiscalYear' in dateRange) {
-            allDisplayDateRanges.push(formatUnixTimeToFiscalYear(dateRange.fiscalYear));
+        } else if (props.dateAggregationType === ChartDateAggregationType.FiscalYear.type && 'year' in dateRange) {
+            allDisplayDateRanges.push(formatUnixTimeToFiscalYear(dateRange.minUnixTime));
         } else if (props.dateAggregationType === ChartDateAggregationType.Quarter.type && 'quarter' in dateRange) {
             allDisplayDateRanges.push(formatYearQuarter(dateRange.year, dateRange.quarter));
         } else { // if (props.dateAggregationType === ChartDateAggregationType.Month.type) {
@@ -152,6 +153,12 @@ const allSeries = computed<TrendsChartDataItem[]>(() => {
 
             if (props.dateAggregationType === ChartDateAggregationType.Year.type) {
                 dateRangeKey = dataItem.year.toString();
+            } else if (props.dateAggregationType === ChartDateAggregationType.FiscalYear.type) {
+                const fiscalYear = getFiscalYearFromUnixTime(
+                    getYearMonthFirstUnixTime({ year: dataItem.year, month: dataItem.month }),
+                    props.fiscalYearStart
+                );
+                dateRangeKey = formatYearToFiscalYear(fiscalYear);
             } else if (props.dateAggregationType === ChartDateAggregationType.Quarter.type) {
                 dateRangeKey = `${dataItem.year}-${Math.floor((dataItem.month - 1) / 3) + 1}`;
             } else { // if (props.dateAggregationType === ChartDateAggregationType.Month.type) {
@@ -170,8 +177,8 @@ const allSeries = computed<TrendsChartDataItem[]>(() => {
 
             if (props.dateAggregationType === ChartDateAggregationType.Year.type) {
                 dateRangeKey = dateRange.year.toString();
-            } else if (props.dateAggregationType === ChartDateAggregationType.FiscalYear.type && 'fiscalYear' in dateRange) {
-                dateRangeKey = 
+            } else if (props.dateAggregationType === ChartDateAggregationType.FiscalYear.type && 'year' in dateRange) {
+                dateRangeKey = formatYearToFiscalYear(dateRange.year);
             } else if (props.dateAggregationType === ChartDateAggregationType.Quarter.type && 'quarter' in dateRange) {
                 dateRangeKey = `${dateRange.year}-${dateRange.quarter}`;
             } else if (props.dateAggregationType === ChartDateAggregationType.Month.type && 'month' in dateRange) {

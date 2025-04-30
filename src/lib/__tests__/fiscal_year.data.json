@@ -1013,7 +1013,7 @@
             }
         }
     ],
-    "test_cases_getFiscalYearUnixTimeRange": [
+    "test_cases_getFiscalYearTimeRangeFromUnixTime": [
         {
             "date": "2022-01-01",
             "expected": {
@@ -1556,7 +1556,7 @@
             ]
         }
     ],
-    "test_cases_getFiscalYearRangeFromYear": [
+    "test_cases_getFiscalYearTimeRangeFromYear": [
         {
             "year": 2023,
             "fiscalYearStart": "07-01",

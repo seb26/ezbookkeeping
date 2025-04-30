@@ -139,8 +139,9 @@ import {
     isDateRangeMatchFullYears,
     isDateRangeMatchFullMonths,
     formatMonthDay,
-    getFiscalYearUnixTimeRange,
     getCurrentUnixTime,
+    getFiscalYearTimeRangeFromYear,
+    getFiscalYearTimeRangeFromUnixTime,
 } from '@/lib/datetime.ts';
 
 import {
@@ -510,8 +511,8 @@ export function useI18n() {
 
     function getLocalizedFiscalYearFormat(): string {
         const languageDefaultTypeName = t('default.fiscalYearFormat');
-        const formatType = getFiscalYearFormatType(FiscalYearFormat.all(), FiscalYearFormat.values(), userStore.currentUserFiscalYearFormat, languageDefaultTypeName, FiscalYearFormat.Default);
-        return t(`format.fiscalYear.${formatType.name}`);
+        const fiscalYearFormat = getFiscalYearFormatType(FiscalYearFormat.all(), FiscalYearFormat.values(), userStore.currentUserFiscalYearFormat, languageDefaultTypeName, FiscalYearFormat.Default);
+        return fiscalYearFormat.name;
     }
 
     function getNumberFormatOptions(currencyCode?: string): NumberFormatOptions {
@@ -635,6 +636,10 @@ export function useI18n() {
 
     function getDefaultFiscalYearStart(): string {
         return t('default.fiscalYearStart');
+    }
+
+    function getDefaultFiscalYearFormat(): string {
+        return t('default.fiscalYearFormat');
     }
 
     function getAllLanguageOptions(includeSystemDefault: boolean): LanguageOption[] {
@@ -799,7 +804,10 @@ export function useI18n() {
         const defaultFormat = getLocalizedFiscalYearFormatType<T>();
         const ret: LocalizedDateTimeFormat[] = [];
         const allFormatArray = FiscalYearFormat.values();
-        const formattedValue = formatFiscalYearFormat(getCurrentUnixTime(), defaultFormat.name)
+        const fiscalYearUnixTimeRange = getFiscalYearTimeRangeFromUnixTime(getCurrentUnixTime(), getCurrentFiscalYearStart().value);
+        const formatValues = formatTimeRangeToFiscalYearFormatValues(fiscalYearUnixTimeRange.minUnixTime, fiscalYearUnixTimeRange.maxUnixTime);
+        const test = getCurrentFiscalYearFormat();
+        const formattedValue = t('format.fiscalYear.' + test, formatValues);
 
         ret.push({
             type: LANGUAGE_DEFAULT_FISCAL_YEAR_FORMAT_VALUE,
@@ -809,7 +817,7 @@ export function useI18n() {
 
         for (let i = 0; i < allFormatArray.length; i++) {
             const formatType = allFormatArray[i];
-            const formattedValue = formatFiscalYearFormat(getCurrentUnixTime(), formatType.name);
+            const formattedValue = t('format.fiscalYear.' + formatType.name, formatValues);
 
             let item = {
                 type: formatType.type,
@@ -1303,7 +1311,6 @@ export function useI18n() {
         return joinMultiText(finalWeekdayNames);
     }
 
-    // Returns FiscalYearStart object, to facilitate diverse uses and conversions
     function getCurrentFiscalYearStart(): FiscalYearStart {
         let fiscalYearStart = FiscalYearStart.fromNumber(userStore.currentUserFiscalYearStart);
         if ( fiscalYearStart ) {
@@ -1316,6 +1323,21 @@ export function useI18n() {
             return fiscalYearStart;
         }
         return FiscalYearStart.Default;
+    }
+
+    function getCurrentFiscalYearFormat(): string {
+        let fiscalYearFormat = '';
+        const currentFiscalYearFormat = FiscalYearFormat.valueOf(userStore.currentUserFiscalYearFormat);
+        if ( currentFiscalYearFormat ) {
+            fiscalYearFormat = currentFiscalYearFormat.name;
+        }
+        if ( fiscalYearFormat ) {
+            return fiscalYearFormat;
+        }
+        if ( !fiscalYearFormat ) {
+            return getLocalizedFiscalYearFormat();
+        }
+        return FiscalYearFormat.Default.name;
     }
 
     function getCurrentDecimalSeparator(): string {
@@ -1409,17 +1431,26 @@ export function useI18n() {
             return '';
         }
     }
-
-    function formatFiscalYearFormat(unixTime: number, format: string): string {
-        const fiscalYearUnixTimeRange = getFiscalYearUnixTimeRange(unixTime, getCurrentFiscalYearStart().value);
-        const yearFormatValues = {
-            StartYYYY: formatUnixTime(fiscalYearUnixTimeRange.minUnixTime, 'YYYY'),
-            StartYY: formatUnixTime(fiscalYearUnixTimeRange.minUnixTime, 'YY'),
-            EndYYYY: formatUnixTime(fiscalYearUnixTimeRange.maxUnixTime, 'YYYY'),
-            EndYY: formatUnixTime(fiscalYearUnixTimeRange.maxUnixTime, 'YY'),
+    
+    function formatTimeRangeToFiscalYearFormatValues(minUnixTime: number, maxUnixTime: number): Record<string, string> {
+        return {
+            StartYYYY: formatUnixTime(minUnixTime, 'YYYY'),
+            StartYY: formatUnixTime(minUnixTime, 'YY'),
+            EndYYYY: formatUnixTime(maxUnixTime, 'YYYY'),
+            EndYY: formatUnixTime(maxUnixTime, 'YY'),
         };
-        
-        return t('format.fiscalYear.' + format, yearFormatValues);
+    }
+
+    function formatUnixTimeToFiscalYear(unixTime: number): string {
+        const fiscalYearUnixTimeRange = getFiscalYearTimeRangeFromUnixTime(unixTime, getCurrentFiscalYearStart().value);
+        const yearFormatValues = formatTimeRangeToFiscalYearFormatValues(fiscalYearUnixTimeRange.minUnixTime, fiscalYearUnixTimeRange.maxUnixTime);
+        return t('format.fiscalYear.' + getCurrentFiscalYearFormat(), yearFormatValues);
+    }
+
+    function formatYearToFiscalYear(year: number): string {
+        const thisFiscalYearRange = getFiscalYearTimeRangeFromYear(year, getCurrentFiscalYearStart().value);
+        const yearFormatValues = formatTimeRangeToFiscalYearFormatValues(thisFiscalYearRange.minUnixTime, thisFiscalYearRange.maxUnixTime);
+        return t('format.fiscalYear.' + getCurrentFiscalYearFormat(), yearFormatValues);
     }
 
     function formatDateRange(dateType: number, startTime: number, endTime: number): string {
@@ -1754,6 +1785,7 @@ export function useI18n() {
         getDefaultCurrency,
         getDefaultFirstDayOfWeek,
         getDefaultFiscalYearStart,
+        getDefaultFiscalYearFormat,
         // get all localized info of specified type
         getAllLanguageOptions,
         getAllEnableDisableOptions,
@@ -1806,6 +1838,7 @@ export function useI18n() {
         getMultiMonthdayShortNames,
         getMultiWeekdayLongNames,
         getCurrentFiscalYearStart,
+        getCurrentFiscalYearFormat,
         getCurrentDecimalSeparator,
         getCurrentDigitGroupingSymbol,
         getCurrentDigitGroupingType,
@@ -1831,7 +1864,8 @@ export function useI18n() {
         formatUnixTimeToShortMonthDay: (unixTime: number, utcOffset?: number, currentUtcOffset?: number) => formatUnixTime(unixTime, getLocalizedShortMonthDayFormat(), utcOffset, currentUtcOffset),
         formatUnixTimeToLongTime: (unixTime: number, utcOffset?: number, currentUtcOffset?: number) => formatUnixTime(unixTime, getLocalizedLongTimeFormat(), utcOffset, currentUtcOffset),
         formatUnixTimeToShortTime: (unixTime: number, utcOffset?: number, currentUtcOffset?: number) => formatUnixTime(unixTime, getLocalizedShortTimeFormat(), utcOffset, currentUtcOffset),
-        formatUnixTimeToFiscalYear: (unixTime: number, utcOffset?: number, currentUtcOffset?: number) => formatUnixTime(unixTime, getLocalizedFiscalYearFormat(), utcOffset, currentUtcOffset),
+        formatUnixTimeToFiscalYear,
+        formatYearToFiscalYear,
         formatDateToLongDate,
         formatMonthDayToLongDay,
         formatYearQuarter,

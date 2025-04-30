@@ -24,8 +24,7 @@ import {
 } from '@/core/datetime.ts';
 import {
     type FiscalYearUnixTime,
-    FiscalYearStart,
-    FiscalYearFormat
+    FiscalYearStart
 } from '@/core/fiscalyear.ts';
 import {
     isObject,
@@ -1024,7 +1023,7 @@ export function getCurrentFiscalYear(fiscalYearStart: number): number {
     return getFiscalYearFromUnixTime(date.unix(), fiscalYearStart);
 }
 
-export function getFiscalYearUnixTimeRange(unixTime: number, fiscalYearStart: number): FiscalYearUnixTime {
+export function getFiscalYearTimeRangeFromUnixTime(unixTime: number, fiscalYearStart: number): FiscalYearUnixTime {
     const start = getFiscalYearStartUnixTime(unixTime, fiscalYearStart);
     const end = getFiscalYearEndUnixTime(unixTime, fiscalYearStart);
     return {
@@ -1034,7 +1033,7 @@ export function getFiscalYearUnixTimeRange(unixTime: number, fiscalYearStart: nu
     };
 }
 
-export function getFiscalYearRangeFromYear(year: number, fiscalYearStart: number): FiscalYearUnixTime {
+export function getFiscalYearTimeRangeFromYear(year: number, fiscalYearStart: number): FiscalYearUnixTime {
     let fiscalYear = year - 1;
 
     if ( fiscalYearStart === 0x0101) {
