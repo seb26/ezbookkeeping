@@ -3,9 +3,10 @@ import type { ImportFileType } from '@/core/file.ts';
 export const SUPPORTED_IMAGE_EXTENSIONS: string = '.jpg,.jpeg,.png,.gif,.webp';
 
 export const DEFAULT_DOCUMENT_LANGUAGE_FOR_IMPORT_FILE: string = 'en';
-export const SUPPORTED_DOCUMENT_LANGUAGES_FOR_IMPORT_FILE: Record<string, boolean> = {
-    DEFAULT_DOCUMENT_LANGUAGE_FOR_IMPORT_FILE: true,
-    'zh-Hans': true
+export const SUPPORTED_DOCUMENT_LANGUAGES_FOR_IMPORT_FILE: Record<string, string> = {
+    DEFAULT_DOCUMENT_LANGUAGE_FOR_IMPORT_FILE: DEFAULT_DOCUMENT_LANGUAGE_FOR_IMPORT_FILE,
+    'zh-Hans': 'zh-Hans',
+    'zh-Hant': 'zh-Hans',
 };
 
 export const SUPPORTED_FILE_ENCODINGS: string[] = [
@@ -99,7 +100,11 @@ export const SUPPORTED_IMPORT_FILE_TYPES: ImportFileType[] = [
                 extensions: '.tsv,.txt',
             }
         ],
-        supportedEncodings: SUPPORTED_FILE_ENCODINGS
+        supportedEncodings: SUPPORTED_FILE_ENCODINGS,
+        document: {
+            supportMultiLanguages: true,
+            anchor: 'how-to-import-delimiter-separated-values-dsv-file-or-data'
+        }
     },
     {
         type: 'dsv_data',
@@ -117,7 +122,11 @@ export const SUPPORTED_IMPORT_FILE_TYPES: ImportFileType[] = [
                 extensions: '.tsv,.txt',
             }
         ],
-        dataFromTextbox: true
+        dataFromTextbox: true,
+        document: {
+            supportMultiLanguages: true,
+            anchor: 'how-to-import-delimiter-separated-values-dsv-file-or-data'
+        }
     },
     {
         type: 'ofx',

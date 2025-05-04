@@ -1,10 +1,13 @@
+import de from './de.json';
 import en from './en.json';
-import ru from './ru.json';
 import es from './es.json';
+import it from './it.json';
+import ja from './ja.json';
+import ru from './ru.json';
+import uk from './uk.json';
 import vi from './vi.json';
 import zhHans from './zh_Hans.json';
-import de from './de.json';
-import ja from './ja.json';
+import zhHant from './zh_Hant.json';
 
 export interface LanguageInfo {
     readonly name: string;
@@ -33,14 +36,20 @@ export const ALL_LANGUAGES: Record<string, LanguageInfo> = {
     'en': {
         name: 'English',
         displayName: 'English',
-        alternativeLanguageTag: 'en',
+        alternativeLanguageTag: 'en-US',
         content: en
     },
     'es': {
         name: 'Spanish',
         displayName: 'Español',
-        alternativeLanguageTag: 'es',
+        alternativeLanguageTag: 'es-ES',
         content: es
+    },
+    'it': {
+        name: 'Italian',
+        displayName: 'Italiano',
+        alternativeLanguageTag: 'it-IT',
+        content: it
     },
     'ja': {
         name: 'Japanese',
@@ -54,6 +63,12 @@ export const ALL_LANGUAGES: Record<string, LanguageInfo> = {
         alternativeLanguageTag: 'ru-RU',
         content: ru
     },
+    'uk': {
+        name: 'Ukrainian',
+        displayName: 'Українська',
+        alternativeLanguageTag: 'uk-UA',
+        content: uk
+    },
     'vi': {
         name: 'Vietnamese',
         displayName: 'Tiếng Việt',
@@ -66,5 +81,12 @@ export const ALL_LANGUAGES: Record<string, LanguageInfo> = {
         alternativeLanguageTag: 'zh-CN',
         aliases: ['zh-CHS', 'zh-CN', 'zh-SG'],
         content: zhHans
+    },
+    'zh-Hant': {
+        name: 'Chinese (Traditional)',
+        displayName: '中文 (繁體)',
+        alternativeLanguageTag: 'zh-TW',
+        aliases: ['zh-CHT', 'zh-TW', 'zh-HK', 'zh-MO'],
+        content: zhHant
     }
 };

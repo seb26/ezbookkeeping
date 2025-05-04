@@ -19,17 +19,26 @@ var AllLanguages = map[string]*LocaleInfo{
 	"es": {
 		Content: es,
 	},
+	"it": {
+		Content: it,
+	},
 	"ja": {
 		Content: ja,
 	},
 	"ru": {
 		Content: ru,
 	},
+	"uk": {
+		Content: uk,
+	},
 	"vi": {
 		Content: vi,
 	},
 	"zh-Hans": {
 		Content: zhHans,
+	},
+	"zh-Hant": {
+		Content: zhHant,
 	},
 }
 

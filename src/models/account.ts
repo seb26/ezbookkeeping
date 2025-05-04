@@ -186,7 +186,7 @@ export class Account implements AccountInfoResponse {
         };
     }
 
-    public toModifyRequest(subAccounts?: Account[], parentAccount?: Account): AccountModifyRequest {
+    public toModifyRequest(clientSessionId: string, subAccounts?: Account[], parentAccount?: Account): AccountModifyRequest {
         let subAccountModifyRequests: AccountModifyRequest[] | undefined = undefined;
 
         if (this.type === AccountType.MultiSubAccounts.type) {
@@ -198,21 +198,25 @@ export class Account implements AccountInfoResponse {
 
             if (subAccounts) {
                 for (const subAccount of subAccounts) {
-                    subAccountModifyRequests.push(subAccount.toModifyRequest(undefined, this));
+                    subAccountModifyRequests.push(subAccount.toModifyRequest(clientSessionId, undefined, this));
                 }
             }
         }
 
         return {
-            id: this.id,
+            id: this.id || '0',
             name: this.name,
             category: parentAccount ? parentAccount.category : this.category,
             icon: this.icon,
             color: this.color,
+            currency: parentAccount && (!this.id || this.id === '0') ? this.currency : undefined,
+            balance: parentAccount && (!this.id || this.id === '0') ? this.balance : undefined,
+            balanceTime: parentAccount && (!this.id || this.id === '0') ? this.balanceTime : undefined,
             comment: this.comment,
             creditCardStatementDate: !parentAccount && this.category === AccountCategory.CreditCard.type ? this.creditCardStatementDate : undefined,
             hidden: !this.visible,
             subAccounts: !parentAccount ? subAccountModifyRequests : undefined,
+            clientSessionId: !parentAccount ? clientSessionId : undefined
         };
     }
 
@@ -240,6 +244,30 @@ export class Account implements AccountInfoResponse {
         }
     }
 
+    public isAccountOrSubAccountHidden(subAccountId: string): boolean {
+        if (this.type === AccountType.SingleAccount.type) {
+            return this.hidden;
+        } else if (this.type === AccountType.MultiSubAccounts.type && !subAccountId) {
+            return this.hidden;
+        } else if (this.type === AccountType.MultiSubAccounts.type && subAccountId) {
+            if (!this.subAccounts || !this.subAccounts.length) {
+                return false;
+            }
+
+            for (let i = 0; i < this.subAccounts.length; i++) {
+                const subAccount = this.subAccounts[i];
+
+                if (subAccountId && subAccountId === subAccount.id) {
+                    return subAccount.hidden;
+                }
+            }
+
+            return false;
+        } else {
+            return false;
+        }
+    }
+
     public getAccountOrSubAccountComment(subAccountId: string): string | null {
         if (this.type === AccountType.SingleAccount.type) {
             return this.comment;
@@ -262,6 +290,46 @@ export class Account implements AccountInfoResponse {
         } else {
             return null;
         }
+    }
+
+    public getAccountOrSubAccount(subAccountId: string): Account | null {
+        if (this.type === AccountType.SingleAccount.type) {
+            return this;
+        } else if (this.type === AccountType.MultiSubAccounts.type && !subAccountId) {
+            return this;
+        } else if (this.type === AccountType.MultiSubAccounts.type && subAccountId) {
+            if (!this.subAccounts || !this.subAccounts.length) {
+                return null;
+            }
+
+            for (let i = 0; i < this.subAccounts.length; i++) {
+                const subAccount = this.subAccounts[i];
+
+                if (subAccountId && subAccountId === subAccount.id) {
+                    return subAccount;
+                }
+            }
+
+            return null;
+        } else {
+            return null;
+        }
+    }
+
+    public getSubAccount(subAccountId: string): Account | null {
+        if (!this.subAccounts || !this.subAccounts.length) {
+            return null;
+        }
+
+        for (let i = 0; i < this.subAccounts.length; i++) {
+            const subAccount = this.subAccounts[i];
+
+            if (subAccountId && subAccountId === subAccount.id) {
+                return subAccount;
+            }
+        }
+
+        return null;
     }
 
     public getSubAccountCurrencies(showHidden: boolean, subAccountId: string): string[] {
@@ -515,10 +583,14 @@ export interface AccountModifyRequest {
     readonly category: number;
     readonly icon: string;
     readonly color: string;
+    readonly currency?: string;
+    readonly balance?: number;
+    readonly balanceTime?: number;
     readonly comment: string;
     readonly creditCardStatementDate?: number;
     readonly hidden: boolean;
     readonly subAccounts?: AccountModifyRequest[];
+    readonly clientSessionId?: string;
 }
 
 export interface AccountInfoResponse {

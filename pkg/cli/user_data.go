@@ -810,7 +810,7 @@ func (l *UserDataCli) ImportTransaction(c *core.CliContext, username string, fil
 		return errs.ErrOperationFailed
 	}
 
-	err = l.transactions.BatchCreateTransactions(c, user.Uid, newTransactions, newTransactionTagIdsMap)
+	err = l.transactions.BatchCreateTransactions(c, user.Uid, newTransactions, newTransactionTagIdsMap, nil)
 
 	if err != nil {
 		log.CliErrorf(c, "[user_data.ImportTransaction] failed to create transaction, because %s", err.Error())
@@ -876,7 +876,7 @@ func (l *UserDataCli) getUserEssentialData(c *core.CliContext, uid int64, userna
 	return accountMap, categoryMap, tagMap, tagIndexes, tagIndexesMap, nil
 }
 
-func (l *UserDataCli) getUserEssentialDataForImport(c *core.CliContext, uid int64, username string) (accountMap map[string]*models.Account, expenseCategoryMap map[string]*models.TransactionCategory, incomeCategoryMap map[string]*models.TransactionCategory, transferCategoryMap map[string]*models.TransactionCategory, tagMap map[string]*models.TransactionTag, err error) {
+func (l *UserDataCli) getUserEssentialDataForImport(c *core.CliContext, uid int64, username string) (accountMap map[string]*models.Account, expenseCategoryMap map[string]map[string]*models.TransactionCategory, incomeCategoryMap map[string]map[string]*models.TransactionCategory, transferCategoryMap map[string]map[string]*models.TransactionCategory, tagMap map[string]*models.TransactionTag, err error) {
 	if uid <= 0 {
 		log.CliErrorf(c, "[user_data.getUserEssentialDataForImport] user uid \"%d\" is invalid", uid)
 		return nil, nil, nil, nil, nil, errs.ErrUserIdInvalid
@@ -889,7 +889,7 @@ func (l *UserDataCli) getUserEssentialDataForImport(c *core.CliContext, uid int6
 		return nil, nil, nil, nil, nil, err
 	}
 
-	accountMap = l.accounts.GetAccountNameMapByList(accounts)
+	accountMap = l.accounts.GetVisibleAccountNameMapByList(accounts)
 
 	categories, err := l.categories.GetAllCategoriesByUid(c, uid, 0, -1)
 
@@ -898,7 +898,7 @@ func (l *UserDataCli) getUserEssentialDataForImport(c *core.CliContext, uid int6
 		return nil, nil, nil, nil, nil, err
 	}
 
-	expenseCategoryMap, incomeCategoryMap, transferCategoryMap = l.categories.GetCategoryNameMapByList(categories)
+	expenseCategoryMap, incomeCategoryMap, transferCategoryMap = l.categories.GetVisibleSubCategoryNameMapByList(categories)
 
 	tags, err := l.tags.GetAllTagsByUid(c, uid)
 
@@ -959,7 +959,7 @@ func (l *UserDataCli) checkTransactionCategory(c *core.CliContext, transaction *
 		return errs.ErrTransactionCategoryNotFound
 	}
 
-	if category.ParentCategoryId == models.LevelOneTransactionParentId {
+	if category.ParentCategoryId == models.LevelOneTransactionCategoryParentId {
 		log.CliErrorf(c, "[user_data.checkTransactionCategory] the transaction category \"id:%d\" of transaction \"id:%d\" is not a sub category", transaction.CategoryId, transaction.TransactionId)
 		return errs.ErrOperationFailed
 	}

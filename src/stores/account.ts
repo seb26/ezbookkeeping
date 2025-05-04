@@ -185,29 +185,38 @@ export const useAccountsStore = defineStore('accounts', () => {
         }
     }
 
-    function updateAccountToAccountList(account: Account): void {
+    function updateAccountToAccountList(oldAccount: Account, newAccount: Account): void {
         for (let i = 0; i < allAccounts.value.length; i++) {
-            if (allAccounts.value[i].id === account.id) {
-                allAccounts.value.splice(i, 1, account);
+            if (allAccounts.value[i].id === newAccount.id) {
+                allAccounts.value.splice(i, 1, newAccount);
                 break;
             }
         }
 
-        allAccountsMap.value[account.id] = account;
+        if (oldAccount.subAccounts) {
+            for (let i = 0; i < oldAccount.subAccounts.length; i++) {
+                const subAccount = oldAccount.subAccounts[i];
+                if (allAccountsMap.value[subAccount.id]) {
+                    delete allAccountsMap.value[subAccount.id];
+                }
+            }
+        }
 
-        if (account.subAccounts) {
-            for (let i = 0; i < account.subAccounts.length; i++) {
-                const subAccount = account.subAccounts[i];
+        allAccountsMap.value[newAccount.id] = newAccount;
+
+        if (newAccount.subAccounts) {
+            for (let i = 0; i < newAccount.subAccounts.length; i++) {
+                const subAccount = newAccount.subAccounts[i];
                 allAccountsMap.value[subAccount.id] = subAccount;
             }
         }
 
-        if (allCategorizedAccountsMap.value[account.category]) {
-            const accountList = allCategorizedAccountsMap.value[account.category].accounts;
+        if (allCategorizedAccountsMap.value[newAccount.category]) {
+            const accountList = allCategorizedAccountsMap.value[newAccount.category].accounts;
 
             for (let i = 0; i < accountList.length; i++) {
-                if (accountList[i].id === account.id) {
-                    accountList.splice(i, 1, account);
+                if (accountList[i].id === newAccount.id) {
+                    accountList.splice(i, 1, newAccount);
                     break;
                 }
             }
@@ -290,6 +299,46 @@ export const useAccountsStore = defineStore('accounts', () => {
                 if (accountList[i].id === account.id) {
                     accountList.splice(i, 1);
                     break;
+                }
+            }
+        }
+    }
+
+    function removeSubAccountFromAccountList(subAccount: Account): void {
+        for (let i = 0; i < allAccounts.value.length; i++) {
+            if (allAccounts.value[i].type !== AccountType.MultiSubAccounts.type || !allAccounts.value[i].subAccounts) {
+                continue;
+            }
+
+            const subAccounts = allAccounts.value[i].subAccounts as Account[];
+
+            for (let j = 0; j < subAccounts.length; j++) {
+                if (subAccounts[j].id === subAccount.id) {
+                    subAccounts.splice(j, 1);
+                    break;
+                }
+            }
+        }
+
+        if (allAccountsMap.value[subAccount.id]) {
+            delete allAccountsMap.value[subAccount.id];
+        }
+
+        if (allCategorizedAccountsMap.value[subAccount.category]) {
+            const accountList = allCategorizedAccountsMap.value[subAccount.category].accounts;
+
+            for (let i = 0; i < accountList.length; i++) {
+                if (accountList[i].type !== AccountType.MultiSubAccounts.type || !accountList[i].subAccounts) {
+                    continue;
+                }
+
+                const subAccounts = accountList[i].subAccounts as Account[];
+
+                for (let j = 0; j < subAccounts.length; j++) {
+                    if (subAccounts[j].id === subAccount.id) {
+                        subAccounts.splice(j, 1);
+                        break;
+                    }
                 }
             }
         }
@@ -807,7 +856,7 @@ export const useAccountsStore = defineStore('accounts', () => {
             if (!isEdit) {
                 promise = services.addAccount(account.toCreateRequest(clientSessionId, subAccounts));
             } else {
-                promise = services.modifyAccount(account.toModifyRequest(subAccounts));
+                promise = services.modifyAccount(account.toModifyRequest(clientSessionId, subAccounts));
             }
 
             promise.then(response => {
@@ -828,7 +877,7 @@ export const useAccountsStore = defineStore('accounts', () => {
                     addAccountToAccountList(newAccount);
                 } else {
                     if (oldAccount && oldAccount.category === newAccount.category) {
-                        updateAccountToAccountList(newAccount);
+                        updateAccountToAccountList(oldAccount, newAccount);
                     } else {
                         updateAccountListInvalidState(true);
                     }
@@ -997,6 +1046,41 @@ export const useAccountsStore = defineStore('accounts', () => {
         });
     }
 
+    function deleteSubAccount({ subAccount, beforeResolve }: { subAccount: Account, beforeResolve?: BeforeResolveFunction }): Promise<boolean> {
+        return new Promise((resolve, reject) => {
+            services.deleteSubAccount({
+                id: subAccount.id
+            }).then(response => {
+                const data = response.data;
+
+                if (!data || !data.success || !data.result) {
+                    reject({ message: 'Unable to delete this sub-account' });
+                    return;
+                }
+
+                if (beforeResolve) {
+                    beforeResolve(() => {
+                        removeSubAccountFromAccountList(subAccount);
+                    });
+                } else {
+                    removeSubAccountFromAccountList(subAccount);
+                }
+
+                resolve(data.result);
+            }).catch(error => {
+                logger.error('failed to delete sub-account', error);
+
+                if (error.response && error.response.data && error.response.data.errorMessage) {
+                    reject({ error: error.response.data });
+                } else if (!error.processed) {
+                    reject({ message: 'Unable to delete this sub-account' });
+                } else {
+                    reject(error);
+                }
+            });
+        });
+    }
+
     return {
         // states
         allAccounts,
@@ -1029,6 +1113,7 @@ export const useAccountsStore = defineStore('accounts', () => {
         changeAccountDisplayOrder,
         updateAccountDisplayOrders,
         hideAccount,
-        deleteAccount
+        deleteAccount,
+        deleteSubAccount
     }
 });

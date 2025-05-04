@@ -11,7 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 
 	"github.com/mayswind/ezbookkeeping/pkg/api"
 	"github.com/mayswind/ezbookkeeping/pkg/core"
@@ -29,7 +29,7 @@ import (
 var WebServer = &cli.Command{
 	Name:  "server",
 	Usage: "ezBookkeeping web server operation",
-	Subcommands: []*cli.Command{
+	Commands: []*cli.Command{
 		{
 			Name:   "run",
 			Usage:  "Run ezBookkeeping web server",
@@ -302,6 +302,7 @@ func startWebServer(c *core.CliContext) error {
 			apiV1Route.POST("/accounts/hide.json", bindApi(api.Accounts.AccountHideHandler))
 			apiV1Route.POST("/accounts/move.json", bindApi(api.Accounts.AccountMoveHandler))
 			apiV1Route.POST("/accounts/delete.json", bindApi(api.Accounts.AccountDeleteHandler))
+			apiV1Route.POST("/accounts/sub_account/delete.json", bindApi(api.Accounts.SubAccountDeleteHandler))
 
 			// Transactions
 			apiV1Route.GET("/transactions/count.json", bindApi(api.Transactions.TransactionCountHandler))
@@ -319,6 +320,7 @@ func startWebServer(c *core.CliContext) error {
 				apiV1Route.POST("/transactions/parse_dsv_file.json", bindApi(api.Transactions.TransactionParseImportDsvFileDataHandler))
 				apiV1Route.POST("/transactions/parse_import.json", bindApi(api.Transactions.TransactionParseImportFileHandler))
 				apiV1Route.POST("/transactions/import.json", bindApi(api.Transactions.TransactionImportHandler))
+				apiV1Route.GET("/transactions/import/process.json", bindApi(api.Transactions.TransactionImportProcessHandler))
 			}
 
 			// Transaction Pictures
@@ -416,6 +418,18 @@ func bindApiWithTokenUpdate(fn core.ApiHandlerFunc, config *settings.Config) gin
 			utils.PrintJsonErrorResult(c, err)
 		} else {
 			utils.PrintJsonSuccessResult(c, result)
+		}
+	}
+}
+
+func bindEventStreamApi(fn core.EventStreamApiHandlerFunc) gin.HandlerFunc {
+	return func(ginCtx *gin.Context) {
+		c := core.WrapWebContext(ginCtx)
+		utils.SetEventStreamHeader(c)
+		err := fn(c)
+
+		if err != nil {
+			utils.WriteEventStreamJsonErrorResult(c, err)
 		}
 	}
 }

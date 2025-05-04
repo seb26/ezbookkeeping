@@ -30,6 +30,7 @@ const feideeMymoneyAppTransactionDescriptionColumnName = "备注"
 const feideeMymoneyAppTransactionRelatedIdColumnName = "关联Id"
 
 const feideeMymoneyAppTransactionTypeModifyBalanceText = "余额变更"
+const feideeMymoneyAppTransactionTypeModifyOutstandingBalanceText = "负债变更"
 const feideeMymoneyAppTransactionTypeIncomeText = "收入"
 const feideeMymoneyAppTransactionTypeExpenseText = "支出"
 const feideeMymoneyAppTransactionTypeTransferInText = "转入"
@@ -55,7 +56,7 @@ var (
 )
 
 // ParseImportedData returns the imported data by parsing the feidee mymoney app transaction csv data
-func (c *feideeMymoneyAppTransactionDataCsvFileImporter) ParseImportedData(ctx core.Context, user *models.User, data []byte, defaultTimezoneOffset int16, accountMap map[string]*models.Account, expenseCategoryMap map[string]*models.TransactionCategory, incomeCategoryMap map[string]*models.TransactionCategory, transferCategoryMap map[string]*models.TransactionCategory, tagMap map[string]*models.TransactionTag) (models.ImportedTransactionSlice, []*models.Account, []*models.TransactionCategory, []*models.TransactionCategory, []*models.TransactionCategory, []*models.TransactionTag, error) {
+func (c *feideeMymoneyAppTransactionDataCsvFileImporter) ParseImportedData(ctx core.Context, user *models.User, data []byte, defaultTimezoneOffset int16, accountMap map[string]*models.Account, expenseCategoryMap map[string]map[string]*models.TransactionCategory, incomeCategoryMap map[string]map[string]*models.TransactionCategory, transferCategoryMap map[string]map[string]*models.TransactionCategory, tagMap map[string]*models.TransactionTag) (models.ImportedTransactionSlice, []*models.Account, []*models.TransactionCategory, []*models.TransactionCategory, []*models.TransactionCategory, []*models.TransactionTag, error) {
 	fallback := unicode.UTF8.NewDecoder()
 	reader := transform.NewReader(bytes.NewReader(data), unicode.BOMOverride(fallback))
 
@@ -190,9 +191,12 @@ func (c *feideeMymoneyAppTransactionDataCsvFileImporter) createNewFeideeMymoneyA
 
 		transactionType := data[datatable.TRANSACTION_DATA_TABLE_TRANSACTION_TYPE]
 
-		if transactionType == feideeMymoneyAppTransactionTypeModifyBalanceText || transactionType == feideeMymoneyAppTransactionTypeIncomeText || transactionType == feideeMymoneyAppTransactionTypeExpenseText {
+		if transactionType == feideeMymoneyAppTransactionTypeModifyBalanceText || transactionType == feideeMymoneyAppTransactionTypeModifyOutstandingBalanceText ||
+			transactionType == feideeMymoneyAppTransactionTypeIncomeText || transactionType == feideeMymoneyAppTransactionTypeExpenseText {
 			if transactionType == feideeMymoneyAppTransactionTypeModifyBalanceText {
 				data[datatable.TRANSACTION_DATA_TABLE_TRANSACTION_TYPE] = feideeMymoneyTransactionTypeNameMapping[models.TRANSACTION_TYPE_MODIFY_BALANCE]
+			} else if transactionType == feideeMymoneyAppTransactionTypeModifyOutstandingBalanceText {
+				data[datatable.TRANSACTION_DATA_TABLE_TRANSACTION_TYPE] = feideeMymoneyTransactionTypeModifyOutstandingBalanceName
 			} else if transactionType == feideeMymoneyAppTransactionTypeIncomeText {
 				data[datatable.TRANSACTION_DATA_TABLE_TRANSACTION_TYPE] = feideeMymoneyTransactionTypeNameMapping[models.TRANSACTION_TYPE_INCOME]
 			} else if transactionType == feideeMymoneyAppTransactionTypeExpenseText {

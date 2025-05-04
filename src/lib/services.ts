@@ -360,6 +360,9 @@ export default {
     deleteAccount: (req: AccountDeleteRequest): ApiResponsePromise<boolean> => {
         return axios.post<ApiResponse<boolean>>('v1/accounts/delete.json', req);
     },
+    deleteSubAccount: (req: AccountDeleteRequest): ApiResponsePromise<boolean> => {
+        return axios.post<ApiResponse<boolean>>('v1/accounts/sub_account/delete.json', req);
+    },
     getTransactions: (req: TransactionListByMaxTimeRequest): ApiResponsePromise<TransactionInfoPageWrapperResponse> => {
         const amountFilter = encodeURIComponent(req.amountFilter);
         const keyword = encodeURIComponent(req.keyword);
@@ -478,6 +481,11 @@ export default {
     importTransactions: (req: TransactionImportRequest): ApiResponsePromise<number> => {
         return axios.post<ApiResponse<number>>('v1/transactions/import.json', req, {
             timeout: DEFAULT_IMPORT_API_TIMEOUT
+        } as ApiRequestConfig);
+    },
+    getImportTransactionsProcess: (clientSessionId: string): ApiResponsePromise<number | null> => {
+        return axios.get<ApiResponse<number | null>>('v1/transactions/import/process.json?client_session_id=' + clientSessionId, {
+            ignoreError: true
         } as ApiRequestConfig);
     },
     uploadTransactionPicture: ({ pictureFile, clientSessionId }: { pictureFile: File, clientSessionId?: string }): ApiResponsePromise<TransactionPictureInfoBasicResponse> => {
