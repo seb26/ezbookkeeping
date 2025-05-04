@@ -44,9 +44,6 @@ import { computed, ref } from 'vue';
 import { useI18n } from '@/locales/helpers.ts';
 
 import { useEnvironmentsStore } from '@/stores/environment.ts';
-import { useUserStore } from '@/stores/user.ts';
-
-import { arrangeArrayWithNewStartIndex } from '@/lib/common.ts';
 
 import {
     type FiscalYearStartSelectionBaseProps,
@@ -72,21 +69,20 @@ interface FiscalYearStartSelectionSheetEmits extends FiscalYearStartSelectionBas
 
 const emit = defineEmits<FiscalYearStartSelectionSheetEmits>();
 
-const { tt, getAllMinWeekdayNames, getMonthShortName, getCurrentFiscalYearStartFormatted } = useI18n();
+const { tt, getMonthShortName, getCurrentFiscalYearStartFormatted } = useI18n();
 
 const environmentsStore = useEnvironmentsStore();
-const userStore = useUserStore();
 
 const {
+    dayNames,
     disabledDates,
+    firstDayOfWeek,
     getModelValueToDateString,
     setModelValueFromDateString,
     selectedDisplayName,
 } = useFiscalYearStartSelectionBase(props, emit);
 
 const isDarkMode = computed<boolean>(() => environmentsStore.framework7DarkMode || false);
-const firstDayOfWeek = computed<number>(() => userStore.currentUserFirstDayOfWeek);
-const dayNames = computed<string[]>(() => arrangeArrayWithNewStartIndex(getAllMinWeekdayNames(), firstDayOfWeek.value));
 
 const selectedDate = ref<string>(getModelValueToDateString());
 

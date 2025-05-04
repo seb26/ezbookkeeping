@@ -59,18 +59,17 @@ interface FiscalYearStartSelectProps extends FiscalYearStartSelectionBaseProps {
 const props = defineProps<FiscalYearStartSelectProps>();
 const emit = defineEmits<FiscalYearStartSelectionBaseEmits>();
 
-const { getAllMinWeekdayNames, getMonthShortName } = useI18n();
-const userStore = useUserStore();
+const { getMonthShortName } = useI18n();
 const theme = useTheme();
 
 const isDarkMode = computed<boolean>(() => theme.global.name.value === ThemeType.Dark);
-const firstDayOfWeek = computed<number>(() => userStore.currentUserFirstDayOfWeek);
-const dayNames = computed<string[]>(() => arrangeArrayWithNewStartIndex(getAllMinWeekdayNames(), firstDayOfWeek.value));
 
 // Get all base functionality
 const {
+    dayNames,
     displayName,
     disabledDates,
+    firstDayOfWeek,
     getModelValueToDateString,
     setModelValueFromDateString,
 } = useFiscalYearStartSelectionBase(props, emit);

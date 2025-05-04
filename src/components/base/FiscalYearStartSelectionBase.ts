@@ -2,7 +2,11 @@ import { computed } from 'vue';
 
 import { FiscalYearStart } from '@/core/fiscalyear.ts';
 
+import { useUserStore } from '@/stores/user.ts';
+
 import { useI18n } from '@/locales/helpers.ts';
+
+import { arrangeArrayWithNewStartIndex } from '@/lib/common';
 
 export interface FiscalYearStartSelectionBaseProps {
     modelValue?: number;
@@ -13,11 +17,9 @@ export interface FiscalYearStartSelectionBaseEmits {
 }
 
 export function useFiscalYearStartSelectionBase(props: FiscalYearStartSelectionBaseProps, emit: FiscalYearStartSelectionBaseEmits) {
-    const { getCurrentFiscalYearStart, formatMonthDayToLongDay, getCurrentFiscalYearStartFormatted } = useI18n();
+    const { getAllMinWeekdayNames,getCurrentFiscalYearStart, formatMonthDayToLongDay, getCurrentFiscalYearStartFormatted } = useI18n();
 
-    const selectedFiscalYearStart = computed<number>(() => {
-        return props.modelValue !== undefined ? props.modelValue : getCurrentFiscalYearStart().value;
-    });
+    const dayNames = computed<string[]>(() => arrangeArrayWithNewStartIndex(getAllMinWeekdayNames(), firstDayOfWeek.value));
 
     const displayName = computed<string>(() => {
         let fy = getCurrentFiscalYearStart();
@@ -37,6 +39,14 @@ export function useFiscalYearStartSelectionBase(props: FiscalYearStartSelectionB
         // Disable February 29 (leap day)
         return date.getMonth() === 1 && date.getDate() === 29; 
     };
+
+    const firstDayOfWeek = computed<number>(() => userStore.currentUserFirstDayOfWeek);
+
+    const selectedFiscalYearStart = computed<number>(() => {
+        return props.modelValue !== undefined ? props.modelValue : getCurrentFiscalYearStart().value;
+    });
+
+    const userStore = useUserStore();
 
     function selectedDisplayName(dateString: string): string {
         const fyString = FiscalYearStart.fromMonthDashDayString(dateString);
@@ -73,8 +83,10 @@ export function useFiscalYearStartSelectionBase(props: FiscalYearStartSelectionB
         setModelValueFromDateString,
         selectedDisplayName,
         // computed states
+        dayNames,
         displayName,
         disabledDates,
+        firstDayOfWeek,
         selectedFiscalYearStart,
     }
 }
