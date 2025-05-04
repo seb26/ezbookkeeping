@@ -1034,25 +1034,27 @@ export function getFiscalYearTimeRangeFromUnixTime(unixTime: number, fiscalYearS
 }
 
 export function getFiscalYearTimeRangeFromYear(year: number, fiscalYearStart: number): FiscalYearUnixTime {
-    let fiscalYear = year - 1;
-
-    if ( fiscalYearStart === 0x0101) {
-        fiscalYear = year;
-    }
-
+    const fiscalYear = year;
     const fiscalYearStartObj = FiscalYearStart.strictFromNumber(fiscalYearStart);
-
+    
+    // For a specified fiscal year (e.g., 2023), the start date is in the previous calendar year
+    // unless fiscal year starts on January 1
+    const calendarStartYear = fiscalYearStart === 0x0101 ? fiscalYear : fiscalYear - 1;
+    
+    // Create the timestamp for the start of the fiscal year
     const fiscalYearStartUnixTime = moment().set({
-        year: fiscalYear,
+        year: calendarStartYear,
         month: fiscalYearStartObj.month - 1, // 0-index
         date: fiscalYearStartObj.day,
         hour: 0,
         minute: 0,
         second: 0,
+        millisecond: 0,
     }).unix();
-
-    const fiscalYearEndUnixTime = getFiscalYearEndUnixTime(fiscalYearStartUnixTime, fiscalYearStart);
-
+    
+    // Fiscal year end is one year after start minus 1 second
+    const fiscalYearEndUnixTime = moment.unix(fiscalYearStartUnixTime).add(1, 'year').subtract(1, 'second').unix();
+    
     return {
         year: fiscalYear,
         minUnixTime: fiscalYearStartUnixTime,

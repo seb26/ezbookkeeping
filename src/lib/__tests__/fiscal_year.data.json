@@ -1018,17 +1018,17 @@
             "date": "2022-01-01",
             "expected": {
                 "January 1": {
-                    "fiscalYear": 2022,
+                    "year": 2022,
                     "minUnixTime": 1640995200,
                     "maxUnixTime": 1672531199
                 },
                 "April 1": {
-                    "fiscalYear": 2022,
+                    "year": 2022,
                     "minUnixTime": 1617235200,
                     "maxUnixTime": 1648771199
                 },
                 "October 1": {
-                    "fiscalYear": 2022,
+                    "year": 2022,
                     "minUnixTime": 1633046400,
                     "maxUnixTime": 1664582399
                 }
@@ -1038,17 +1038,17 @@
             "date": "2022-03-31",
             "expected": {
                 "January 1": {
-                    "fiscalYear": 2022,
+                    "year": 2022,
                     "minUnixTime": 1640995200,
                     "maxUnixTime": 1672531199
                 },
                 "April 1": {
-                    "fiscalYear": 2022,
+                    "year": 2022,
                     "minUnixTime": 1617235200,
                     "maxUnixTime": 1648771199
                 },
                 "October 1": {
-                    "fiscalYear": 2022,
+                    "year": 2022,
                     "minUnixTime": 1633046400,
                     "maxUnixTime": 1664582399
                 }
@@ -1058,17 +1058,17 @@
             "date": "2022-04-01",
             "expected": {
                 "January 1": {
-                    "fiscalYear": 2022,
+                    "year": 2022,
                     "minUnixTime": 1640995200,
                     "maxUnixTime": 1672531199
                 },
                 "April 1": {
-                    "fiscalYear": 2023,
+                    "year": 2023,
                     "minUnixTime": 1648771200,
                     "maxUnixTime": 1680307199
                 },
                 "October 1": {
-                    "fiscalYear": 2022,
+                    "year": 2022,
                     "minUnixTime": 1633046400,
                     "maxUnixTime": 1664582399
                 }
@@ -1078,17 +1078,17 @@
             "date": "2022-09-30",
             "expected": {
                 "January 1": {
-                    "fiscalYear": 2022,
+                    "year": 2022,
                     "minUnixTime": 1640995200,
                     "maxUnixTime": 1672531199
                 },
                 "April 1": {
-                    "fiscalYear": 2023,
+                    "year": 2023,
                     "minUnixTime": 1648771200,
                     "maxUnixTime": 1680307199
                 },
                 "October 1": {
-                    "fiscalYear": 2022,
+                    "year": 2022,
                     "minUnixTime": 1633046400,
                     "maxUnixTime": 1664582399
                 }
@@ -1098,17 +1098,17 @@
             "date": "2022-10-01",
             "expected": {
                 "January 1": {
-                    "fiscalYear": 2022,
+                    "year": 2022,
                     "minUnixTime": 1640995200,
                     "maxUnixTime": 1672531199
                 },
                 "April 1": {
-                    "fiscalYear": 2023,
+                    "year": 2023,
                     "minUnixTime": 1648771200,
                     "maxUnixTime": 1680307199
                 },
                 "October 1": {
-                    "fiscalYear": 2023,
+                    "year": 2023,
                     "minUnixTime": 1664582400,
                     "maxUnixTime": 1696118399
                 }
@@ -1118,17 +1118,17 @@
             "date": "2022-12-31",
             "expected": {
                 "January 1": {
-                    "fiscalYear": 2022,
+                    "year": 2022,
                     "minUnixTime": 1640995200,
                     "maxUnixTime": 1672531199
                 },
                 "April 1": {
-                    "fiscalYear": 2023,
+                    "year": 2023,
                     "minUnixTime": 1648771200,
                     "maxUnixTime": 1680307199
                 },
                 "October 1": {
-                    "fiscalYear": 2023,
+                    "year": 2023,
                     "minUnixTime": 1664582400,
                     "maxUnixTime": 1696118399
                 }
@@ -1138,17 +1138,17 @@
             "date": "2023-01-01",
             "expected": {
                 "January 1": {
-                    "fiscalYear": 2023,
+                    "year": 2023,
                     "minUnixTime": 1672531200,
                     "maxUnixTime": 1704067199
                 },
                 "April 1": {
-                    "fiscalYear": 2023,
+                    "year": 2023,
                     "minUnixTime": 1648771200,
                     "maxUnixTime": 1680307199
                 },
                 "October 1": {
-                    "fiscalYear": 2023,
+                    "year": 2023,
                     "minUnixTime": 1664582400,
                     "maxUnixTime": 1696118399
                 }
@@ -1158,17 +1158,17 @@
             "date": "2023-03-31",
             "expected": {
                 "January 1": {
-                    "fiscalYear": 2023,
+                    "year": 2023,
                     "minUnixTime": 1672531200,
                     "maxUnixTime": 1704067199
                 },
                 "April 1": {
-                    "fiscalYear": 2023,
+                    "year": 2023,
                     "minUnixTime": 1648771200,
                     "maxUnixTime": 1680307199
                 },
                 "October 1": {
-                    "fiscalYear": 2023,
+                    "year": 2023,
                     "minUnixTime": 1664582400,
                     "maxUnixTime": 1696118399
                 }
@@ -1178,17 +1178,17 @@
             "date": "2023-04-01",
             "expected": {
                 "January 1": {
-                    "fiscalYear": 2023,
+                    "year": 2023,
                     "minUnixTime": 1672531200,
                     "maxUnixTime": 1704067199
                 },
                 "April 1": {
-                    "fiscalYear": 2024,
+                    "year": 2024,
                     "minUnixTime": 1680307200,
                     "maxUnixTime": 1711929599
                 },
                 "October 1": {
-                    "fiscalYear": 2023,
+                    "year": 2023,
                     "minUnixTime": 1664582400,
                     "maxUnixTime": 1696118399
                 }
@@ -1198,17 +1198,17 @@
             "date": "2023-09-30",
             "expected": {
                 "January 1": {
-                    "fiscalYear": 2023,
+                    "year": 2023,
                     "minUnixTime": 1672531200,
                     "maxUnixTime": 1704067199
                 },
                 "April 1": {
-                    "fiscalYear": 2024,
+                    "year": 2024,
                     "minUnixTime": 1680307200,
                     "maxUnixTime": 1711929599
                 },
                 "October 1": {
-                    "fiscalYear": 2023,
+                    "year": 2023,
                     "minUnixTime": 1664582400,
                     "maxUnixTime": 1696118399
                 }
@@ -1218,17 +1218,17 @@
             "date": "2023-10-01",
             "expected": {
                 "January 1": {
-                    "fiscalYear": 2023,
+                    "year": 2023,
                     "minUnixTime": 1672531200,
                     "maxUnixTime": 1704067199
                 },
                 "April 1": {
-                    "fiscalYear": 2024,
+                    "year": 2024,
                     "minUnixTime": 1680307200,
                     "maxUnixTime": 1711929599
                 },
                 "October 1": {
-                    "fiscalYear": 2024,
+                    "year": 2024,
                     "minUnixTime": 1696118400,
                     "maxUnixTime": 1727740799
                 }
@@ -1238,17 +1238,17 @@
             "date": "2023-12-31",
             "expected": {
                 "January 1": {
-                    "fiscalYear": 2023,
+                    "year": 2023,
                     "minUnixTime": 1672531200,
                     "maxUnixTime": 1704067199
                 },
                 "April 1": {
-                    "fiscalYear": 2024,
+                    "year": 2024,
                     "minUnixTime": 1680307200,
                     "maxUnixTime": 1711929599
                 },
                 "October 1": {
-                    "fiscalYear": 2024,
+                    "year": 2024,
                     "minUnixTime": 1696118400,
                     "maxUnixTime": 1727740799
                 }
@@ -1258,17 +1258,17 @@
             "date": "2024-01-01",
             "expected": {
                 "January 1": {
-                    "fiscalYear": 2024,
+                    "year": 2024,
                     "minUnixTime": 1704067200,
                     "maxUnixTime": 1735689599
                 },
                 "April 1": {
-                    "fiscalYear": 2024,
+                    "year": 2024,
                     "minUnixTime": 1680307200,
                     "maxUnixTime": 1711929599
                 },
                 "October 1": {
-                    "fiscalYear": 2024,
+                    "year": 2024,
                     "minUnixTime": 1696118400,
                     "maxUnixTime": 1727740799
                 }
@@ -1278,17 +1278,17 @@
             "date": "2024-03-31",
             "expected": {
                 "January 1": {
-                    "fiscalYear": 2024,
+                    "year": 2024,
                     "minUnixTime": 1704067200,
                     "maxUnixTime": 1735689599
                 },
                 "April 1": {
-                    "fiscalYear": 2024,
+                    "year": 2024,
                     "minUnixTime": 1680307200,
                     "maxUnixTime": 1711929599
                 },
                 "October 1": {
-                    "fiscalYear": 2024,
+                    "year": 2024,
                     "minUnixTime": 1696118400,
                     "maxUnixTime": 1727740799
                 }
@@ -1298,17 +1298,17 @@
             "date": "2024-04-01",
             "expected": {
                 "January 1": {
-                    "fiscalYear": 2024,
+                    "year": 2024,
                     "minUnixTime": 1704067200,
                     "maxUnixTime": 1735689599
                 },
                 "April 1": {
-                    "fiscalYear": 2025,
+                    "year": 2025,
                     "minUnixTime": 1711929600,
                     "maxUnixTime": 1743465599
                 },
                 "October 1": {
-                    "fiscalYear": 2024,
+                    "year": 2024,
                     "minUnixTime": 1696118400,
                     "maxUnixTime": 1727740799
                 }
@@ -1318,17 +1318,17 @@
             "date": "2024-09-30",
             "expected": {
                 "January 1": {
-                    "fiscalYear": 2024,
+                    "year": 2024,
                     "minUnixTime": 1704067200,
                     "maxUnixTime": 1735689599
                 },
                 "April 1": {
-                    "fiscalYear": 2025,
+                    "year": 2025,
                     "minUnixTime": 1711929600,
                     "maxUnixTime": 1743465599
                 },
                 "October 1": {
-                    "fiscalYear": 2024,
+                    "year": 2024,
                     "minUnixTime": 1696118400,
                     "maxUnixTime": 1727740799
                 }
@@ -1338,17 +1338,17 @@
             "date": "2024-10-01",
             "expected": {
                 "January 1": {
-                    "fiscalYear": 2024,
+                    "year": 2024,
                     "minUnixTime": 1704067200,
                     "maxUnixTime": 1735689599
                 },
                 "April 1": {
-                    "fiscalYear": 2025,
+                    "year": 2025,
                     "minUnixTime": 1711929600,
                     "maxUnixTime": 1743465599
                 },
                 "October 1": {
-                    "fiscalYear": 2025,
+                    "year": 2025,
                     "minUnixTime": 1727740800,
                     "maxUnixTime": 1759276799
                 }
@@ -1358,17 +1358,17 @@
             "date": "2024-12-31",
             "expected": {
                 "January 1": {
-                    "fiscalYear": 2024,
+                    "year": 2024,
                     "minUnixTime": 1704067200,
                     "maxUnixTime": 1735689599
                 },
                 "April 1": {
-                    "fiscalYear": 2025,
+                    "year": 2025,
                     "minUnixTime": 1711929600,
                     "maxUnixTime": 1743465599
                 },
                 "October 1": {
-                    "fiscalYear": 2025,
+                    "year": 2025,
                     "minUnixTime": 1727740800,
                     "maxUnixTime": 1759276799
                 }
@@ -1378,17 +1378,17 @@
             "date": "2025-01-01",
             "expected": {
                 "January 1": {
-                    "fiscalYear": 2025,
+                    "year": 2025,
                     "minUnixTime": 1735689600,
                     "maxUnixTime": 1767225599
                 },
                 "April 1": {
-                    "fiscalYear": 2025,
+                    "year": 2025,
                     "minUnixTime": 1711929600,
                     "maxUnixTime": 1743465599
                 },
                 "October 1": {
-                    "fiscalYear": 2025,
+                    "year": 2025,
                     "minUnixTime": 1727740800,
                     "maxUnixTime": 1759276799
                 }
@@ -1398,17 +1398,17 @@
             "date": "2025-03-31",
             "expected": {
                 "January 1": {
-                    "fiscalYear": 2025,
+                    "year": 2025,
                     "minUnixTime": 1735689600,
                     "maxUnixTime": 1767225599
                 },
                 "April 1": {
-                    "fiscalYear": 2025,
+                    "year": 2025,
                     "minUnixTime": 1711929600,
                     "maxUnixTime": 1743465599
                 },
                 "October 1": {
-                    "fiscalYear": 2025,
+                    "year": 2025,
                     "minUnixTime": 1727740800,
                     "maxUnixTime": 1759276799
                 }
@@ -1418,17 +1418,17 @@
             "date": "2025-04-01",
             "expected": {
                 "January 1": {
-                    "fiscalYear": 2025,
+                    "year": 2025,
                     "minUnixTime": 1735689600,
                     "maxUnixTime": 1767225599
                 },
                 "April 1": {
-                    "fiscalYear": 2026,
+                    "year": 2026,
                     "minUnixTime": 1743465600,
                     "maxUnixTime": 1775001599
                 },
                 "October 1": {
-                    "fiscalYear": 2025,
+                    "year": 2025,
                     "minUnixTime": 1727740800,
                     "maxUnixTime": 1759276799
                 }
@@ -1438,17 +1438,17 @@
             "date": "2025-09-30",
             "expected": {
                 "January 1": {
-                    "fiscalYear": 2025,
+                    "year": 2025,
                     "minUnixTime": 1735689600,
                     "maxUnixTime": 1767225599
                 },
                 "April 1": {
-                    "fiscalYear": 2026,
+                    "year": 2026,
                     "minUnixTime": 1743465600,
                     "maxUnixTime": 1775001599
                 },
                 "October 1": {
-                    "fiscalYear": 2025,
+                    "year": 2025,
                     "minUnixTime": 1727740800,
                     "maxUnixTime": 1759276799
                 }
@@ -1458,17 +1458,17 @@
             "date": "2025-10-01",
             "expected": {
                 "January 1": {
-                    "fiscalYear": 2025,
+                    "year": 2025,
                     "minUnixTime": 1735689600,
                     "maxUnixTime": 1767225599
                 },
                 "April 1": {
-                    "fiscalYear": 2026,
+                    "year": 2026,
                     "minUnixTime": 1743465600,
                     "maxUnixTime": 1775001599
                 },
                 "October 1": {
-                    "fiscalYear": 2026,
+                    "year": 2026,
                     "minUnixTime": 1759276800,
                     "maxUnixTime": 1790812799
                 }
@@ -1478,17 +1478,17 @@
             "date": "2025-12-31",
             "expected": {
                 "January 1": {
-                    "fiscalYear": 2025,
+                    "year": 2025,
                     "minUnixTime": 1735689600,
                     "maxUnixTime": 1767225599
                 },
                 "April 1": {
-                    "fiscalYear": 2026,
+                    "year": 2026,
                     "minUnixTime": 1743465600,
                     "maxUnixTime": 1775001599
                 },
                 "October 1": {
-                    "fiscalYear": 2026,
+                    "year": 2026,
                     "minUnixTime": 1759276800,
                     "maxUnixTime": 1790812799
                 }
@@ -1562,8 +1562,8 @@
             "fiscalYearStart": "07-01",
             "expected": {
                 "year": 2023,
-                "minUnixTime": 1672531200,
-                "maxUnixTime": 1688255999
+                "minUnixTime": 1656633600,
+                "maxUnixTime": 1688169599
             }
         },
         {
