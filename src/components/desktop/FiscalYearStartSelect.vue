@@ -37,7 +37,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
+import { computed } from 'vue';
 import { useTheme } from 'vuetify';
 import { useUserStore } from '@/stores/user.ts';
 import { ThemeType } from '@/core/theme.ts';
@@ -71,9 +71,18 @@ const dayNames = computed<string[]>(() => arrangeArrayWithNewStartIndex(getAllMi
 const {
     displayName,
     disabledDates,
-    selectedDate,
+    getModelValueToDateString,
+    setModelValueFromDateString,
 } = useFiscalYearStartSelectionBase(props, emit);
 
+const selectedDate = computed<string>({
+    get: () => {
+        return getModelValueToDateString();
+    },
+    set: (value: string) => {
+        emit('update:modelValue', setModelValueFromDateString(value));
+    }
+});
 </script>
 
 <style>

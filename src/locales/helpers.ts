@@ -1340,6 +1340,10 @@ export function useI18n() {
         return FiscalYearFormat.Default.name;
     }
 
+    function getCurrentFiscalYearStartFormatted(): string {
+        return formatFiscalYearStart(getCurrentFiscalYearStart());
+    }
+
     function getCurrentDecimalSeparator(): string {
         let decimalSeparatorType = DecimalSeparator.valueOf(userStore.currentUserDecimalSeparator);
 
@@ -1451,6 +1455,11 @@ export function useI18n() {
         const thisFiscalYearRange = getFiscalYearTimeRangeFromYear(year, getCurrentFiscalYearStart().value);
         const yearFormatValues = formatTimeRangeToFiscalYearFormatValues(thisFiscalYearRange.minUnixTime, thisFiscalYearRange.maxUnixTime);
         return t('format.fiscalYear.' + getCurrentFiscalYearFormat(), yearFormatValues);
+    }
+
+    function formatFiscalYearStart(fiscalYearStart: FiscalYearStart): string {
+        const monthDay = fiscalYearStart.toMonthDashDayString();
+        return formatMonthDayToLongDay(monthDay);
     }
 
     function formatDateRange(dateType: number, startTime: number, endTime: number): string {
@@ -1838,7 +1847,7 @@ export function useI18n() {
         getMultiMonthdayShortNames,
         getMultiWeekdayLongNames,
         getCurrentFiscalYearStart,
-        getCurrentFiscalYearFormat,
+        getCurrentFiscalYearStartFormatted,
         getCurrentDecimalSeparator,
         getCurrentDigitGroupingSymbol,
         getCurrentDigitGroupingType,
@@ -1865,6 +1874,7 @@ export function useI18n() {
         formatUnixTimeToLongTime: (unixTime: number, utcOffset?: number, currentUtcOffset?: number) => formatUnixTime(unixTime, getLocalizedLongTimeFormat(), utcOffset, currentUtcOffset),
         formatUnixTimeToShortTime: (unixTime: number, utcOffset?: number, currentUtcOffset?: number) => formatUnixTime(unixTime, getLocalizedShortTimeFormat(), utcOffset, currentUtcOffset),
         formatUnixTimeToFiscalYear,
+        formatFiscalYearStart,
         formatYearToFiscalYear,
         formatDateToLongDate,
         formatMonthDayToLongDay,

@@ -12,38 +12,18 @@ export interface FiscalYearStartSelectionBaseEmits {
     (e: 'update:modelValue', value: number): void;
 }
 
-export function useFiscalYearStartSelectionBase(props: FiscalYearStartSelectionBaseProps, emit?: FiscalYearStartSelectionBaseEmits) {
-    const { getCurrentFiscalYearStart, formatMonthDayToLongDay } = useI18n();
+export function useFiscalYearStartSelectionBase(props: FiscalYearStartSelectionBaseProps, emit: FiscalYearStartSelectionBaseEmits) {
+    const { getCurrentFiscalYearStart, formatMonthDayToLongDay, getCurrentFiscalYearStartFormatted } = useI18n();
 
-    const effectiveModelValue = computed<number>(() => {
+    const selectedFiscalYearStart = computed<number>(() => {
         return props.modelValue !== undefined ? props.modelValue : getCurrentFiscalYearStart().value;
     });
 
-    function getterModelValue(input?: number): string {
-        const valueToUse = input !== undefined ? input : effectiveModelValue.value;
-        
-        if (valueToUse !== 0 && valueToUse !== undefined) {
-            const fy = FiscalYearStart.fromNumber(valueToUse);
-            if (fy) {
-                return fy.toMonthDashDayString();
-            }
-        }
-        return getCurrentFiscalYearStart().toMonthDashDayString();
-    }
-
-    function setterModelValue(input: string): number {
-        const fyString = FiscalYearStart.fromMonthDashDayString(input);
-        if (fyString) {
-            return fyString.value;
-        }
-        return getCurrentFiscalYearStart().value;
-    }
-    
     const displayName = computed<string>(() => {
         let fy = getCurrentFiscalYearStart();
 
-        if (effectiveModelValue.value !== 0 && effectiveModelValue.value !== undefined) {
-            const testFy = FiscalYearStart.fromNumber(effectiveModelValue.value);
+        if (selectedFiscalYearStart.value !== 0 && selectedFiscalYearStart.value !== undefined) {
+            const testFy = FiscalYearStart.fromNumber(selectedFiscalYearStart.value);
             if (testFy) {
                 fy = testFy;
             }
@@ -58,29 +38,43 @@ export function useFiscalYearStartSelectionBase(props: FiscalYearStartSelectionB
         return date.getMonth() === 1 && date.getDate() === 29; 
     };
 
-    const selectedDate = computed<string>({
-        get: () => {
-            if (props.modelValue === undefined) {
-                return getCurrentFiscalYearStart().toMonthDashDayString();
-            }
-            return getterModelValue();
-        },
-        set: (value: string) => {
-            if (emit) {
-                const numericValue = setterModelValue(value);
-                emit('update:modelValue', numericValue);
+    function selectedDisplayName(dateString: string): string {
+        const fyString = FiscalYearStart.fromMonthDashDayString(dateString);
+        if (fyString) {
+            const monthDay = fyString.toMonthDashDayString();
+            return formatMonthDayToLongDay(monthDay);
+        }
+        return displayName.value;
+    }
+
+    function getModelValueToDateString(): string {
+        const input = selectedFiscalYearStart.value;
+        
+        if (input !== 0 && input !== undefined) {
+            const fy = FiscalYearStart.fromNumber(input);
+            if (fy) {
+                return fy.toMonthDashDayString();
             }
         }
-    });
+        return getCurrentFiscalYearStartFormatted();
+    }
 
+    function setModelValueFromDateString(input: string): number {
+        const fyString = FiscalYearStart.fromMonthDashDayString(input);
+        if (fyString) {
+            return fyString.value;
+        }
+        return getCurrentFiscalYearStart().value;
+    }
+    
     return {
+        // functions
+        getModelValueToDateString,
+        setModelValueFromDateString,
+        selectedDisplayName,
         // computed states
         displayName,
         disabledDates,
-        effectiveModelValue,
-        selectedDate,
-        // functions
-        getterModelValue,
-        setterModelValue,
+        selectedFiscalYearStart,
     }
 }
