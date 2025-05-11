@@ -9,6 +9,7 @@ import { useTransactionCategoriesStore } from '@/stores/transactionCategory.ts';
 import { useTransactionTagsStore } from '@/stores/transactionTag.ts';
 import { type TransactionListFilter, type TransactionMonthList, useTransactionsStore } from '@/stores/transaction.ts';
 
+import type { TypeAndName } from '@/core/base.ts';
 import { type LocalizedDateRange, DateRange, DateRangeScene } from '@/core/datetime.ts';
 import { AccountType } from '@/core/account.ts';
 import { TransactionType } from '@/core/transaction.ts';
@@ -22,9 +23,19 @@ import {
     getUtcOffsetByUtcOffsetMinutes,
     getTimezoneOffset,
     getTimezoneOffsetMinutes,
+    getBrowserTimezoneOffsetMinutes,
+    getLocalDatetimeFromUnixTime,
+    getActualUnixTimeForStore,
+    getDummyUnixTimeForLocalUsage,
+    getCurrentYearAndMonth,
     parseDateFromUnixTime,
+    getYearAndMonth,
+    getYear,
+    getMonth,
+    getYearMonthFirstUnixTime,
+    getDay,
     getUnixTime,
-    getYearMonthFirstUnixTime
+    isDateRangeMatchOneMonth
 } from '@/lib/datetime.ts';
 
 import {
@@ -34,6 +45,35 @@ import {
 import {
     categoryTypeToTransactionType
 } from '@/lib/category.ts';
+
+export class TransactionListPageType implements TypeAndName {
+    private static readonly allInstances: TransactionListPageType[] = [];
+    private static readonly allInstancesByType: Record<number, TransactionListPageType> = {};
+
+    public static readonly List = new TransactionListPageType(0, 'Transaction List');
+    public static readonly Calendar = new TransactionListPageType(1, 'Transaction Calendar');
+
+    public static readonly Default = TransactionListPageType.List;
+
+    public readonly type: number;
+    public readonly name: string;
+
+    private constructor(type: number, name: string) {
+        this.type = type;
+        this.name = name;
+
+        TransactionListPageType.allInstances.push(this);
+        TransactionListPageType.allInstancesByType[type] = this;
+    }
+
+    public static values(): TransactionListPageType[] {
+        return TransactionListPageType.allInstances;
+    }
+
+    public static valueOf(type: number): TransactionListPageType | undefined {
+        return TransactionListPageType.allInstancesByType[type];
+    }
+}
 
 export function useTransactionListPageBase() {
     const {
@@ -54,9 +94,11 @@ export function useTransactionListPageBase() {
     const transactionTagsStore = useTransactionTagsStore();
     const transactionsStore = useTransactionsStore();
 
+    const pageType = ref<number>(TransactionListPageType.List.type);
     const loading = ref<boolean>(true);
     const customMinDatetime = ref<number>(0);
     const customMaxDatetime = ref<number>(0);
+    const currentCalendarDate = ref<string>('');
 
     const currentTimezoneOffsetMinutes = computed<number>(() => getTimezoneOffsetMinutes(settingsStore.appSettings.timeZone));
     const firstDayOfWeek = computed<number>(() => userStore.currentUserFirstDayOfWeek);
@@ -111,6 +153,16 @@ export function useTransactionListPageBase() {
     const allTransactionTags = computed<Record<string, TransactionTag>>(() => transactionTagsStore.allTransactionTagsMap);
     const allAvailableTagsCount = computed<number>(() => transactionTagsStore.allAvailableTagsCount);
 
+    const displayPageTypeName = computed<string>(() => {
+        const type = TransactionListPageType.valueOf(pageType.value);
+
+        if (type) {
+            return tt(type.name);
+        }
+
+        return tt(TransactionListPageType.List.name);
+    });
+
     const query = computed<TransactionListFilter>(() => transactionsStore.transactionsFilter);
     const queryDateRangeName = computed<string>(() => {
         if (query.value.dateType === DateRange.All.type) {
@@ -121,6 +173,15 @@ export function useTransactionListPageBase() {
     });
     const queryMinTime = computed<string>(() => formatUnixTimeToLongDateTime(query.value.minTime));
     const queryMaxTime = computed<string>(() => formatUnixTimeToLongDateTime(query.value.maxTime));
+    const queryMonthlyData = computed<boolean>(() => isDateRangeMatchOneMonth(query.value.minTime, query.value.maxTime));
+    const queryMonth = computed<string>(() => {
+        if (!query.value.minTime || !query.value.maxTime) {
+            return getCurrentYearAndMonth();
+        }
+
+        return getYearAndMonth(parseDateFromUnixTime(query.value.minTime));
+    });
+
     const queryAllFilterCategoryIds = computed<Record<string, boolean>>(() => transactionsStore.allFilterCategoryIds);
     const queryAllFilterAccountIds = computed<Record<string, boolean>>(() => transactionsStore.allFilterAccountIds);
     const queryAllFilterTagIds = computed<Record<string, boolean>>(() => transactionsStore.allFilterTagIds);
@@ -175,6 +236,34 @@ export function useTransactionListPageBase() {
 
         return displayAmount.join(' ~ ');
     });
+
+    const transactionCalendarMinDate = computed<Date>(() => getLocalDatetimeFromUnixTime(getDummyUnixTimeForLocalUsage(query.value.minTime, getTimezoneOffsetMinutes(), getBrowserTimezoneOffsetMinutes())));
+    const transactionCalendarMaxDate = computed<Date>(() => getLocalDatetimeFromUnixTime(getDummyUnixTimeForLocalUsage(query.value.maxTime, getTimezoneOffsetMinutes(), getBrowserTimezoneOffsetMinutes())));
+
+    const currentMonthTransactionData = computed<TransactionMonthList | null>(() => {
+        const allTransactions = transactionsStore.transactions;
+
+        if (!allTransactions || !allTransactions.length) {
+            return null;
+        }
+
+        const currentMonthMinDate = parseDateFromUnixTime(query.value.minTime);
+        const currentYear = getYear(currentMonthMinDate);
+        const currentMonth = getMonth(currentMonthMinDate);
+
+        for (let i = 0; i < allTransactions.length; i++) {
+            if (allTransactions[i].year === currentYear && allTransactions[i].month === currentMonth) {
+                return allTransactions[i];
+            }
+        }
+
+        return null;
+    });
+
+    function noTransactionInMonthDay(date: Date): boolean {
+        const dateTime = parseDateFromUnixTime(getActualUnixTimeForStore(getUnixTime(date), getTimezoneOffsetMinutes(), getBrowserTimezoneOffsetMinutes()));
+        return !currentMonthTransactionData.value || !currentMonthTransactionData.value.dailyTotalAmounts || !currentMonthTransactionData.value.dailyTotalAmounts[getDay(dateTime)];
+    }
 
     const canAddTransaction = computed<boolean>(() => {
         if (query.value.accountIds && queryAllFilterAccountIdsCount.value === 1) {
@@ -247,7 +336,7 @@ export function useTransactionListPageBase() {
         return '';
     }
 
-    function getDisplayMonthTotalAmount(amount: number, currency: string, symbol: string, incomplete: boolean): string {
+    function getDisplayMonthTotalAmount(amount: number, currency: string | false, symbol: string, incomplete: boolean): string {
         const displayAmount = formatAmountWithCurrency(amount, currency);
         return symbol + displayAmount + (incomplete ? '+' : '');
     }
@@ -269,9 +358,11 @@ export function useTransactionListPageBase() {
 
     return {
         // states
+        pageType,
         loading,
         customMinDatetime,
         customMaxDatetime,
+        currentCalendarDate,
         // computed states
         currentTimezoneOffsetMinutes,
         firstDayOfWeek,
@@ -288,10 +379,13 @@ export function useTransactionListPageBase() {
         allAvailableCategoriesCount,
         allTransactionTags,
         allAvailableTagsCount,
+        displayPageTypeName,
         query,
         queryDateRangeName,
         queryMinTime,
         queryMaxTime,
+        queryMonthlyData,
+        queryMonth,
         queryAllFilterCategoryIds,
         queryAllFilterAccountIds,
         queryAllFilterTagIds,
@@ -302,6 +396,10 @@ export function useTransactionListPageBase() {
         queryCategoryName,
         queryTagName,
         queryAmount,
+        transactionCalendarMinDate,
+        transactionCalendarMaxDate,
+        currentMonthTransactionData,
+        noTransactionInMonthDay,
         canAddTransaction,
         // functions
         getDisplayTime,

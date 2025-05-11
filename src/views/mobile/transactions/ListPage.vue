@@ -9,7 +9,12 @@
              @infinite="loadMore(true)">
         <f7-navbar>
             <f7-nav-left :back-link="tt('Back')"></f7-nav-left>
-            <f7-nav-title :title="tt('Transaction List')"></f7-nav-title>
+            <f7-nav-title>
+                <f7-link popover-open=".chart-data-type-popover-menu">
+                    <span style="color: var(--f7-text-color)">{{ displayPageTypeName }}</span>
+                    <f7-icon class="page-title-bar-icon" color="gray" style="opacity: 0.5" f7="chevron_down_circle_fill"></f7-icon>
+                </f7-link>
+            </f7-nav-title>
             <f7-nav-right class="navbar-compact-icons">
                 <f7-link icon-f7="plus" :class="{ 'disabled': !canAddTransaction }" :href="`/transaction/add?type=${query.type}&categoryId=${queryAllFilterCategoryIdsCount === 1 ? query.categoryIds : ''}&accountId=${queryAllFilterAccountIdsCount === 1 ? query.accountIds : ''}&tagIds=${query.tagIds || ''}`"></f7-link>
             </f7-nav-right>
@@ -24,6 +29,21 @@
                 ></f7-searchbar>
             </f7-subnavbar>
         </f7-navbar>
+
+        <f7-popover class="chart-data-type-popover-menu"
+                    v-model:opened="showTransactionListPageTypePopover">
+            <f7-list dividers>
+                <f7-list-item :title="tt(type.name)"
+                              :class="{ 'list-item-selected': pageType === type.type }"
+                              :key="type.type"
+                              v-for="type in TransactionListPageType.values()"
+                              @click="changePageType(type.type); showTransactionListPageTypePopover = false">
+                    <template #after>
+                        <f7-icon class="list-item-checked-icon" f7="checkmark_alt" v-if="pageType === type.type"></f7-icon>
+                    </template>
+                </f7-list-item>
+            </f7-list>
+        </f7-popover>
 
         <f7-toolbar tabbar bottom class="toolbar-item-auto-size transaction-list-toolbar">
             <f7-link :class="{ 'disabled': loading || query.dateType === DateRange.All.type }" @click="shiftDateRange(query.minTime, query.maxTime, -1)">
@@ -46,10 +66,41 @@
             </f7-link>
         </f7-toolbar>
 
+        <f7-block class="transaction-calendar-container margin-vertical" v-if="pageType === TransactionListPageType.Calendar.type">
+            <vue-date-picker inline auto-apply model-type="yyyy-M-d"
+                             month-name-format="long"
+                             class="justify-content-center"
+                             :config="{ noSwipe: true }"
+                             :readonly="loading"
+                             :disable-month-year-select="true"
+                             :month-change-on-scroll="false"
+                             :month-change-on-arrows="false"
+                             :enable-time-picker="false"
+                             :hide-offset-dates="true"
+                             :min-date="transactionCalendarMinDate"
+                             :max-date="transactionCalendarMaxDate"
+                             :disabled-dates="noTransactionInMonthDay"
+                             :prevent-min-max-navigation="true"
+                             :clearable="false"
+                             :dark="isDarkMode"
+                             :week-start="firstDayOfWeek"
+                             :day-names="dayNames"
+                             v-model="currentCalendarDate">
+                <template #day="{ day }">
+                    <div class="transaction-calendar-daily-amounts display-flex flex-direction-column align-items-center justify-content-center">
+                        <span>{{ day }}</span>
+                        <small class="text-income" v-if="currentMonthTransactionData && currentMonthTransactionData.dailyTotalAmounts[day] && currentMonthTransactionData.dailyTotalAmounts[day].income">{{ getDisplayMonthTotalAmount(currentMonthTransactionData.dailyTotalAmounts[day].income, false, '', currentMonthTransactionData.dailyTotalAmounts[day].incompleteIncome) }}</small>
+                        <small class="text-expense" v-if="currentMonthTransactionData && currentMonthTransactionData.dailyTotalAmounts[day] && currentMonthTransactionData.dailyTotalAmounts[day].expense">{{ getDisplayMonthTotalAmount(currentMonthTransactionData.dailyTotalAmounts[day].expense, false, '', currentMonthTransactionData.dailyTotalAmounts[day].incompleteExpense) }}</small>
+                    </div>
+                </template>
+            </vue-date-picker>
+        </f7-block>
+
         <div class="skeleton-text" v-if="loading">
-            <f7-block class="combination-list-wrapper margin-vertical" :key="blockIdx" v-for="blockIdx in [ 1, 2 ]">
+            <f7-block class="combination-list-wrapper margin-vertical" :class="{ 'no-accordion-toggle': pageType !== TransactionListPageType.List.type }"
+                      :key="blockIdx" v-for="blockIdx in (pageType === TransactionListPageType.List.type ? [ 1, 2 ] : [ 1 ])">
                 <f7-accordion-item>
-                    <f7-block-title>
+                    <f7-block-title v-if="pageType === TransactionListPageType.List.type">
                         <f7-accordion-toggle>
                             <f7-list strong inset dividers media-list
                                      class="transaction-amount-list combination-list-header combination-list-opened">
@@ -122,12 +173,12 @@
             <f7-list-item :title="tt('No transaction data')"></f7-list-item>
         </f7-list>
 
-        <f7-block class="combination-list-wrapper margin-vertical"
+        <f7-block class="combination-list-wrapper margin-vertical" :class="{ 'no-accordion-toggle': pageType !== TransactionListPageType.List.type }"
                   :key="transactionMonthList.yearMonth" v-for="(transactionMonthList) in transactions">
             <f7-accordion-item :opened="transactionMonthList.opened"
                                @accordion:open="collapseTransactionMonthList(transactionMonthList, false)"
                                @accordion:close="collapseTransactionMonthList(transactionMonthList, true)">
-                <f7-block-title>
+                <f7-block-title v-if="pageType === TransactionListPageType.List.type">
                     <f7-accordion-toggle>
                         <f7-list strong inset dividers media-list
                                  class="transaction-amount-list combination-list-header"
@@ -254,7 +305,8 @@
             </f7-accordion-item>
         </f7-block>
 
-        <f7-block class="text-align-center" :class="{ 'disabled': loadingMore }" v-show="!loading && hasMoreTransaction">
+        <f7-block class="text-align-center" :class="{ 'disabled': loadingMore }" v-show="!loading && hasMoreTransaction"
+                  v-if="pageType === TransactionListPageType.List.type">
             <f7-link href="#" @click="loadMore(false)">{{ tt('Load More') }}</f7-link>
         </f7-block>
 
@@ -266,6 +318,7 @@
                               :class="{ 'list-item-selected': query.dateType === dateRange.type }"
                               :key="dateRange.type"
                               v-for="dateRange in allDateRanges"
+                              v-show="pageType === TransactionListPageType.List.type || dateRange.type === DateRange.ThisMonth.type || dateRange.type === DateRange.LastMonth.type || dateRange.type === DateRange.Custom.type"
                               @click="changeDateFilter(dateRange.type)">
                     <template #after>
                         <f7-icon class="list-item-checked-icon" f7="checkmark_alt" v-if="query.dateType === dateRange.type"></f7-icon>
@@ -288,6 +341,12 @@
                                     v-model:show="showCustomDateRangeSheet"
                                     @dateRange:change="changeCustomDateFilter">
         </date-range-selection-sheet>
+
+        <month-selection-sheet :title="tt('Custom Date Range')"
+                               :model-value="queryMonth"
+                               v-model:show="showCustomMonthSheet"
+                               @update:modelValue="changeCustomMonthDateFilter">
+        </month-selection-sheet>
 
         <f7-popover class="category-popover-menu"
                     v-model:opened="showCategoryPopover"
@@ -525,8 +584,9 @@ import type { Router } from 'framework7/types';
 
 import { useI18n } from '@/locales/helpers.ts';
 import { type Framework7Dom, useI18nUIComponents, showLoading, hideLoading, onSwipeoutDeleted, scrollToSelectedItem } from '@/lib/ui/mobile.ts';
-import { useTransactionListPageBase } from '@/views/base/transactions/TransactionListPageBase.ts';
+import { TransactionListPageType, useTransactionListPageBase } from '@/views/base/transactions/TransactionListPageBase.ts';
 
+import { useEnvironmentsStore } from '@/stores/environment.ts';
 import { useAccountsStore } from '@/stores/account.ts';
 import { useTransactionCategoriesStore } from '@/stores/transactionCategory.ts';
 import { useTransactionTagsStore } from '@/stores/transactionTag.ts';
@@ -544,16 +604,26 @@ import type { TransactionCategory } from '@/models/transaction_category.ts';
 import type { Transaction } from '@/models/transaction.ts';
 
 import {
+    arrangeArrayWithNewStartIndex
+} from '@/lib/common.ts';
+import {
     getCurrentUnixTime,
-    getSpecifiedDayFirstUnixTime,
+    parseDateFromUnixTime,
     getBrowserTimezoneOffsetMinutes,
     getActualUnixTimeForStore,
+    getYear,
+    getMonth,
+    getSpecifiedDayFirstUnixTime,
+    getYearMonthFirstUnixTime,
+    getYearMonthLastUnixTime,
     getShiftedDateRangeAndDateType,
     getShiftedDateRangeAndDateTypeForBillingCycle,
     getDateTypeByDateRange,
     getDateTypeByBillingCycleDateRange,
     getDateRangeByDateType,
-    getDateRangeByBillingCycleDateType
+    getDateRangeByBillingCycleDateType,
+    getFullMonthDateRange,
+    getMonthFirstDayOrCurrentDayShortDate
 } from '@/lib/datetime.ts';
 import {
     categoryTypeToTransactionType,
@@ -567,6 +637,7 @@ const props = defineProps<{
 
 const {
     tt,
+    getAllShortWeekdayNames,
     getAllTransactionTagFilterTypes,
     getWeekdayShortName
 } = useI18n();
@@ -574,9 +645,11 @@ const {
 const { showAlert, showToast, routeBackOnError } = useI18nUIComponents();
 
 const {
+    pageType,
     loading,
     customMinDatetime,
     customMaxDatetime,
+    currentCalendarDate,
     currentTimezoneOffsetMinutes,
     firstDayOfWeek,
     fiscalYearStart,
@@ -592,10 +665,13 @@ const {
     allAvailableCategoriesCount,
     allTransactionTags,
     allAvailableTagsCount,
+    displayPageTypeName,
     query,
     queryDateRangeName,
     queryMinTime,
     queryMaxTime,
+    queryMonthlyData,
+    queryMonth,
     queryAllFilterCategoryIds,
     queryAllFilterAccountIds,
     queryAllFilterTagIds,
@@ -605,6 +681,10 @@ const {
     queryAccountName,
     queryCategoryName,
     queryAmount,
+    transactionCalendarMinDate,
+    transactionCalendarMaxDate,
+    currentMonthTransactionData,
+    noTransactionInMonthDay,
     canAddTransaction,
     getDisplayTime,
     getDisplayLongYearMonth,
@@ -614,19 +694,25 @@ const {
     getTransactionTypeName,
 } = useTransactionListPageBase();
 
+const environmentsStore = useEnvironmentsStore();
 const accountsStore = useAccountsStore();
 const transactionCategoriesStore = useTransactionCategoriesStore();
 const transactionTagsStore = useTransactionTagsStore();
 const transactionsStore = useTransactionsStore();
 
+const isDarkMode = computed<boolean>(() => environmentsStore.framework7DarkMode || false);
+const dayNames = computed<string[]>(() => arrangeArrayWithNewStartIndex(getAllShortWeekdayNames(), firstDayOfWeek.value));
+
 const loadingError = ref<unknown | null>(null);
 const loadingMore = ref<boolean>(false);
 const transactionToDelete = ref<Transaction | null>(null);
+const showTransactionListPageTypePopover = ref<boolean>(false);
 const showDatePopover = ref<boolean>(false);
 const showCategoryPopover = ref<boolean>(false);
 const showAccountPopover = ref<boolean>(false);
 const showMorePopover = ref<boolean>(false);
 const showCustomDateRangeSheet = ref<boolean>(false);
+const showCustomMonthSheet = ref<boolean>(false);
 const showDeleteActionSheet = ref<boolean>(false);
 
 const allTransactionTagFilterTypes = computed<TypeAndDisplayName[]>(() => getAllTransactionTagFilterTypes());
@@ -636,10 +722,60 @@ const transactions = computed<TransactionMonthList[]>(() => {
         return [];
     }
 
-    return transactionsStore.transactions;
+    if (pageType.value === TransactionListPageType.List.type) {
+        return transactionsStore.transactions;
+    } else if (pageType.value === TransactionListPageType.Calendar.type) {
+        if (queryMonthlyData.value) {
+            const transactionData = currentMonthTransactionData.value;
+
+            if (!transactionData || !transactionData.items) {
+                return [];
+            }
+
+            const transactions :Transaction[] = [];
+
+            for (let i = 0; i < transactionData.items.length; i++) {
+                const transaction = transactionData.items[i];
+
+                if (transaction.date === currentCalendarDate.value) {
+                    transactions.push(transaction);
+                }
+            }
+
+            const dailyTransactionList: TransactionMonthList = {
+                year: currentMonthTransactionData.value.year,
+                month: currentMonthTransactionData.value.month,
+                yearMonth: currentMonthTransactionData.value.yearMonth,
+                opened: true,
+                items: transactions,
+                totalAmount: {
+                    income: 0,
+                    expense: 0,
+                    incompleteIncome: false,
+                    incompleteExpense: false
+                },
+                dailyTotalAmounts: {}
+            };
+
+            return [dailyTransactionList];
+        } else {
+            return [];
+        }
+    } else {
+        return [];
+    }
 });
 
-const noTransaction = computed<boolean>(() => transactionsStore.noTransaction);
+const noTransaction = computed<boolean>(() => {
+    if (pageType.value === TransactionListPageType.List.type) {
+        return transactionsStore.noTransaction;
+    } else if (pageType.value === TransactionListPageType.Calendar.type) {
+        return !transactions.value || !transactions.value.length || !transactions.value[0].items || !transactions.value[0].items.length;
+    } else {
+        return true;
+    }
+});
+
 const hasMoreTransaction = computed<boolean>(() => transactionsStore.hasMoreTransaction);
 
 function getTransactionDomId(transaction: Transaction): string {
@@ -717,11 +853,24 @@ function reload(done?: () => void): void {
         transactionCategoriesStore.loadAllCategories({ force: false }),
         transactionTagsStore.loadAllTags({ force: false })
     ]).then(() => {
-        return transactionsStore.loadTransactions({
-            reload: true,
-            autoExpand: true,
-            defaultCurrency: defaultCurrency.value
-        });
+        if (queryMonthlyData.value) {
+            const currentMonthMinDate = parseDateFromUnixTime(query.value.minTime);
+            const currentYear = getYear(currentMonthMinDate);
+            const currentMonth = getMonth(currentMonthMinDate);
+
+            return transactionsStore.loadMonthlyAllTransactions({
+                year: currentYear,
+                month: currentMonth,
+                autoExpand: true,
+                defaultCurrency: defaultCurrency.value
+            });
+        } else {
+            return transactionsStore.loadTransactions({
+                reload: true,
+                autoExpand: true,
+                defaultCurrency: defaultCurrency.value
+            });
+        }
     }).then(() => {
         done?.();
 
@@ -773,6 +922,28 @@ function loadMore(autoExpand: boolean): void {
     });
 }
 
+function changePageType(type: number): void {
+    pageType.value = type;
+    currentCalendarDate.value = getMonthFirstDayOrCurrentDayShortDate(query.value.minTime);
+
+    if (pageType.value === TransactionListPageType.Calendar.type) {
+        const dateRange = getFullMonthDateRange(query.value.minTime, query.value.maxTime, firstDayOfWeek.value);
+
+        if (dateRange) {
+            const changed = transactionsStore.updateTransactionListFilter({
+                dateType: dateRange.dateType,
+                maxTime: dateRange.maxTime,
+                minTime: dateRange.minTime
+            });
+
+            if (changed) {
+                currentCalendarDate.value = getMonthFirstDayOrCurrentDayShortDate(query.value.minTime);
+                reload();
+            }
+        }
+    }
+}
+
 function changeDateFilter(dateType: number): void {
     if (dateType === DateRange.Custom.type) { // Custom
         if (!query.value.minTime || !query.value.maxTime) {
@@ -783,7 +954,12 @@ function changeDateFilter(dateType: number): void {
             customMinDatetime.value = query.value.minTime;
         }
 
-        showCustomDateRangeSheet.value = true;
+        if (pageType.value === TransactionListPageType.Calendar.type) {
+            showCustomMonthSheet.value = true;
+        } else {
+            showCustomDateRangeSheet.value = true;
+        }
+
         showDatePopover.value = false;
         return;
     } else if (query.value.dateType === dateType) {
@@ -800,6 +976,16 @@ function changeDateFilter(dateType: number): void {
 
     if (!dateRange) {
         return;
+    }
+
+    if (pageType.value === TransactionListPageType.Calendar.type) {
+        currentCalendarDate.value = getMonthFirstDayOrCurrentDayShortDate(dateRange.minTime);
+        const fullMonthDateRange = getFullMonthDateRange(dateRange.minTime, dateRange.maxTime, firstDayOfWeek.value);
+
+        if (fullMonthDateRange) {
+            dateRange = fullMonthDateRange;
+            currentCalendarDate.value = getMonthFirstDayOrCurrentDayShortDate(dateRange.minTime);
+        }
     }
 
     const changed = transactionsStore.updateTransactionListFilter({
@@ -826,6 +1012,18 @@ function changeCustomDateFilter(minTime: number, maxTime: number): void {
         dateType = getDateTypeByDateRange(minTime, maxTime, firstDayOfWeek.value, fiscalYearStart.value, DateRangeScene.Normal);
     }
 
+    if (pageType.value === TransactionListPageType.Calendar.type) {
+        currentCalendarDate.value = getMonthFirstDayOrCurrentDayShortDate(minTime);
+        const dateRange = getFullMonthDateRange(minTime, maxTime, firstDayOfWeek.value);
+
+        if (dateRange) {
+            minTime = dateRange.minTime;
+            maxTime = dateRange.maxTime;
+            dateType = dateRange.dateType;
+            currentCalendarDate.value = getMonthFirstDayOrCurrentDayShortDate(minTime);
+        }
+    }
+
     const changed = transactionsStore.updateTransactionListFilter({
         dateType: dateType,
         maxTime: maxTime,
@@ -833,6 +1031,32 @@ function changeCustomDateFilter(minTime: number, maxTime: number): void {
     });
 
     showCustomDateRangeSheet.value = false;
+
+    if (changed) {
+        reload();
+    }
+}
+
+function changeCustomMonthDateFilter(yearMonth: string): void {
+    if (!yearMonth) {
+        return;
+    }
+
+    const minTime = getYearMonthFirstUnixTime(yearMonth);
+    const maxTime = getYearMonthLastUnixTime(yearMonth);
+    const dateType = getDateTypeByDateRange(minTime, maxTime, firstDayOfWeek.value, DateRangeScene.Normal);
+
+    if (pageType.value === TransactionListPageType.Calendar.type) {
+        currentCalendarDate.value = getMonthFirstDayOrCurrentDayShortDate(minTime);
+    }
+
+    const changed = transactionsStore.updateTransactionListFilter({
+        dateType: dateType,
+        maxTime: maxTime,
+        minTime: minTime
+    });
+
+    showCustomMonthSheet.value = false;
 
     if (changed) {
         reload();
@@ -852,6 +1076,16 @@ function shiftDateRange(minTime: number, maxTime: number, scale: number): void {
 
     if (!newDateRange) {
         newDateRange = getShiftedDateRangeAndDateType(minTime, maxTime, scale, firstDayOfWeek.value, fiscalYearStart.value, DateRangeScene.Normal);
+    }
+
+    if (pageType.value === TransactionListPageType.Calendar.type) {
+        currentCalendarDate.value = getMonthFirstDayOrCurrentDayShortDate(newDateRange.minTime);
+        const fullMonthDateRange = getFullMonthDateRange(newDateRange.minTime, newDateRange.maxTime, firstDayOfWeek.value);
+
+        if (fullMonthDateRange) {
+            newDateRange = fullMonthDateRange;
+            currentCalendarDate.value = getMonthFirstDayOrCurrentDayShortDate(newDateRange.minTime);
+        }
     }
 
     const changed = transactionsStore.updateTransactionListFilter({
@@ -1199,5 +1433,71 @@ init();
 .more-popover-menu .popover-inner{
     max-height: 400px;
     overflow-y: auto;
+}
+
+.transaction-calendar-container .dp__main .dp__menu {
+    --dp-border-radius: var(--f7-list-inset-border-radius);
+    --dp-menu-padding: 4px 6px;
+    --dp-menu-border-color: transparent;
+}
+
+.transaction-calendar-container .dp__main .dp__menu.dp__theme_dark {
+    --dp-background-color: var(--f7-list-strong-bg-color);
+}
+
+.transaction-calendar-container .dp__main .dp__calendar .dp__calendar_row {
+    --dp-cell-size: var(--ebk-transaction-calendar-daily-amounts-height);
+    --dp-cell-padding: 1px;
+    --dp-primary-text-color: var(--f7-theme-color);
+}
+
+.transaction-calendar-container .dp__main .dp__calendar .dp__calendar_row > .dp__calendar_item .transaction-calendar-daily-amounts {
+    width: 100%;
+    height: 100%;
+    background-color: var(--f7-list-group-title-bg-color);
+    border-radius: 6px;
+}
+
+.transaction-calendar-container .dp__main .dp__calendar .dp__calendar_row > .dp__calendar_item > .dp__active_date {
+    background-color: transparent;
+}
+
+.transaction-calendar-container .dp__main .dp__calendar .dp__calendar_row > .dp__calendar_item > .dp__today {
+    border: inherit;
+}
+
+.transaction-calendar-container .dp__main .dp__calendar .dp__calendar_row > .dp__calendar_item > .dp__date_hover_end:hover,
+.transaction-calendar-container .dp__main .dp__calendar .dp__calendar_row > .dp__calendar_item > .dp__date_hover_start:hover,
+.transaction-calendar-container .dp__main .dp__calendar .dp__calendar_row > .dp__calendar_item > .dp__date_hover:hover {
+    background-color: transparent;
+}
+
+.transaction-calendar-container .dp__main .dp__calendar .dp__calendar_row > .dp__calendar_item > .dp__active_date .transaction-calendar-daily-amounts {
+    background-color: rgba(var(--ebk-primary-color), 0.16);
+}
+
+.transaction-calendar-container .dp__main .dp__calendar .dp__calendar_row > .dp__calendar_item > .dp__today .transaction-calendar-daily-amounts {
+    border: 1px solid var(--dp-primary-color);
+}
+
+.transaction-calendar-container .dp__main .dp__calendar .dp__calendar_row > .dp__calendar_item > .dp__date_hover_end:hover .transaction-calendar-daily-amounts,
+.transaction-calendar-container .dp__main .dp__calendar .dp__calendar_row > .dp__calendar_item > .dp__date_hover_start:hover .transaction-calendar-daily-amounts,
+.transaction-calendar-container .dp__main .dp__calendar .dp__calendar_row > .dp__calendar_item > .dp__date_hover:hover .transaction-calendar-daily-amounts {
+    background: var(--dp-hover-color);
+}
+
+.transaction-calendar-container .dp__main .dp__calendar .dp__calendar_row > .dp__calendar_item {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.transaction-calendar-container .dp__main .dp__calendar .dp__calendar_row > .dp__calendar_item .transaction-calendar-daily-amounts > small {
+    display: block;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--ebk-transaction-calendar-amount-font-size);
 }
 </style>

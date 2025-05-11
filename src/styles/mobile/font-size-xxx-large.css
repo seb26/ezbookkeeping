@@ -50,6 +50,7 @@
     --ebk-big-icon-button-size: 58px;
     --ebk-icon-after-text-font-size: 20px;
     --ebk-right-bottom-icon-font-size: 17px;
+    --ebk-page-title-bar-icon-font-size: 20px;
     --ebk-list-item-checked-icon-font-size: 26px;
     --ebk-searchbar-icon-font-size: 24px;
     --ebk-searchbar-disable-button-font-size: 22px;
@@ -75,6 +76,8 @@
     --ebk-transaction-date-width: 36px;
     --ebk-transaction-day-font-size: 22px;
     --ebk-transaction-day-of-week-font-size: 17px;
+    --ebk-transaction-calendar-amount-font-size: 17px;
+    --ebk-transaction-calendar-daily-amounts-height: 80px;
     --ebk-transaction-account-arrow-font-size: 17px;
     --ebk-transaction-account-arrow-margin-top: -4px;
     --ebk-transaction-tag-icon-font-size: 30px;
