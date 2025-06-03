@@ -212,8 +212,7 @@
             >
                 <fiscal-year-start-selection-sheet
                     v-model:show="showFiscalYearStartSheet"
-                    v-model="newProfile.fiscalYearStart"
-                    v-model:title="currentFiscalYearStartDate">
+                    v-model="newProfile.fiscalYearStart">
                 </fiscal-year-start-selection-sheet>
             </f7-list-item>
 
@@ -517,7 +516,7 @@ const props = defineProps<{
     f7router: Router.Router;
 }>();
 
-const { tt, getAllLanguageOptions, getAllCurrencies, getCurrencyName, getCurrentFiscalYearStartFormatted } = useI18n();
+const { tt, getAllLanguageOptions, getAllCurrencies, getCurrencyName, formatFiscalYearStart } = useI18n();
 const { showAlert, showToast, routeBackOnError } = useI18nUIComponents();
 
 const {
@@ -598,7 +597,7 @@ const currentLanguageName = computed<string>(() => {
 });
 
 const currentDayOfWeekName = computed<string | null>(() => findDisplayNameByType(allWeekDays.value, newProfile.value.firstDayOfWeek));
-const currentFiscalYearStartDate = ref<string>(getCurrentFiscalYearStartFormatted());
+const currentFiscalYearStartDate = computed(() => formatFiscalYearStart(newProfile.value.fiscalYearStart) );
 
 function init(): void {
     loading.value = true;

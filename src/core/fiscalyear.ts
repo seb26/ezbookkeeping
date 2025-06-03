@@ -239,16 +239,20 @@ export class FiscalYearFormat implements TypeAndName {
         FiscalYearFormat.allInstancesByTypeName[name] = this;
     }
 
-    public static values(): FiscalYearFormat[] {
-        return FiscalYearFormat.allInstances;
-    }
-
     public static all(): Record<FiscalYearFormatTypeName, FiscalYearFormat> {
         return FiscalYearFormat.allInstancesByTypeName;
     }
 
+    public static values(): FiscalYearFormat[] {
+        return FiscalYearFormat.allInstances;
+    }
+
     public static valueOf(type: number): FiscalYearFormat | undefined {
         return FiscalYearFormat.allInstancesByType[type];
+    }
+
+    public static parse(name: string): FiscalYearFormat | undefined {
+        return FiscalYearFormat.allInstancesByTypeName[name];
     }
 }
 
