@@ -439,6 +439,15 @@ func (a *UsersApi) UserUpdateProfileHandler(c *core.WebContext) (any, *errs.Erro
 		userNew.CurrencyDisplayType = core.CURRENCY_DISPLAY_TYPE_INVALID
 	}
 
+	if userUpdateReq.CoordinateDisplayType != nil && *userUpdateReq.CoordinateDisplayType != user.CoordinateDisplayType {
+		user.CoordinateDisplayType = *userUpdateReq.CoordinateDisplayType
+		userNew.CoordinateDisplayType = *userUpdateReq.CoordinateDisplayType
+		modifyProfileBasicInfo = true
+		anythingUpdate = true
+	} else {
+		userNew.CoordinateDisplayType = core.COORDINATE_DISPLAY_TYPE_INVALID
+	}
+
 	if userUpdateReq.ExpenseAmountColor != nil && *userUpdateReq.ExpenseAmountColor != user.ExpenseAmountColor {
 		user.ExpenseAmountColor = *userUpdateReq.ExpenseAmountColor
 		userNew.ExpenseAmountColor = *userUpdateReq.ExpenseAmountColor

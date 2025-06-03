@@ -96,6 +96,7 @@ import FiscalYearStartSelectionSheet from '@/components/mobile/FiscalYearStartSe
 import DateRangeSelectionSheet from '@/components/mobile/DateRangeSelectionSheet.vue';
 import MonthSelectionSheet from '@/components/mobile/MonthSelectionSheet.vue';
 import MonthRangeSelectionSheet from '@/components/mobile/MonthRangeSelectionSheet.vue';
+import ListNumberInput from '@/components/mobile/ListNumberInput.vue';
 import ListItemSelectionSheet from '@/components/mobile/ListItemSelectionSheet.vue';
 import ListItemSelectionPopup from '@/components/mobile/ListItemSelectionPopup.vue';
 import TwoColumnListItemSelectionSheet from '@/components/mobile/TwoColumnListItemSelectionSheet.vue';
@@ -183,6 +184,7 @@ app.component('FiscalYearStartSelectionSheet', FiscalYearStartSelectionSheet);
 app.component('DateRangeSelectionSheet', DateRangeSelectionSheet);
 app.component('MonthSelectionSheet', MonthSelectionSheet);
 app.component('MonthRangeSelectionSheet', MonthRangeSelectionSheet);
+app.component('ListNumberInput', ListNumberInput);
 app.component('ListItemSelectionSheet', ListItemSelectionSheet);
 app.component('ListItemSelectionPopup', ListItemSelectionPopup);
 app.component('TwoColumnListItemSelectionSheet', TwoColumnListItemSelectionSheet);

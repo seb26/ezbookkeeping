@@ -1,6 +1,7 @@
 import { LongDateFormat, ShortDateFormat, LongTimeFormat, ShortTimeFormat } from '@/core/datetime.ts';
 import { DecimalSeparator, DigitGroupingSymbol, DigitGroupingType } from '@/core/numeral.ts';
 import { CurrencyDisplayType } from '@/core/currency.ts';
+import { CoordinateDisplayType } from '@/core/coordinate.ts';
 import { PresetAmountColor } from '@/core/color.ts';
 import type { LocalizedPresetCategory } from '@/core/category.ts';
 import { TransactionEditScopeType } from '@/core/transaction.ts';
@@ -28,6 +29,7 @@ export class User {
     public digitGroupingSymbol: number = 0;
     public digitGrouping: number = 0;
     public currencyDisplayType: number = 0;
+    public coordinateDisplayType: number = 0;
     public expenseAmountColor: number = 0;
     public incomeAmountColor: number = 0;
 
@@ -56,6 +58,7 @@ export class User {
         this.digitGroupingSymbol = user.digitGroupingSymbol;
         this.digitGrouping = user.digitGrouping;
         this.currencyDisplayType = user.currencyDisplayType;
+        this.coordinateDisplayType = user.coordinateDisplayType;
         this.expenseAmountColor = user.expenseAmountColor;
         this.incomeAmountColor = user.incomeAmountColor;
     }
@@ -94,6 +97,7 @@ export class User {
             digitGroupingSymbol: this.digitGroupingSymbol,
             digitGrouping: this.digitGrouping,
             currencyDisplayType: this.currencyDisplayType,
+            coordinateDisplayType: this.coordinateDisplayType,
             expenseAmountColor: this.expenseAmountColor,
             incomeAmountColor: this.incomeAmountColor
         };
@@ -113,6 +117,7 @@ export class User {
         user.digitGroupingSymbol = userInfo.digitGroupingSymbol;
         user.digitGrouping = userInfo.digitGrouping;
         user.currencyDisplayType = userInfo.currencyDisplayType;
+        user.coordinateDisplayType = userInfo.coordinateDisplayType;
         user.expenseAmountColor = userInfo.expenseAmountColor;
         user.incomeAmountColor = userInfo.incomeAmountColor;
 
@@ -145,6 +150,7 @@ export interface UserBasicInfo {
     readonly digitGroupingSymbol: number;
     readonly digitGrouping: number;
     readonly currencyDisplayType: number;
+    readonly coordinateDisplayType: number;
     readonly expenseAmountColor: number;
     readonly incomeAmountColor: number;
     readonly emailVerified: boolean;
@@ -197,6 +203,7 @@ export interface UserProfileUpdateRequest {
     readonly digitGroupingSymbol?: number;
     readonly digitGrouping?: number;
     readonly currencyDisplayType?: number;
+    readonly coordinateDisplayType?: number;
     readonly expenseAmountColor?: number;
     readonly incomeAmountColor?: number;
 }
@@ -231,6 +238,7 @@ export const EMPTY_USER_BASIC_INFO: UserBasicInfo = {
     digitGroupingSymbol: DigitGroupingSymbol.LanguageDefaultType,
     digitGrouping: DigitGroupingType.LanguageDefaultType,
     currencyDisplayType: CurrencyDisplayType.Default.type,
+    coordinateDisplayType: CoordinateDisplayType.Default.type,
     expenseAmountColor: PresetAmountColor.DefaultExpenseColor.type,
     incomeAmountColor: PresetAmountColor.DefaultIncomeColor.type,
     emailVerified: false
