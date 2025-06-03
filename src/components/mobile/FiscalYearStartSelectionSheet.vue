@@ -6,7 +6,6 @@
             <div class="left">
                 <f7-link :text="tt('Clear')" @click="clear"></f7-link>
             </div>
-            <div class="center">{{ selectedDisplayName(selectedDate) }}</div>
             <div class="right">
                 <f7-link :text="tt('Done')" @click="confirm"></f7-link>
             </div>
@@ -18,7 +17,6 @@
                                  model-type="MM-dd"
                                  six-weeks="center"
                                  class="justify-content-center"
-                                 :title="selectedDisplayName(selectedDate)"
                                  :enable-time-picker="false"
                                  :clearable="true"
                                  :dark="isDarkMode"
@@ -77,8 +75,8 @@ const {
     dayNames,
     disabledDates,
     firstDayOfWeek,
+    getDateStringToModelValue,
     getModelValueToDateString,
-    setModelValueFromDateString,
     selectedDisplayName,
 } = useFiscalYearStartSelectionBase(props, emit);
 
@@ -95,7 +93,7 @@ function clear(): void {
 }
 
 function confirm(): void {
-    emit('update:modelValue', setModelValueFromDateString(selectedDate.value));
+    emit('update:modelValue', getDateStringToModelValue(selectedDate.value));
     emit('update:show', false);
     emit('update:title', selectedDisplayName(selectedDate.value));
 }

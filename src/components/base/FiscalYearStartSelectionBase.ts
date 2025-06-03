@@ -17,7 +17,7 @@ export interface FiscalYearStartSelectionBaseEmits {
 }
 
 export function useFiscalYearStartSelectionBase(props: FiscalYearStartSelectionBaseProps, emit: FiscalYearStartSelectionBaseEmits) {
-    const { getAllMinWeekdayNames,getCurrentFiscalYearStart, formatMonthDayToLongDay, getCurrentFiscalYearStartFormatted } = useI18n();
+    const { getAllMinWeekdayNames, formatMonthDayToLongDay, getCurrentFiscalYearStart, getCurrentFiscalYearStartFormatted } = useI18n();
 
     const dayNames = computed<string[]>(() => arrangeArrayWithNewStartIndex(getAllMinWeekdayNames(), firstDayOfWeek.value));
 
@@ -31,8 +31,7 @@ export function useFiscalYearStartSelectionBase(props: FiscalYearStartSelectionB
             }
         }
         
-        const monthDay = fy.toMonthDashDayString();
-        return formatMonthDayToLongDay(monthDay);
+        return formatMonthDayToLongDay(fy.toMonthDashDayString());
     });
 
     const disabledDates = (date: Date) => {
@@ -43,16 +42,15 @@ export function useFiscalYearStartSelectionBase(props: FiscalYearStartSelectionB
     const firstDayOfWeek = computed<number>(() => userStore.currentUserFirstDayOfWeek);
 
     const selectedFiscalYearStart = computed<number>(() => {
-        return props.modelValue !== undefined ? props.modelValue : getCurrentFiscalYearStart().value;
+        return props.modelValue !== undefined ? props.modelValue : userStore.currentUserFiscalYearStart;
     });
 
     const userStore = useUserStore();
 
     function selectedDisplayName(dateString: string): string {
-        const fyString = FiscalYearStart.fromMonthDashDayString(dateString);
-        if (fyString) {
-            const monthDay = fyString.toMonthDashDayString();
-            return formatMonthDayToLongDay(monthDay);
+        let fy = FiscalYearStart.fromMonthDashDayString(dateString);
+        if ( fy ) {
+            return formatMonthDayToLongDay(fy.toMonthDashDayString());
         }
         return displayName.value;
     }
@@ -60,27 +58,27 @@ export function useFiscalYearStartSelectionBase(props: FiscalYearStartSelectionB
     function getModelValueToDateString(): string {
         const input = selectedFiscalYearStart.value;
         
-        if (input !== 0 && input !== undefined) {
-            const fy = FiscalYearStart.fromNumber(input);
-            if (fy) {
-                return fy.toMonthDashDayString();
-            }
+        let fy = FiscalYearStart.fromNumber(input);
+
+        if ( fy ) {
+            return fy.toMonthDashDayString();
         }
+
         return getCurrentFiscalYearStartFormatted();
     }
 
-    function setModelValueFromDateString(input: string): number {
+    function getDateStringToModelValue(input: string): number {
         const fyString = FiscalYearStart.fromMonthDashDayString(input);
         if (fyString) {
             return fyString.value;
         }
-        return getCurrentFiscalYearStart().value;
+        return userStore.currentUserFiscalYearStart;
     }
     
     return {
         // functions
+        getDateStringToModelValue,
         getModelValueToDateString,
-        setModelValueFromDateString,
         selectedDisplayName,
         // computed states
         dayNames,

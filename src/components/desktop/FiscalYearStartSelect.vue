@@ -71,7 +71,7 @@ const {
     disabledDates,
     firstDayOfWeek,
     getModelValueToDateString,
-    setModelValueFromDateString,
+    getDateStringToModelValue,
 } = useFiscalYearStartSelectionBase(props, emit);
 
 const selectedDate = computed<string>({
@@ -79,7 +79,7 @@ const selectedDate = computed<string>({
         return getModelValueToDateString();
     },
     set: (value: string) => {
-        emit('update:modelValue', setModelValueFromDateString(value));
+        emit('update:modelValue', getDateStringToModelValue(value));
     }
 });
 </script>
