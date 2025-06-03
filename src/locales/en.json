@@ -19,7 +19,6 @@
     "default": {
         "currency": "USD",
         "firstDayOfWeek": "Sunday",
-        "fiscalYearStart": "01-01",
         "fiscalYearFormat": "StartYYYY_EndYYYY",
         "longDateFormat": "MMDDYYYY",
         "shortDateFormat": "MMDDYYYY",
