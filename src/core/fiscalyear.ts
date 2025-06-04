@@ -212,9 +212,7 @@ export class FiscalYearUnixTime implements UnixTimeRange {
 
 export const LANGUAGE_DEFAULT_FISCAL_YEAR_FORMAT_VALUE: number = 0;
 
-export type FiscalYearFormatTypeName = 'StartYYYY_EndYYYY' | 'StartYYYY_EndYY' | 'StartYY_EndYY' | 'EndYYYY' | 'EndYY';
-
-export class FiscalYearFormat implements TypeAndName {
+export class FiscalYearFormat implements TypeAndDisplayName {
     private static readonly allInstances: FiscalYearFormat[] = [];
     private static readonly allInstancesByType: Record<number, FiscalYearFormat> = {};
     private static readonly allInstancesByTypeName: Record<string, FiscalYearFormat> = {};
@@ -228,18 +226,18 @@ export class FiscalYearFormat implements TypeAndName {
     public static readonly Default = FiscalYearFormat.StartYYYY_EndYYYY;
 
     public readonly type: number;
-    public readonly name: FiscalYearFormatTypeName;
+    public readonly displayName: string;
 
-    private constructor(type: number, name: FiscalYearFormatTypeName) {
+    private constructor(type: number, displayName: string) {
         this.type = type;
-        this.name = name;
+        this.displayName = displayName;
         
         FiscalYearFormat.allInstances.push(this);
         FiscalYearFormat.allInstancesByType[type] = this;
-        FiscalYearFormat.allInstancesByTypeName[name] = this;
+        FiscalYearFormat.allInstancesByTypeName[displayName] = this;
     }
 
-    public static all(): Record<FiscalYearFormatTypeName, FiscalYearFormat> {
+    public static all(): Record<string, FiscalYearFormat> {
         return FiscalYearFormat.allInstancesByTypeName;
     }
 
@@ -251,13 +249,7 @@ export class FiscalYearFormat implements TypeAndName {
         return FiscalYearFormat.allInstancesByType[type];
     }
 
-    public static parse(name: string): FiscalYearFormat | undefined {
-        return FiscalYearFormat.allInstancesByTypeName[name];
+    public static parse(displayName: string): FiscalYearFormat | undefined {
+        return FiscalYearFormat.allInstancesByTypeName[displayName];
     }
-}
-
-export interface LocalizedFiscalYearFormat extends TypeAndDisplayName {
-    readonly type: number;
-    readonly format: string;
-    readonly displayName: string;
 }

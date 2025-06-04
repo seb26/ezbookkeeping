@@ -48,7 +48,6 @@ import {
 } from '@/core/currency.ts';
 
 import {
-    type LocalizedFiscalYearFormat,
     FiscalYearStart,
     FiscalYearFormat,
     FiscalYearUnixTime,
@@ -932,7 +931,7 @@ export function useI18n() {
         ];
     }
 
-    function getAllFiscalYearFormats(): LocalizedFiscalYearFormat[] {
+    function getAllFiscalYearFormats(): FiscalYearFormat[] {
         const now = getCurrentUnixTime();
         let fiscalYearStart = userStore.currentUserFiscalYearStart;
         if (!fiscalYearStart) {
@@ -940,7 +939,7 @@ export function useI18n() {
         }
         let nowFiscalYearRange = getFiscalYearTimeRangeFromUnixTime(now, userStore.currentUserFiscalYearStart);
 
-        const ret: LocalizedFiscalYearFormat[] = [];
+        const ret: FiscalYearFormat[] = [];
 
         let defaultFiscalYearFormatType = FiscalYearFormat.parse(t('default.fiscalYearFormat'));
         if (!defaultFiscalYearFormatType) {
@@ -948,8 +947,7 @@ export function useI18n() {
         }
         ret.push({
             type: LANGUAGE_DEFAULT_FISCAL_YEAR_FORMAT_VALUE,
-            format: defaultFiscalYearFormatType.name,
-            displayName: `${t('Language Default')} (${formatUnixTimeToFiscalYear(now)})`
+            displayName: `${t('Language Default')} (${formatTimeRangeToFiscalYearFormat(defaultFiscalYearFormatType, nowFiscalYearRange)})`
         });
 
         const allFiscalYearFormats = FiscalYearFormat.values();
@@ -957,7 +955,6 @@ export function useI18n() {
             const type = allFiscalYearFormats[i];
             ret.push({
                 type: type.type,
-                format: type.name,
                 displayName: formatTimeRangeToFiscalYearFormat(type, nowFiscalYearRange),
             });
         }
@@ -1484,7 +1481,7 @@ export function useI18n() {
             format = FiscalYearFormat.Default;
         }
 
-        return t('format.fiscalYear.' + format.name, {
+        return t('format.fiscalYear.' + format.displayName, {
             StartYYYY: formatUnixTime(timeRange.minUnixTime, 'YYYY'),
             StartYY: formatUnixTime(timeRange.minUnixTime, 'YY'),
             EndYYYY: formatUnixTime(timeRange.maxUnixTime, 'YYYY'),
