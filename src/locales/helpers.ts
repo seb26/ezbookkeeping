@@ -51,7 +51,7 @@ import {
     FiscalYearStart,
     FiscalYearFormat,
     FiscalYearUnixTime,
-    LANGUAGE_DEFAULT_FISCAL_YEAR_FORMAT_VALUE,
+    DEFAULT_FISCAL_YEAR_FORMAT_VALUE,
 } from '@/core/fiscalyear.ts';
 
 import {
@@ -946,7 +946,7 @@ export function useI18n() {
             defaultFiscalYearFormatType = FiscalYearFormat.Default;
         }
         ret.push({
-            type: LANGUAGE_DEFAULT_FISCAL_YEAR_FORMAT_VALUE,
+            type: DEFAULT_FISCAL_YEAR_FORMAT_VALUE,
             displayName: `${t('Language Default')} (${formatTimeRangeToFiscalYearFormat(defaultFiscalYearFormatType, nowFiscalYearRange)})`
         });
 
@@ -1509,11 +1509,11 @@ export function useI18n() {
     function formatFiscalYearStart(fiscalYearStart: number) {
         let fy = FiscalYearStart.fromNumber(fiscalYearStart);
 
-        if ( fy ) {
-            return formatMonthDayToLongDay(fy.toMonthDashDayString());
+        if ( !fy ) {
+            fy = FiscalYearStart.Default;
         }
-
-        return '';
+        
+        return formatMonthDayToLongDay(fy.toMonthDashDayString());
     }
         
     function getTimezoneDifferenceDisplayText(utcOffset: number): string {

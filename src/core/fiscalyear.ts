@@ -1,4 +1,4 @@
-import type { TypeAndDisplayName, TypeAndName } from '@/core/base.ts';
+import type { TypeAndDisplayName } from '@/core/base.ts';
 import type { UnixTimeRange } from './datetime';
 
 export class FiscalYearStart {
@@ -210,7 +210,7 @@ export class FiscalYearUnixTime implements UnixTimeRange {
     }
 }
 
-export const LANGUAGE_DEFAULT_FISCAL_YEAR_FORMAT_VALUE: number = 0;
+export const DEFAULT_FISCAL_YEAR_FORMAT_VALUE: number = 0;
 
 export class FiscalYearFormat implements TypeAndDisplayName {
     private static readonly allInstances: FiscalYearFormat[] = [];
@@ -223,7 +223,7 @@ export class FiscalYearFormat implements TypeAndDisplayName {
     public static readonly EndYYYY = new FiscalYearFormat(4, 'EndYYYY');
     public static readonly EndYY = new FiscalYearFormat(5, 'EndYY');
 
-    public static readonly Default = FiscalYearFormat.StartYYYY_EndYYYY;
+    public static readonly Default = FiscalYearFormat.EndYYYY;
 
     public readonly type: number;
     public readonly displayName: string;

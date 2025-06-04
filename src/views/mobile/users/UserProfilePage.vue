@@ -597,7 +597,7 @@ const currentLanguageName = computed<string>(() => {
 });
 
 const currentDayOfWeekName = computed<string | null>(() => findDisplayNameByType(allWeekDays.value, newProfile.value.firstDayOfWeek));
-const currentFiscalYearStartDate = computed(() => formatFiscalYearStart(newProfile.value.fiscalYearStart) );
+const currentFiscalYearStartDate = computed<string | null>( () => formatFiscalYearStart(newProfile.value.fiscalYearStart) );
 
 function init(): void {
     loading.value = true;

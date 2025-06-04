@@ -23,6 +23,7 @@
                                  :week-start="firstDayOfWeek"
                                  :day-names="dayNames"
                                  :disabled-dates="disabledDates"
+                                 :start-date="selectedDate"
                                  v-model="selectedDate">
                     <template #month="{ text }">
                         {{ getMonthShortName(text) }}
