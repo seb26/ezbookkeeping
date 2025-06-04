@@ -1,6 +1,6 @@
 <template>
     <f7-sheet swipe-to-close swipe-handler=".swipe-handler" class="fiscal-year-start-selection-sheet" style="height:auto"
-              :opened="show" @sheet:open="onSheetOpen">
+              :opened="show" @sheet:open="onSheetOpen" @sheet:closed="onSheetClosed">
         <f7-toolbar>
             <div class="swipe-handler"></div>
             <div class="left">
@@ -87,6 +87,10 @@ const selectedDate = ref<string>(getModelValueToDateString());
 
 function onSheetOpen(): void {
     selectedDate.value = getModelValueToDateString();
+}
+
+function onSheetClosed(): void {
+    emit('update:show', false);
 }
 
 function clear(): void {
