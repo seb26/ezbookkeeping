@@ -17,21 +17,19 @@ export interface FiscalYearStartSelectionBaseEmits {
 }
 
 export function useFiscalYearStartSelectionBase(props: FiscalYearStartSelectionBaseProps, emit: FiscalYearStartSelectionBaseEmits) {
-    const { getAllMinWeekdayNames, formatMonthDayToLongDay, getCurrentFiscalYearStart, getCurrentFiscalYearStartFormatted } = useI18n();
+    const { getAllMinWeekdayNames, formatMonthDayToLongDay, getCurrentFiscalYearStartFormatted } = useI18n();
 
     const dayNames = computed<string[]>(() => arrangeArrayWithNewStartIndex(getAllMinWeekdayNames(), firstDayOfWeek.value));
 
     const displayName = computed<string>(() => {
-        let fy = getCurrentFiscalYearStart();
+        let fy = FiscalYearStart.fromNumber(selectedFiscalYearStart.value);
 
-        if (selectedFiscalYearStart.value !== 0 && selectedFiscalYearStart.value !== undefined) {
-            const testFy = FiscalYearStart.fromNumber(selectedFiscalYearStart.value);
-            if (testFy) {
-                fy = testFy;
-            }
+        if ( fy ) {
+            return formatMonthDayToLongDay(fy.toMonthDashDayString())
         }
-        
-        return formatMonthDayToLongDay(fy.toMonthDashDayString());
+
+        return formatMonthDayToLongDay(FiscalYearStart.strictFromNumber(userStore.currentUserFiscalYearStart).toMonthDashDayString());
+
     });
 
     const disabledDates = (date: Date) => {

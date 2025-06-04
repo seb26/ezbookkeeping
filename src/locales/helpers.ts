@@ -1313,14 +1313,6 @@ export function useI18n() {
         return joinMultiText(finalWeekdayNames);
     }
 
-    function getCurrentFiscalYearStart(): FiscalYearStart {
-        let fiscalYearStart = FiscalYearStart.fromNumber(userStore.currentUserFiscalYearStart);
-        if ( fiscalYearStart ) {
-            return fiscalYearStart;
-        }
-        return FiscalYearStart.Default;
-    }
-
     function getCurrentDecimalSeparator(): string {
         let decimalSeparatorType = DecimalSeparator.valueOf(userStore.currentUserDecimalSeparator);
 
@@ -1869,8 +1861,7 @@ export function useI18n() {
         getWeekdayLongName,
         getMultiMonthdayShortNames,
         getMultiWeekdayLongNames,
-        getCurrentFiscalYearStart,
-        getCurrentFiscalYearStartFormatted: () => formatMonthDayToLongDay(getCurrentFiscalYearStart().toMonthDashDayString()),
+        getCurrentFiscalYearStartFormatted: () => formatMonthDayToLongDay(FiscalYearStart.strictFromNumber(userStore.currentUserFiscalYearStart).toMonthDashDayString()),
         getCurrentFiscalYearFormatType,
         getCurrentDecimalSeparator,
         getCurrentDigitGroupingSymbol,
