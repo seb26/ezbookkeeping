@@ -116,7 +116,7 @@ func (s *TransactionService) GetAllTransactionsWithAccountBalanceByMaxTime(c cor
 	var allTransactions []*models.Transaction
 
 	for maxTransactionTime > 0 {
-		transactions, err := s.GetTransactionsByMaxTime(c, uid, maxTransactionTime, 0, 0, nil, []int64{accountId}, nil, false, models.TRANSACTION_TAG_FILTER_HAS_ANY, "", "", 1, pageCount, false, true)
+		transactions, err := s.GetTransactionsByMaxTime(c, uid, maxTransactionTime, 0, 0, nil, []int64{accountId}, nil, false, models.TRANSACTION_TAG_FILTER_HAS_ANY, nil, models.TRANSACTION_VENDOR_FILTER_ALL, "", "", 1, pageCount, false, true)
 
 		if err != nil {
 			return nil, 0, 0, 0, 0, err
@@ -1400,7 +1400,7 @@ func (s *TransactionService) DeleteAllTransactionsOfAccount(c core.Context, uid 
 		return errs.ErrAccountIdInvalid
 	}
 
-	transactions, err := s.GetAllSpecifiedTransactions(c, uid, 0, 0, 0, nil, []int64{accountId}, nil, false, models.TRANSACTION_TAG_FILTER_HAS_ANY, "", "", pageCount, true)
+	transactions, err := s.GetAllSpecifiedTransactions(c, uid, 0, 0, 0, nil, []int64{accountId}, nil, false, models.TRANSACTION_TAG_FILTER_HAS_ANY, nil, models.TRANSACTION_VENDOR_FILTER_ALL, "", "", pageCount, true)
 
 	if err != nil {
 		return err
@@ -1733,6 +1733,13 @@ func (s *TransactionService) GetTransactionItemsMonthlyIncomeAndExpense(c core.C
 		}
 	}
 
+	condition := "uid=? AND deleted=? AND (type=? OR type=?)"
+	conditionParams := make([]any, 0, 4)
+	conditionParams = append(conditionParams, uid)
+	conditionParams = append(conditionParams, false)
+	conditionParams = append(conditionParams, models.TRANSACTION_DB_TYPE_INCOME)
+	conditionParams = append(conditionParams, models.TRANSACTION_DB_TYPE_EXPENSE)
+
 	minTransactionTime := startTransactionTime
 	maxTransactionTime := endTransactionTime
 	var allTransactions []*models.Transaction
@@ -1760,7 +1767,7 @@ func (s *TransactionService) GetTransactionItemsMonthlyIncomeAndExpense(c core.C
 		}
 
 		sess := s.UserDataDB(uid).NewSession(c).Select("category_id, account_id, vendor_id, transaction_time, timezone_utc_offset, amount").Where(finalCondition, finalConditionParams...)
-		sess = s.appendFilterTagIdsConditionToQuery(sess, uid, maxTransactionTime, minTransactionTime, tagIds, noTags, tagFilterType, vendorIds, vendorFilterType)
+		sess = s.appendFilterConditionsToQuery(sess, uid, maxTransactionTime, minTransactionTime, tagIds, noTags, tagFilterType, vendorIds, vendorFilterType)
 
 		err := sess.Limit(pageCountForLoadTransactionAmounts, 0).OrderBy("transaction_time desc").Find(&transactions)
 

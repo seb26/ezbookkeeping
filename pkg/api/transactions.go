@@ -380,7 +380,7 @@ func (a *TransactionsApi) TransactionReconciliationStatementHandler(c *core.WebC
 		transactionAccountBalanceMap[transactionWithBalance.RelatedId] = transactionWithBalance
 	}
 
-	transactionResult, err := a.getTransactionResponseListResult(c, user, transactions, utcOffset, false, true, true, true)
+	transactionResult, err := a.getTransactionResponseListResult(c, user, transactions, utcOffset, false, true, true, true, true)
 
 	if err != nil {
 		log.Errorf(c, "[transactions.TransactionReconciliationStatementHandler] failed to assemble transaction result for user \"uid:%d\", because %s", uid, err.Error())
