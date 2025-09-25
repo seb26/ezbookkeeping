@@ -661,12 +661,12 @@
                                                             :text="tt('None')"
                                                             v-if="!transaction.tagIds || !transaction.tagIds.length"/>
                                                 </td>
-                                                <td class="transaction-table-column-description text-truncate">
-                                                    {{ transaction.comment }}
-                                                </td>
                                                 <td class="transaction-table-column-vendor">
                                                     <span v-if="transaction.vendor">{{ transaction.vendor.name }}</span>
                                                     <span v-else>{{ tt('None') }}</span>
+                                                </td>
+                                                <td class="transaction-table-column-description text-truncate">
+                                                    {{ transaction.comment }}
                                                 </td>
                                             </tr>
                                         </tbody>
