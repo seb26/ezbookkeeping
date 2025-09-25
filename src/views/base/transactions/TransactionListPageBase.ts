@@ -224,7 +224,7 @@ export function useTransactionListPageBase() {
             return tt('Multiple Vendors');
         }
 
-        return allTransactionVendors.value[query.value.vendorIds]?.name || tt('Transaction Vendor');
+        return allTransactionVendors.value[query.value.vendorIds]?.name || tt('Vendor');
     });
 
     const queryAmount = computed<string>(() => {
