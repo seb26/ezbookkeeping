@@ -57,12 +57,9 @@ export function useTransactionVendorFilterSettingPageBase(type?: string) {
         if (type === 'statisticsCurrent') {
             const transactionVendorIds = statisticsStore.transactionStatisticsFilter.vendorIds ? statisticsStore.transactionStatisticsFilter.vendorIds.split(',') : [];
 
-            for (let i = 0; i < transactionVendorIds.length; i++) {
-                const transactionVendorId = transactionVendorIds[i];
-                const transactionVendor = transactionVendorsStore.allTransactionVendorsMap[transactionVendorId];
-
-                if (transactionVendor) {
-                    selectedVendorIds[transactionVendor.id] = true;
+            for (const transactionVendorId of transactionVendorIds) {
+                if (transactionVendorsStore.allTransactionVendorsMap[transactionVendorId]) {
+                    selectedVendorIds[transactionVendorId] = true;
                 }
             }
             filterVendorIds.value = selectedVendorIds;
@@ -75,10 +72,8 @@ export function useTransactionVendorFilterSettingPageBase(type?: string) {
                     continue;
                 }
 
-                const transactionVendor = transactionVendorsStore.allTransactionVendorsMap[transactionVendorId];
-
-                if (transactionVendor) {
-                    selectedVendorIds[transactionVendor.id] = true;
+                if (transactionVendorsStore.allTransactionVendorsMap[transactionVendorId]) {
+                    selectedVendorIds[transactionVendorId] = true;
                 }
             }
             filterVendorIds.value = selectedVendorIds;

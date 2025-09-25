@@ -447,7 +447,6 @@ export function useTransactionEditPageBase(type: TransactionEditPageType, initMo
         allTagsMap, 
         allVendors,
         allVendorsMap,
-        allTagsMap,
         firstVisibleAccountId,
         hasAvailableExpenseCategories,
         hasAvailableIncomeCategories,

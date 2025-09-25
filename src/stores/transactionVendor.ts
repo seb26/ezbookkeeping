@@ -49,7 +49,9 @@ export const useTransactionVendorsStore = defineStore('transactionVendors', () =
 
     function updateVendorInTransactionVendorList(vendor: TransactionVendor): void {
         for (let i = 0; i < allTransactionVendors.value.length; i++) {
-            if (allTransactionVendors.value[i].id === vendor.id) {
+            const existingVendor = allTransactionVendors.value[i];
+
+            if (existingVendor && existingVendor.id === vendor.id) {
                 allTransactionVendors.value.splice(i, 1, vendor);
                 break;
             }
@@ -59,17 +61,18 @@ export const useTransactionVendorsStore = defineStore('transactionVendors', () =
     }
 
     function updateVendorVisibilityInTransactionVendorList({ vendor, hidden }: { vendor: TransactionVendor, hidden: boolean }): void {
-        if (allTransactionVendorsMap.value[vendor.id]) {
-            allTransactionVendorsMap.value[vendor.id].hidden = hidden;
+        const existingVendor = allTransactionVendorsMap.value[vendor.id];
+
+        if (existingVendor) {
+            existingVendor.hidden = hidden;
         }
     }
 
     function removeVendorFromTransactionVendorList(vendor: TransactionVendor): void {
-        for (let i = 0; i < allTransactionVendors.value.length; i++) {
-            if (allTransactionVendors.value[i].id === vendor.id) {
-                allTransactionVendors.value.splice(i, 1);
-                break;
-            }
+        const index = allTransactionVendors.value.findIndex(existingVendor => existingVendor.id === vendor.id);
+
+        if (index !== -1) {
+            allTransactionVendors.value.splice(index, 1);
         }
 
         if (allTransactionVendorsMap.value[vendor.id]) {

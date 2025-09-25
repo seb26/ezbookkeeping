@@ -168,7 +168,7 @@ export class Transaction implements TransactionInfoResponse {
         return this._vendor;
     }
 
-    public setVendor(vendor: TransactionVendor): void {
+    public setVendor(vendor?: TransactionVendor): void {
         this._vendor = vendor;
     }
 
