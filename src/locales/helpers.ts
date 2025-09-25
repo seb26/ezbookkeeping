@@ -123,7 +123,8 @@ import {
 
 import {
     TransactionEditScopeType,
-    TransactionTagFilterType
+    TransactionTagFilterType,
+    TransactionVendorFilterType
 } from '@/core/transaction.ts';
 
 import {
@@ -2312,6 +2313,7 @@ export function useI18n() {
         getAllStatisticsDateAggregationTypesWithShortName: () => getLocalizedChartDateAggregationTypeAndDisplayName(false),
         getAllTransactionEditScopeTypes: () => getLocalizedDisplayNameAndType(TransactionEditScopeType.values()),
         getAllTransactionTagFilterTypes: () => getLocalizedDisplayNameAndType(TransactionTagFilterType.values()),
+        getAllTransactionVendorFilterTypes: () => getLocalizedDisplayNameAndType(TransactionVendorFilterType.values()),
         getAllTransactionScheduledFrequencyTypes: () => getLocalizedDisplayNameAndType(ScheduledTemplateFrequencyType.values()),
         getAllImportTransactionColumnTypes: () => getLocalizedDisplayNameAndType(ImportTransactionColumnType.values()),
         getAllTransactionDefaultCategories,

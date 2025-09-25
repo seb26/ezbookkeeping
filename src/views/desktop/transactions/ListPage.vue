@@ -510,13 +510,83 @@
                                                     </v-list>
                                                 </v-menu>
                                             </th>
+                                            <th class="transaction-table-column-vendor text-no-wrap">
+                                                <v-menu ref="vendorFilterMenu" class="transaction-vendor-menu"
+                                                        eager location="bottom" max-height="500"
+                                                        @update:model-value="scrollVendorMenuToSelectedItem">
+                                                    <template #activator="{ props }">
+                                                        <div class="d-flex align-center cursor-pointer"
+                                                             :class="{ 'readonly': loading, 'text-primary': query.vendorIds }" v-bind="props">
+                                                            <span>{{ queryVendorName }}</span>
+                                                            <v-icon :icon="mdiMenuDown" />
+                                                        </div>
+                                                    </template>
+                                                    <v-list :selected="[queryAllSelectedFilterVendorIds]">
+                                                        <v-list-item key="" value="" class="text-sm" density="compact"
+                                                                     :class="{ 'list-item-selected': !query.vendorIds }"
+                                                                     :append-icon="(!query.vendorIds ? mdiCheck : undefined)">
+                                                            <v-list-item-title class="cursor-pointer"
+                                                                               @click="changeVendorFilter('')">
+                                                                <div class="d-flex align-center">
+                                                                    <v-icon :icon="mdiViewGridOutline" />
+                                                                    <span class="text-sm ml-3">{{ tt('All') }}</span>
+                                                                </div>
+                                                            </v-list-item-title>
+                                                        </v-list-item>
+                                                        <v-list-item key="none" value="none" class="text-sm" density="compact"
+                                                                     :class="{ 'list-item-selected': query.vendorIds === 'none' }"
+                                                                     :append-icon="(query.vendorIds === 'none' ? mdiCheck : undefined)">
+                                                            <v-list-item-title class="cursor-pointer"
+                                                                               @click="changeVendorFilter('none')">
+                                                                <div class="d-flex align-center">
+                                                                    <v-icon :icon="mdiBorderNoneVariant" />
+                                                                    <span class="text-sm ml-3">{{ tt('Without Vendor') }}</span>
+                                                                </div>
+                                                            </v-list-item-title>
+                                                        </v-list-item>
+                                                        <v-list-item key="multiple" value="multiple" class="text-sm" density="compact"
+                                                                     :class="{ 'list-item-selected': query.vendorIds && queryAllFilterVendorIdsCount > 1 }"
+                                                                     :append-icon="(query.vendorIds && queryAllFilterVendorIdsCount > 1 ? mdiCheck : undefined)"
+                                                                     v-if="allAvailableVendorsCount > 0">
+                                                            <v-list-item-title class="cursor-pointer"
+                                                                               @click="showFilterVendorDialog = true">
+                                                                <div class="d-flex align-center">
+                                                                    <v-icon :icon="mdiVectorArrangeBelow" />
+                                                                    <span class="text-sm ml-3">{{ tt('Multiple Vendors') }}</span>
+                                                                </div>
+                                                            </v-list-item-title>
+                                                        </v-list-item>
+
+                                                        <v-divider v-if="query.vendorIds && query.vendorIds !== 'none'" />
+
+                                                        <template :key="transactionVendor.id"
+                                                                  v-for="transactionVendor in allTransactionVendors">
+                                                            <v-divider v-if="!transactionVendor.hidden || query.vendorIds === transactionVendor.id" />
+                                                            <v-list-item class="text-sm" density="compact"
+                                                                         :value="transactionVendor.id"
+                                                                         :class="{ 'list-item-selected': query.vendorIds === transactionVendor.id, 'item-in-multiple-selection': queryAllFilterVendorIdsCount > 1 && queryAllFilterVendorIds[transactionVendor.id] }"
+                                                                         :append-icon="(query.vendorIds === transactionVendor.id ? mdiCheck : undefined)"
+                                                                         v-if="!transactionVendor.hidden || query.vendorIds === transactionVendor.id">
+                                                                <v-list-item-title class="cursor-pointer"
+                                                                                   @click="changeVendorFilter(transactionVendor.id)">
+                                                                    <div class="d-flex align-center">
+                                                                        <v-icon size="24" :icon="mdiStoreOutline"/>
+                                                                        <span class="text-sm ml-3">{{ transactionVendor.name }}</span>
+                                                                    </div>
+                                                                </v-list-item-title>
+                                                            </v-list-item>
+                                                        </template>
+                                                    </v-list>
+                                                </v-menu>
+                                            </th>
                                             <th class="transaction-table-column-description text-no-wrap">{{ tt('Description') }}</th>
+                                            
                                         </tr>
                                         </thead>
 
                                         <tbody v-if="loading && (!transactions || !transactions.length || transactions.length < 1)">
                                         <tr :key="itemIdx" v-for="itemIdx in skeletonData">
-                                            <td class="px-0" :colspan="showTagInTransactionListPage ? 6 : 5">
+                                            <td class="px-0" :colspan="showTagInTransactionListPage ? 7 : 6">
                                                 <v-skeleton-loader type="text" :loading="true"></v-skeleton-loader>
                                             </td>
                                         </tr>
@@ -524,7 +594,7 @@
 
                                         <tbody v-if="!loading && (!transactions || !transactions.length || transactions.length < 1)">
                                         <tr>
-                                            <td :colspan="showTagInTransactionListPage ? 6 : 5">{{ tt('No transaction data') }}</td>
+                                            <td :colspan="showTagInTransactionListPage ? 7 : 6">{{ tt('No transaction data') }}</td>
                                         </tr>
                                         </tbody>
 
@@ -533,7 +603,7 @@
                                                v-for="(transaction, idx) in transactions">
                                             <tr class="transaction-list-row-date no-hover text-sm"
                                                 v-if="pageType === TransactionListPageType.List.type && (idx === 0 || (idx > 0 && (transaction.gregorianCalendarYearDashMonthDashDay !== transactions[idx - 1]!.gregorianCalendarYearDashMonthDashDay)))">
-                                                <td :colspan="showTagInTransactionListPage ? 6 : 5" class="font-weight-bold">
+                                                <td :colspan="showTagInTransactionListPage ? 7 : 6" class="font-weight-bold">
                                                     <div class="d-flex align-center">
                                                         <span>{{ getDisplayLongDate(transaction) }}</span>
                                                         <v-chip class="ms-1" color="default" size="x-small"
@@ -594,6 +664,10 @@
                                                 <td class="transaction-table-column-description text-truncate">
                                                     {{ transaction.comment }}
                                                 </td>
+                                                <td class="transaction-table-column-vendor">
+                                                    <span v-if="transaction.vendor">{{ transaction.vendor.name }}</span>
+                                                    <span v-else>{{ tt('None') }}</span>
+                                                </td>
                                             </tr>
                                         </tbody>
                                     </v-table>
@@ -643,6 +717,11 @@
                                        @settings:change="changeMultipleTagsFilter" />
     </v-dialog>
 
+    <v-dialog width="800" v-model="showFilterVendorDialog">
+        <transaction-vendor-filter-settings-card type="transactionListCurrent" :dialog-mode="true"
+                                       @settings:change="changeMultipleVendorsFilter" />
+    </v-dialog>
+
     <confirm-dialog ref="confirmDialog"/>
     <snack-bar ref="snackbar" />
 </template>
@@ -658,6 +737,7 @@ import ImportDialog from './import/ImportDialog.vue';
 import AccountFilterSettingsCard from '@/views/desktop/common/cards/AccountFilterSettingsCard.vue';
 import CategoryFilterSettingsCard from '@/views/desktop/common/cards/CategoryFilterSettingsCard.vue';
 import TransactionTagFilterSettingsCard from '@/views/desktop/common/cards/TransactionTagFilterSettingsCard.vue';
+import TransactionVendorFilterSettingsCard from '@/views/desktop/common/cards/TransactionVendorFilterSettingsCard.vue';
 import { TransactionEditPageType } from '@/views/base/transactions/TransactionEditPageBase.ts';
 
 import { ref, computed, useTemplateRef, watch, nextTick } from 'vue';
@@ -672,6 +752,7 @@ import { useUserStore } from '@/stores/user.ts';
 import { useAccountsStore } from '@/stores/account.ts';
 import { useTransactionCategoriesStore } from '@/stores/transactionCategory.ts';
 import { useTransactionTagsStore } from '@/stores/transactionTag.ts';
+import { useTransactionVendorsStore } from '@/stores/transactionVendor.ts';
 import { useTransactionsStore } from '@/stores/transaction.ts';
 import { useTransactionTemplatesStore } from '@/stores/transactionTemplate.ts';
 import { useDesktopPageStore } from '@/stores/desktopPage.ts';
@@ -745,6 +826,7 @@ import {
     mdiMinusBoxMultipleOutline,
     mdiCloseBoxMultipleOutline,
     mdiPound,
+    mdiStoreOutline,
     mdiMagicStaff,
     mdiTextBoxOutline
 } from '@mdi/js';
@@ -759,6 +841,7 @@ interface TransactionListProps {
     initAccountIds?: string,
     initTagIds?: string,
     initTagFilterType?: string,
+    initVendorIds?: string,
     initAmountFilter?: string,
     initKeyword?: string
 }
@@ -815,6 +898,8 @@ const {
     allAvailableCategoriesCount,
     allTransactionTags,
     allAvailableTagsCount,
+    allTransactionVendors,
+    allAvailableVendorsCount,
     query,
     queryMinTime,
     queryMaxTime,
@@ -823,12 +908,15 @@ const {
     queryAllFilterCategoryIds,
     queryAllFilterAccountIds,
     queryAllFilterTagIds,
+    queryAllFilterVendorIds,
     queryAllFilterCategoryIdsCount,
     queryAllFilterAccountIdsCount,
     queryAllFilterTagIdsCount,
+    queryAllFilterVendorIdsCount,
     queryAccountName,
     queryCategoryName,
     queryTagName,
+    queryVendorName,
     queryAmount,
     transactionCalendarMinDate,
     transactionCalendarMaxDate,
@@ -848,6 +936,7 @@ const userStore = useUserStore();
 const accountsStore = useAccountsStore();
 const transactionCategoriesStore = useTransactionCategoriesStore();
 const transactionTagsStore = useTransactionTagsStore();
+const transactionVendorsStore = useTransactionVendorsStore();
 const transactionsStore = useTransactionsStore();
 const transactionTemplatesStore = useTransactionTemplatesStore();
 const desktopPageStore = useDesktopPageStore();
@@ -864,6 +953,7 @@ const categoryFilterMenu = useTemplateRef<VMenu>('categoryFilterMenu');
 const amountFilterMenu = useTemplateRef<VMenu>('amountFilterMenu');
 const accountFilterMenu = useTemplateRef<VMenu>('accountFilterMenu');
 const tagFilterMenu = useTemplateRef<VMenu>('tagFilterMenu');
+const vendorFilterMenu = useTemplateRef<VMenu>('vendorFilterMenu');
 
 const confirmDialog = useTemplateRef<ConfirmDialogType>('confirmDialog');
 const snackbar = useTemplateRef<SnackBarType>('snackbar');
@@ -890,6 +980,7 @@ const showCustomMonthDialog = ref<boolean>(false);
 const showFilterAccountDialog = ref<boolean>(false);
 const showFilterCategoryDialog = ref<boolean>(false);
 const showFilterTagDialog = ref<boolean>(false);
+const showFilterVendorDialog = ref<boolean>(false);
 
 const isDarkMode = computed<boolean>(() => theme.global.name.value === ThemeType.Dark);
 const numeralSystem = computed<NumeralSystem>(() => getCurrentNumeralSystemType());
@@ -1027,6 +1118,16 @@ const queryAllSelectedFilterTagIds = computed<string>(() => {
     }
 });
 
+const queryAllSelectedFilterVendorIds = computed<string>(() => {
+    if (queryAllFilterVendorIdsCount.value === 0) {
+        return '';
+    } else if (queryAllFilterVendorIdsCount.value === 1) {
+        return query.value.vendorIds;
+    } else { // queryAllFilterVendorIdsCount.value > 1
+        return 'multiple';
+    }
+});
+
 const countPerPage = computed<number>({
     get: () => {
         if (temporaryCountPerPage.value) {
@@ -1149,6 +1250,7 @@ function init(initProps: TransactionListProps): void {
         accountIds: initProps.initAccountIds,
         tagIds: initProps.initTagIds,
         tagFilterType: initProps.initTagFilterType && parseInt(initProps.initTagFilterType) >= 0 ? parseInt(initProps.initTagFilterType) : undefined,
+        vendorIds: initProps.initVendorIds,
         amountFilter: initProps.initAmountFilter || '',
         keyword: initProps.initKeyword || ''
     });
@@ -1200,7 +1302,8 @@ function reload(force: boolean, init: boolean): void {
     Promise.all([
         accountsStore.loadAllAccounts({ force: false }),
         transactionCategoriesStore.loadAllCategories({ force: false }),
-        transactionTagsStore.loadAllTags({ force: false })
+        transactionTagsStore.loadAllTags({ force: false }),
+        transactionVendorsStore.loadAllVendors({ force: false })
     ]).then(() => {
         if (init) {
             if (desktopPageStore.showAddTransactionDialogInTransactionList) {
@@ -1520,6 +1623,23 @@ function changeTagFilterType(filterType: number): void {
     updateUrlWhenChanged(changed);
 }
 
+function changeVendorFilter(vendorIds: string): void {
+    if (query.value.vendorIds === vendorIds) {
+        return;
+    }
+
+    const changed = transactionsStore.updateTransactionListFilter({
+        vendorIds: vendorIds
+    });
+
+    updateUrlWhenChanged(changed);
+}
+
+function changeMultipleVendorsFilter(changed: boolean): void {
+    showFilterVendorDialog.value = false;
+    updateUrlWhenChanged(changed);
+}
+
 function changeKeywordFilter(keyword: string): void {
     if (query.value.keyword === keyword) {
         return;
@@ -1746,6 +1866,12 @@ function scrollTagMenuToSelectedItem(opened: boolean): void {
     }
 }
 
+function scrollVendorMenuToSelectedItem(opened: boolean): void {
+    if (opened) {
+        scrollMenuToSelectedItem(vendorFilterMenu.value);
+    }
+}
+
 function scrollMenuToSelectedItem(menu: VMenu | null): void {
     nextTick(() => {
         scrollToSelectedItem(menu?.contentEl, 'div.v-list', 'div.v-list-item.list-item-selected');
@@ -1767,6 +1893,7 @@ onBeforeRouteUpdate((to) => {
             initAccountIds: (to.query['accountIds'] as string | null) || undefined,
             initTagIds: (to.query['tagIds'] as string | null) || undefined,
             initTagFilterType: (to.query['tagFilterType'] as string | null) || undefined,
+            initVendorIds: (to.query['vendorIds'] as string | null) || undefined,
             initAmountFilter: (to.query['amountFilter'] as string | null) || undefined,
             initKeyword: (to.query['keyword'] as string | null) || undefined
         });

@@ -57,3 +57,29 @@ export class TransactionTagFilterType implements TypeAndName {
         return TransactionTagFilterType.allInstances;
     }
 }
+
+export class TransactionVendorFilterType implements TypeAndName {
+    private static readonly allInstances: TransactionVendorFilterType[] = [];
+
+    public static readonly All = new TransactionVendorFilterType(0, 'All');
+    public static readonly HasVendor = new TransactionVendorFilterType(1, 'Has Any Vendor');
+    public static readonly NoVendor = new TransactionVendorFilterType(2, 'Has No Vendor');
+    public static readonly IncludeVendors = new TransactionVendorFilterType(3, 'Include Selected Vendors');
+    public static readonly ExcludeVendors = new TransactionVendorFilterType(4, 'Exclude Selected Vendors');
+
+    public static readonly Default = TransactionVendorFilterType.All;
+
+    public readonly type: number;
+    public readonly name: string;
+
+    private constructor(type: number, name: string) {
+        this.type = type;
+        this.name = name;
+
+        TransactionVendorFilterType.allInstances.push(this);
+    }
+
+    public static values(): TransactionVendorFilterType[] {
+        return TransactionVendorFilterType.allInstances;
+    }
+}

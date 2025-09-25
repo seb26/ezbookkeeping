@@ -103,6 +103,13 @@ import type {
     TransactionTagInfoResponse
 } from '@/models/transaction_tag.ts';
 import type {
+    TransactionVendorCreateRequest,
+    TransactionVendorModifyRequest,
+    TransactionVendorHideRequest,
+    TransactionVendorDeleteRequest,
+    TransactionVendorInfoResponse
+} from '@/models/transaction_vendor.ts';
+import type {
     TransactionTemplateCreateRequest,
     TransactionTemplateModifyRequest,
     TransactionTemplateHideRequest,
@@ -426,12 +433,12 @@ export default {
     getTransactions: (req: TransactionListByMaxTimeRequest): ApiResponsePromise<TransactionInfoPageWrapperResponse> => {
         const amountFilter = encodeURIComponent(req.amountFilter);
         const keyword = encodeURIComponent(req.keyword);
-        return axios.get<ApiResponse<TransactionInfoPageWrapperResponse>>(`v1/transactions/list.json?max_time=${req.maxTime}&min_time=${req.minTime}&type=${req.type}&category_ids=${req.categoryIds}&account_ids=${req.accountIds}&tag_ids=${req.tagIds}&tag_filter_type=${req.tagFilterType}&amount_filter=${amountFilter}&keyword=${keyword}&count=${req.count}&page=${req.page}&with_count=${req.withCount}&trim_account=true&trim_category=true&trim_tag=true`);
+        return axios.get<ApiResponse<TransactionInfoPageWrapperResponse>>(`v1/transactions/list.json?max_time=${req.maxTime}&min_time=${req.minTime}&type=${req.type}&category_ids=${req.categoryIds}&account_ids=${req.accountIds}&tag_ids=${req.tagIds}&tag_filter_type=${req.tagFilterType}&vendor_ids=${req.vendorIds}&amount_filter=${amountFilter}&keyword=${keyword}&count=${req.count}&page=${req.page}&with_count=${req.withCount}&trim_account=true&trim_category=true&trim_tag=true`);
     },
     getAllTransactionsByMonth: (req: TransactionListInMonthByPageRequest): ApiResponsePromise<TransactionInfoPageWrapperResponse2> => {
         const amountFilter = encodeURIComponent(req.amountFilter);
         const keyword = encodeURIComponent(req.keyword);
-        return axios.get<ApiResponse<TransactionInfoPageWrapperResponse2>>(`v1/transactions/list/by_month.json?year=${req.year}&month=${req.month}&type=${req.type}&category_ids=${req.categoryIds}&account_ids=${req.accountIds}&tag_ids=${req.tagIds}&tag_filter_type=${req.tagFilterType}&amount_filter=${amountFilter}&keyword=${keyword}&trim_account=true&trim_category=true&trim_tag=true`);
+        return axios.get<ApiResponse<TransactionInfoPageWrapperResponse2>>(`v1/transactions/list/by_month.json?year=${req.year}&month=${req.month}&type=${req.type}&category_ids=${req.categoryIds}&account_ids=${req.accountIds}&tag_ids=${req.tagIds}&tag_filter_type=${req.tagFilterType}&vendor_ids=${req.vendorIds}&amount_filter=${amountFilter}&keyword=${keyword}&trim_account=true&trim_category=true&trim_tag=true`);
     },
     getReconciliationStatements: (req: TransactionReconciliationStatementRequest): ApiResponsePromise<TransactionReconciliationStatementResponse> => {
         return axios.get<ApiResponse<TransactionReconciliationStatementResponse>>(`v1/transactions/reconciliation_statements.json?account_id=${req.accountId}&start_time=${req.startTime}&end_time=${req.endTime}`);
@@ -453,6 +460,14 @@ export default {
 
         if (req.tagFilterType) {
             queryParams.push(`tag_filter_type=${req.tagFilterType}`);
+        }
+
+        if (req.vendorIds) {
+            queryParams.push(`vendor_ids=${req.vendorIds}`);
+        }
+
+        if (req.vendorFilterType) {
+            queryParams.push(`vendor_filter_type=${req.vendorFilterType}`);
         }
 
         if (req.keyword) {
@@ -478,6 +493,14 @@ export default {
 
         if (req.tagFilterType) {
             queryParams.push(`tag_filter_type=${req.tagFilterType}`);
+        }
+
+        if (req.vendorIds) {
+            queryParams.push(`vendor_ids=${req.vendorIds}`);
+        }
+
+        if (req.vendorFilterType) {
+            queryParams.push(`vendor_filter_type=${req.vendorFilterType}`);
         }
 
         if (req.keyword) {
@@ -628,6 +651,24 @@ export default {
     },
     deleteTransactionTag: (req: TransactionTagDeleteRequest): ApiResponsePromise<boolean> => {
         return axios.post<ApiResponse<boolean>>('v1/transaction/tags/delete.json', req);
+    },
+    getAllTransactionVendors: (): ApiResponsePromise<TransactionVendorInfoResponse[]> => {
+        return axios.get<ApiResponse<TransactionVendorInfoResponse[]>>('v1/transaction/vendors/list.json');
+    },
+    getTransactionVendor: ({ id }: { id: string }): ApiResponsePromise<TransactionVendorInfoResponse> => {
+        return axios.get<ApiResponse<TransactionVendorInfoResponse>>('v1/transaction/vendors/get.json?id=' + id);
+    },
+    addTransactionVendor: (req: TransactionVendorCreateRequest): ApiResponsePromise<TransactionVendorInfoResponse> => {
+        return axios.post<ApiResponse<TransactionVendorInfoResponse>>('v1/transaction/vendors/add.json', req);
+    },
+    modifyTransactionVendor: (req: TransactionVendorModifyRequest): ApiResponsePromise<TransactionVendorInfoResponse> => {
+        return axios.post<ApiResponse<TransactionVendorInfoResponse>>('v1/transaction/vendors/modify.json', req);
+    },
+    hideTransactionVendor: (req: TransactionVendorHideRequest): ApiResponsePromise<boolean> => {
+        return axios.post<ApiResponse<boolean>>('v1/transaction/vendors/hide.json', req);
+    },
+    deleteTransactionVendor: (req: TransactionVendorDeleteRequest): ApiResponsePromise<boolean> => {
+        return axios.post<ApiResponse<boolean>>('v1/transaction/vendors/delete.json', req);
     },
     getAllTransactionTemplates: ({ templateType }: { templateType: number }): ApiResponsePromise<TransactionTemplateInfoResponse[]> => {
         return axios.get<ApiResponse<TransactionTemplateInfoResponse[]>>('v1/transaction/templates/list.json?templateType=' + templateType);

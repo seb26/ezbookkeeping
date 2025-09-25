@@ -567,6 +567,7 @@ const {
     allCategoriesMap,
     allTags,
     allTagsMap,
+    allVendorsMap,
     firstVisibleAccountId,
     hasAvailableExpenseCategories,
     hasAvailableIncomeCategories,
@@ -935,6 +936,7 @@ function init(): void {
             allVisibleAccounts.value,
             allAccountsMap.value,
             allTagsMap.value,
+            allVendorsMap.value,
             defaultAccountId.value,
             {
                 time: query['time'] ? parseInt(query['time']) : undefined,

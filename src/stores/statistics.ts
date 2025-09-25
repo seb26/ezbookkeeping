@@ -5,13 +5,14 @@ import { useSettingsStore } from './setting.ts';
 import { useUserStore } from './user.ts';
 import { useAccountsStore } from './account.ts';
 import { useTransactionCategoriesStore } from './transactionCategory.ts';
+import { useTransactionVendorsStore } from './transactionVendor.ts';
 import { useExchangeRatesStore } from './exchangeRates.ts';
 
 import { entries, values } from '@/core/base.ts';
 import { type TextualYearMonth, type TimeRangeAndDateType, DateRangeScene, DateRange } from '@/core/datetime.ts';
 import { TimezoneTypeForStatistics } from '@/core/timezone.ts';
 import { CategoryType } from '@/core/category.ts';
-import { TransactionTagFilterType } from '@/core/transaction.ts';
+import { TransactionTagFilterType, TransactionVendorFilterType } from '@/core/transaction.ts';
 import {
     StatisticsAnalysisType,
     CategoricalChartType,
@@ -27,6 +28,7 @@ import { DEFAULT_ACCOUNT_COLOR, DEFAULT_CATEGORY_COLOR } from '@/consts/color.ts
 
 import type { Account } from '@/models/account.ts';
 import type { TransactionCategory } from '@/models/transaction_category.ts';
+import type { TransactionVendor } from '@/models/transaction_vendor.ts';
 import type {
     TransactionStatisticResponse,
     TransactionStatisticResponseItem,
@@ -61,11 +63,12 @@ import services from '@/lib/services.ts';
 interface TransactionStatisticResponseItemWithInfo extends TransactionStatisticResponseItem {
     categoryId: string;
     accountId: string;
-    amount: number;
+    vendorId: string;
     account?: Account;
     primaryAccount?: Account;
     category?: TransactionCategory;
     primaryCategory?: TransactionCategory;
+    vendor?: TransactionVendor;
     amountInDefaultCurrency: number | null;
 }
 
@@ -123,8 +126,11 @@ export interface TransactionStatisticsPartialFilter {
     trendChartEndYearMonth?: TextualYearMonth | '';
     filterAccountIds?: Record<string, boolean>;
     filterCategoryIds?: Record<string, boolean>;
+    filterVendorIds?: Record<string, boolean>;
     tagIds?: string;
     tagFilterType?: number;
+    vendorIds?: string;
+    vendorFilterType?: number;
     keyword?: string;
     sortingType?: number;
 }
@@ -143,6 +149,8 @@ export interface TransactionStatisticsFilter extends TransactionStatisticsPartia
     filterCategoryIds: Record<string, boolean>;
     tagIds: string;
     tagFilterType: number;
+    vendorIds: string;
+    vendorFilterType: number;
     keyword: string;
     sortingType: number;
 }
@@ -152,6 +160,7 @@ export const useStatisticsStore = defineStore('statistics', () => {
     const userStore = useUserStore();
     const accountsStore = useAccountsStore();
     const transactionCategoriesStore = useTransactionCategoriesStore();
+    const transactionVendorsStore = useTransactionVendorsStore();
     const exchangeRatesStore = useExchangeRatesStore();
 
     const transactionStatisticsFilter = ref<TransactionStatisticsFilter>({
@@ -166,8 +175,11 @@ export const useStatisticsStore = defineStore('statistics', () => {
         trendChartEndYearMonth: '',
         filterAccountIds: {},
         filterCategoryIds: {},
+        filterVendorIds: {},
         tagIds: '',
         tagFilterType: TransactionTagFilterType.Default.type,
+        vendorIds: '',
+        vendorFilterType: TransactionVendorFilterType.Default.type,
         keyword: '',
         sortingType: ChartSortingType.Default.type
     });
@@ -187,6 +199,9 @@ export const useStatisticsStore = defineStore('statistics', () => {
             transactionStatisticsFilter.value.chartDataType === ChartDataType.IncomeByPrimaryCategory.type ||
             transactionStatisticsFilter.value.chartDataType === ChartDataType.IncomeBySecondaryCategory.type) {
             return 'category';
+        } else if (transactionStatisticsFilter.value.chartDataType === ChartDataType.ExpenseByVendor.type ||
+            transactionStatisticsFilter.value.chartDataType === ChartDataType.IncomeByVendor.type) {
+            return 'vendor';
         } else {
             return '';
         }
@@ -206,7 +221,7 @@ export const useStatisticsStore = defineStore('statistics', () => {
         };
 
         if (statistics && statistics.items && statistics.items.length) {
-            finalStatistics.items.push(...assembleAccountAndCategoryInfo(statistics.items));
+            finalStatistics.items.push(...assembleTransactionItemInfo(statistics.items));
         }
 
         return finalStatistics;
@@ -299,9 +314,11 @@ export const useStatisticsStore = defineStore('statistics', () => {
         if (transactionStatisticsFilter.value.chartDataType === ChartDataType.ExpenseByAccount.type ||
             transactionStatisticsFilter.value.chartDataType === ChartDataType.ExpenseByPrimaryCategory.type ||
             transactionStatisticsFilter.value.chartDataType === ChartDataType.ExpenseBySecondaryCategory.type ||
+            transactionStatisticsFilter.value.chartDataType === ChartDataType.ExpenseByVendor.type ||
             transactionStatisticsFilter.value.chartDataType === ChartDataType.IncomeByAccount.type ||
             transactionStatisticsFilter.value.chartDataType === ChartDataType.IncomeByPrimaryCategory.type ||
-            transactionStatisticsFilter.value.chartDataType === ChartDataType.IncomeBySecondaryCategory.type) {
+            transactionStatisticsFilter.value.chartDataType === ChartDataType.IncomeBySecondaryCategory.type ||
+            transactionStatisticsFilter.value.chartDataType === ChartDataType.IncomeByVendor.type) {
             combinedData = transactionCategoryTotalAmountAnalysisData.value;
         } else if (transactionStatisticsFilter.value.chartDataType === ChartDataType.AccountTotalAssets.type ||
             transactionStatisticsFilter.value.chartDataType === ChartDataType.AccountTotalLiabilities.type) {
@@ -363,7 +380,7 @@ export const useStatisticsStore = defineStore('statistics', () => {
                 };
 
                 if (trendItem && trendItem.items && trendItem.items.length) {
-                    finalTrendItem.items.push(...assembleAccountAndCategoryInfo(trendItem.items));
+                    finalTrendItem.items.push(...assembleTransactionItemInfo(trendItem.items));
                 }
 
                 finalTrendsData.push(finalTrendItem);
@@ -426,7 +443,7 @@ export const useStatisticsStore = defineStore('statistics', () => {
         return trendsData;
     });
 
-    function assembleAccountAndCategoryInfo(items: TransactionStatisticResponseItem[]): TransactionStatisticResponseItemWithInfo[] {
+    function assembleTransactionItemInfo(items: TransactionStatisticResponseItem[]): TransactionStatisticResponseItemWithInfo[] {
         const finalItems: TransactionStatisticResponseItemWithInfo[] = [];
         const defaultCurrency = userStore.currentUserDefaultCurrency;
 
@@ -434,6 +451,7 @@ export const useStatisticsStore = defineStore('statistics', () => {
             const item: TransactionStatisticResponseItemWithInfo = {
                 categoryId: dataItem.categoryId,
                 accountId: dataItem.accountId,
+                vendorId: dataItem.vendorId,
                 amount: dataItem.amount,
                 amountInDefaultCurrency: null
             };
@@ -456,6 +474,10 @@ export const useStatisticsStore = defineStore('statistics', () => {
                 item.primaryCategory = transactionCategoriesStore.allTransactionCategoriesMap[item.category.parentId];
             } else {
                 item.primaryCategory = item.category;
+            }
+
+            if (item.vendorId) {
+                item.vendor = transactionVendorsStore.allTransactionVendorsMap[item.vendorId];
             }
 
             if (item.account && item.account.currency !== defaultCurrency) {
@@ -489,6 +511,7 @@ export const useStatisticsStore = defineStore('statistics', () => {
             if (transactionStatisticsFilter.chartDataType === ChartDataType.ExpenseByAccount.type ||
                 transactionStatisticsFilter.chartDataType === ChartDataType.ExpenseByPrimaryCategory.type ||
                 transactionStatisticsFilter.chartDataType === ChartDataType.ExpenseBySecondaryCategory.type ||
+                transactionStatisticsFilter.chartDataType === ChartDataType.ExpenseByVendor.type ||
                 transactionStatisticsFilter.chartDataType === ChartDataType.TotalExpense.type) {
                 if (item.category.type !== CategoryType.Expense) {
                     continue;
@@ -496,6 +519,7 @@ export const useStatisticsStore = defineStore('statistics', () => {
             } else if (transactionStatisticsFilter.chartDataType === ChartDataType.IncomeByAccount.type ||
                 transactionStatisticsFilter.chartDataType === ChartDataType.IncomeByPrimaryCategory.type ||
                 transactionStatisticsFilter.chartDataType === ChartDataType.IncomeBySecondaryCategory.type ||
+                transactionStatisticsFilter.chartDataType === ChartDataType.IncomeByVendor.type ||
                 transactionStatisticsFilter.chartDataType === ChartDataType.TotalIncome.type) {
                 if (item.category.type !== CategoryType.Income) {
                     continue;
@@ -511,6 +535,10 @@ export const useStatisticsStore = defineStore('statistics', () => {
             }
 
             if (transactionStatisticsFilter.filterCategoryIds && transactionStatisticsFilter.filterCategoryIds[item.category.id]) {
+                continue;
+            }
+
+            if (transactionStatisticsFilter.filterVendorIds && item.vendor && transactionStatisticsFilter.filterVendorIds[item.vendor.id]) {
                 continue;
             }
 
@@ -643,6 +671,38 @@ export const useStatisticsStore = defineStore('statistics', () => {
 
                     allDataItems['total'] = data;
                 }
+            } else if (transactionStatisticsFilter.chartDataType === ChartDataType.ExpenseByVendor.type ||
+                transactionStatisticsFilter.chartDataType === ChartDataType.IncomeByVendor.type) {
+                if (isNumber(item.amountInDefaultCurrency)) {
+                    const vendorId = item.vendor ? item.vendor.id : 'no-vendor';
+                    const vendorName = item.vendor ? item.vendor.name : 'Without Vendor';
+                    const vendorHidden = item.vendor ? item.vendor.hidden : false;
+                    
+                    let data = allDataItems[vendorId];
+
+                    if (data) {
+                        data.totalAmount += item.amountInDefaultCurrency;
+                    } else {
+                        data = {
+                            name: vendorName,
+                            type: 'vendor',
+                            id: vendorId,
+                            icon: '',
+                            color: '',
+                            hidden: vendorHidden,
+                            displayOrders: [1, 1],
+                            totalAmount: item.amountInDefaultCurrency
+                        };
+                    }
+
+                    totalAmount += item.amountInDefaultCurrency;
+
+                    if (item.amountInDefaultCurrency > 0) {
+                        totalNonNegativeAmount += item.amountInDefaultCurrency;
+                    }
+
+                    allDataItems[vendorId] = data;
+                }
             }
         }
 
@@ -673,8 +733,11 @@ export const useStatisticsStore = defineStore('statistics', () => {
         transactionStatisticsFilter.value.trendChartEndYearMonth = '';
         transactionStatisticsFilter.value.filterAccountIds = {};
         transactionStatisticsFilter.value.filterCategoryIds = {};
+        transactionStatisticsFilter.value.filterVendorIds = {};
         transactionStatisticsFilter.value.tagIds = '';
         transactionStatisticsFilter.value.tagFilterType = TransactionTagFilterType.Default.type;
+        transactionStatisticsFilter.value.vendorIds = '';
+        transactionStatisticsFilter.value.vendorFilterType = TransactionVendorFilterType.Default.type;
         transactionStatisticsFilter.value.keyword = '';
         transactionCategoryStatisticsData.value = null;
         transactionCategoryTrendsData.value = [];
@@ -796,6 +859,12 @@ export const useStatisticsStore = defineStore('statistics', () => {
             transactionStatisticsFilter.value.filterCategoryIds = settingsStore.appSettings.statistics.defaultTransactionCategoryFilter || {};
         }
 
+        if (filter && isObject(filter.filterVendorIds)) {
+            transactionStatisticsFilter.value.filterVendorIds = filter.filterVendorIds;
+        } else {
+            transactionStatisticsFilter.value.filterVendorIds = {};
+        }
+
         if (filter && isString(filter.tagIds)) {
             transactionStatisticsFilter.value.tagIds = filter.tagIds;
         } else {
@@ -808,11 +877,24 @@ export const useStatisticsStore = defineStore('statistics', () => {
             transactionStatisticsFilter.value.tagFilterType = TransactionTagFilterType.Default.type;
         }
 
+        if (filter && isString(filter.vendorIds)) {
+            transactionStatisticsFilter.value.vendorIds = filter.vendorIds;
+        } else {
+            transactionStatisticsFilter.value.vendorIds = '';
+        }
+
+        if (filter && isInteger(filter.vendorFilterType)) {
+            transactionStatisticsFilter.value.vendorFilterType = filter.vendorFilterType;
+        } else {
+            transactionStatisticsFilter.value.vendorFilterType = TransactionVendorFilterType.Default.type;
+        }
+
         if (filter && isString(filter.keyword)) {
             transactionStatisticsFilter.value.keyword = filter.keyword;
         } else {
             transactionStatisticsFilter.value.keyword = '';
         }
+
 
         if (filter && isInteger(filter.sortingType)) {
             transactionStatisticsFilter.value.sortingType = filter.sortingType;
@@ -883,6 +965,11 @@ export const useStatisticsStore = defineStore('statistics', () => {
             changed = true;
         }
 
+        if (filter && isObject(filter.filterVendorIds) && !isEquals(transactionStatisticsFilter.value.filterVendorIds, filter.filterVendorIds)) {
+            transactionStatisticsFilter.value.filterVendorIds = filter.filterVendorIds;
+            changed = true;
+        }
+
         if (filter && isString(filter.tagIds) && transactionStatisticsFilter.value.tagIds !== filter.tagIds) {
             transactionStatisticsFilter.value.tagIds = filter.tagIds;
             changed = true;
@@ -890,6 +977,16 @@ export const useStatisticsStore = defineStore('statistics', () => {
 
         if (filter && isInteger(filter.tagFilterType) && transactionStatisticsFilter.value.tagFilterType !== filter.tagFilterType) {
             transactionStatisticsFilter.value.tagFilterType = filter.tagFilterType;
+            changed = true;
+        }
+
+        if (filter && isString(filter.vendorIds) && transactionStatisticsFilter.value.vendorIds !== filter.vendorIds) {
+            transactionStatisticsFilter.value.vendorIds = filter.vendorIds;
+            changed = true;
+        }
+
+        if (filter && isInteger(filter.vendorFilterType) && transactionStatisticsFilter.value.vendorFilterType !== filter.vendorFilterType) {
+            transactionStatisticsFilter.value.vendorFilterType = filter.vendorFilterType;
             changed = true;
         }
 
@@ -950,12 +1047,28 @@ export const useStatisticsStore = defineStore('statistics', () => {
             }
         }
 
+        if (transactionStatisticsFilter.value.filterVendorIds) {
+            const ids = objectFieldToArrayItem(transactionStatisticsFilter.value.filterVendorIds);
+
+            if (ids && ids.length) {
+                querys.push('filterVendorIds=' + ids.join(','));
+            }
+        }
+
         if (transactionStatisticsFilter.value.tagIds) {
             querys.push('tagIds=' + transactionStatisticsFilter.value.tagIds);
         }
 
         if (transactionStatisticsFilter.value.tagFilterType) {
             querys.push('tagFilterType=' + transactionStatisticsFilter.value.tagFilterType);
+        }
+
+        if (transactionStatisticsFilter.value.vendorIds) {
+            querys.push('vendorIds=' + transactionStatisticsFilter.value.vendorIds);
+        }
+
+        if (transactionStatisticsFilter.value.vendorFilterType) {
+            querys.push('vendorFilterType=' + transactionStatisticsFilter.value.vendorFilterType);
         }
 
         if (transactionStatisticsFilter.value.keyword) {
@@ -973,11 +1086,13 @@ export const useStatisticsStore = defineStore('statistics', () => {
         if (transactionStatisticsFilter.value.chartDataType === ChartDataType.IncomeByAccount.type
             || transactionStatisticsFilter.value.chartDataType === ChartDataType.IncomeByPrimaryCategory.type
             || transactionStatisticsFilter.value.chartDataType === ChartDataType.IncomeBySecondaryCategory.type
+            || transactionStatisticsFilter.value.chartDataType === ChartDataType.IncomeByVendor.type
             || transactionStatisticsFilter.value.chartDataType === ChartDataType.TotalIncome.type) {
             querys.push('type=2');
         } else if (transactionStatisticsFilter.value.chartDataType === ChartDataType.ExpenseByAccount.type
             || transactionStatisticsFilter.value.chartDataType === ChartDataType.ExpenseByPrimaryCategory.type
             || transactionStatisticsFilter.value.chartDataType === ChartDataType.ExpenseBySecondaryCategory.type
+            || transactionStatisticsFilter.value.chartDataType === ChartDataType.ExpenseByVendor.type
             || transactionStatisticsFilter.value.chartDataType === ChartDataType.TotalExpense.type) {
             querys.push('type=3');
         }
@@ -1000,6 +1115,17 @@ export const useStatisticsStore = defineStore('statistics', () => {
             if (!isObjectEmpty(transactionStatisticsFilter.value.filterAccountIds)) {
                 querys.push('accountIds=' + getFinalAccountIdsByFilteredAccountIds(accountsStore.allAccountsMap, transactionStatisticsFilter.value.filterAccountIds));
             }
+        } else if (itemId && (transactionStatisticsFilter.value.chartDataType === ChartDataType.ExpenseByVendor.type
+            || transactionStatisticsFilter.value.chartDataType === ChartDataType.IncomeByVendor.type)) {
+            querys.push('vendorIds=' + itemId);
+
+            if (!isObjectEmpty(transactionStatisticsFilter.value.filterAccountIds)) {
+                querys.push('accountIds=' + getFinalAccountIdsByFilteredAccountIds(accountsStore.allAccountsMap, transactionStatisticsFilter.value.filterAccountIds));
+            }
+
+            if (!isObjectEmpty(transactionStatisticsFilter.value.filterCategoryIds)) {
+                querys.push('categoryIds=' + getFinalCategoryIdsByFilteredCategoryIds(transactionCategoriesStore.allTransactionCategoriesMap, transactionStatisticsFilter.value.filterCategoryIds));
+            }
         } else if (!itemId) {
             if (!isObjectEmpty(transactionStatisticsFilter.value.filterCategoryIds)) {
                 querys.push('categoryIds=' + getFinalCategoryIdsByFilteredCategoryIds(transactionCategoriesStore.allTransactionCategoriesMap, transactionStatisticsFilter.value.filterCategoryIds));
@@ -1016,6 +1142,14 @@ export const useStatisticsStore = defineStore('statistics', () => {
 
         if (transactionStatisticsFilter.value.tagFilterType) {
             querys.push('tagFilterType=' + transactionStatisticsFilter.value.tagFilterType);
+        }
+
+        if (transactionStatisticsFilter.value.vendorIds) {
+            querys.push('vendorIds=' + transactionStatisticsFilter.value.vendorIds);
+        }
+
+        if (transactionStatisticsFilter.value.vendorFilterType) {
+            querys.push('vendorFilterType=' + transactionStatisticsFilter.value.vendorFilterType);
         }
 
         if (transactionStatisticsFilter.value.keyword) {
@@ -1047,6 +1181,8 @@ export const useStatisticsStore = defineStore('statistics', () => {
                 endTime: transactionStatisticsFilter.value.categoricalChartEndTime,
                 tagIds: transactionStatisticsFilter.value.tagIds,
                 tagFilterType: transactionStatisticsFilter.value.tagFilterType,
+                vendorIds: transactionStatisticsFilter.value.vendorIds,
+                vendorFilterType: transactionStatisticsFilter.value.vendorFilterType,
                 keyword: transactionStatisticsFilter.value.keyword,
                 useTransactionTimezone: settingsStore.appSettings.statistics.defaultTimezoneType === TimezoneTypeForStatistics.TransactionTimezone.type
             }).then(response => {
@@ -1090,6 +1226,8 @@ export const useStatisticsStore = defineStore('statistics', () => {
                 endYearMonth: transactionStatisticsFilter.value.trendChartEndYearMonth,
                 tagIds: transactionStatisticsFilter.value.tagIds,
                 tagFilterType: transactionStatisticsFilter.value.tagFilterType,
+                vendorIds: transactionStatisticsFilter.value.vendorIds,
+                vendorFilterType: transactionStatisticsFilter.value.vendorFilterType,
                 keyword: transactionStatisticsFilter.value.keyword,
                 useTransactionTimezone: settingsStore.appSettings.statistics.defaultTimezoneType === TimezoneTypeForStatistics.TransactionTimezone.type
             }).then(response => {

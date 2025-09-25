@@ -7,6 +7,7 @@ import { useUserStore } from '@/stores/user.ts';
 import { useAccountsStore } from '@/stores/account.ts';
 import { useTransactionCategoriesStore } from '@/stores/transactionCategory.ts';
 import { useTransactionTagsStore } from '@/stores/transactionTag.ts';
+import { useTransactionVendorsStore } from '@/stores/transactionVendor.ts';
 import { useTransactionsStore } from '@/stores/transaction.ts';
 import { useExchangeRatesStore } from '@/stores/exchangeRates.ts';
 
@@ -38,6 +39,10 @@ import {
     getTimezoneOffsetMinutes,
     getCurrentUnixTime
 } from '@/lib/datetime.ts';
+
+import {
+    type TransactionVendor,
+} from '@/models/transaction_vendor.ts';
 
 export enum TransactionEditPageType {
     Transaction = 'transaction',
@@ -72,6 +77,7 @@ export function useTransactionEditPageBase(type: TransactionEditPageType, initMo
     const accountsStore = useAccountsStore();
     const transactionCategoriesStore = useTransactionCategoriesStore();
     const transactionTagsStore = useTransactionTagsStore();
+    const transactionVendorsStore = useTransactionVendorsStore();
     const transactionsStore = useTransactionsStore();
     const exchangeRatesStore = useExchangeRatesStore();
 
@@ -108,6 +114,8 @@ export function useTransactionEditPageBase(type: TransactionEditPageType, initMo
     const allCategoriesMap = computed<Record<string, TransactionCategory>>(() => transactionCategoriesStore.allTransactionCategoriesMap);
     const allTags = computed<TransactionTag[]>(() => transactionTagsStore.allTransactionTags);
     const allTagsMap = computed<Record<string, TransactionTag>>(() => transactionTagsStore.allTransactionTagsMap);
+    const allVendors = computed<TransactionVendor[]>(() => transactionVendorsStore.allTransactionVendors);
+    const allVendorsMap = computed<Record<string, TransactionVendor>>(() => transactionVendorsStore.allTransactionVendorsMap);
     const firstVisibleAccountId = computed<string | undefined>(() => allVisibleAccounts.value && allVisibleAccounts.value[0] ? allVisibleAccounts.value[0].id : undefined);
 
     const hasAvailableExpenseCategories = computed<boolean>(() => transactionCategoriesStore.hasAvailableExpenseCategories);
@@ -436,6 +444,9 @@ export function useTransactionEditPageBase(type: TransactionEditPageType, initMo
         allCategories,
         allCategoriesMap,
         allTags,
+        allTagsMap, 
+        allVendors,
+        allVendorsMap,
         allTagsMap,
         firstVisibleAccountId,
         hasAvailableExpenseCategories,

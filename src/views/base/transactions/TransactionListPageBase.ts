@@ -7,6 +7,7 @@ import { useUserStore } from '@/stores/user.ts';
 import { useAccountsStore } from '@/stores/account.ts';
 import { useTransactionCategoriesStore } from '@/stores/transactionCategory.ts';
 import { useTransactionTagsStore } from '@/stores/transactionTag.ts';
+import { useTransactionVendorsStore } from '@/stores/transactionVendor.ts';
 import { type TransactionListFilter, type TransactionMonthList, useTransactionsStore } from '@/stores/transaction.ts';
 
 import { type TypeAndName, entries } from '@/core/base.ts';
@@ -41,6 +42,7 @@ import {
 import {
     categoryTypeToTransactionType
 } from '@/lib/category.ts';
+import type { TransactionVendor } from '@/models/transaction_vendor';
 
 export class TransactionListPageType implements TypeAndName {
     private static readonly allInstances: TransactionListPageType[] = [];
@@ -89,6 +91,7 @@ export function useTransactionListPageBase() {
     const accountsStore = useAccountsStore();
     const transactionCategoriesStore = useTransactionCategoriesStore();
     const transactionTagsStore = useTransactionTagsStore();
+    const transactionVendorsStore = useTransactionVendorsStore();
     const transactionsStore = useTransactionsStore();
 
     const pageType = ref<number>(TransactionListPageType.List.type);
@@ -142,6 +145,9 @@ export function useTransactionListPageBase() {
     });
     const allTransactionTags = computed<Record<string, TransactionTag>>(() => transactionTagsStore.allTransactionTagsMap);
     const allAvailableTagsCount = computed<number>(() => transactionTagsStore.allAvailableTagsCount);
+    
+    const allTransactionVendors = computed<Record<string, TransactionVendor>>(() => transactionVendorsStore.allTransactionVendorsMap);
+    const allAvailableVendorsCount = computed<number>(() => transactionVendorsStore.allAvailableVendorsCount);
 
     const displayPageTypeName = computed<string>(() => {
         const type = TransactionListPageType.valueOf(pageType.value);
@@ -175,9 +181,11 @@ export function useTransactionListPageBase() {
     const queryAllFilterCategoryIds = computed<Record<string, boolean>>(() => transactionsStore.allFilterCategoryIds);
     const queryAllFilterAccountIds = computed<Record<string, boolean>>(() => transactionsStore.allFilterAccountIds);
     const queryAllFilterTagIds = computed<Record<string, boolean>>(() => transactionsStore.allFilterTagIds);
+    const queryAllFilterVendorIds = computed<Record<string, boolean>>(() => transactionsStore.allFilterVendorIds);
     const queryAllFilterCategoryIdsCount = computed<number>(() => transactionsStore.allFilterCategoryIdsCount);
     const queryAllFilterAccountIdsCount = computed<number>(() => transactionsStore.allFilterAccountIdsCount);
     const queryAllFilterTagIdsCount = computed<number>(() => transactionsStore.allFilterTagIdsCount);
+    const queryAllFilterVendorIdsCount = computed<number>(() => transactionsStore.allFilterVendorIdsCount);
 
     const queryAccountName = computed<string>(() => {
         if (queryAllFilterAccountIdsCount.value > 1) {
@@ -205,6 +213,18 @@ export function useTransactionListPageBase() {
         }
 
         return allTransactionTags.value[query.value.tagIds]?.name || tt('Tags');
+    });
+
+    const queryVendorName = computed<string>(() => {
+        if (query.value.vendorIds === 'none') {
+            return tt('Without Vendors');
+        }
+
+        if (queryAllFilterVendorIdsCount.value > 1) {
+            return tt('Multiple Vendors');
+        }
+
+        return allTransactionVendors.value[query.value.vendorIds]?.name || tt('Transaction Vendor');
     });
 
     const queryAmount = computed<string>(() => {
@@ -365,6 +385,8 @@ export function useTransactionListPageBase() {
         allAvailableCategoriesCount,
         allTransactionTags,
         allAvailableTagsCount,
+        allTransactionVendors,
+        allAvailableVendorsCount,
         displayPageTypeName,
         query,
         queryDateRangeName,
@@ -375,12 +397,15 @@ export function useTransactionListPageBase() {
         queryAllFilterCategoryIds,
         queryAllFilterAccountIds,
         queryAllFilterTagIds,
+        queryAllFilterVendorIds,
         queryAllFilterCategoryIdsCount,
         queryAllFilterAccountIdsCount,
         queryAllFilterTagIdsCount,
+        queryAllFilterVendorIdsCount,
         queryAccountName,
         queryCategoryName,
         queryTagName,
+        queryVendorName,
         queryAmount,
         transactionCalendarMinDate,
         transactionCalendarMaxDate,

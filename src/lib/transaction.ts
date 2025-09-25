@@ -3,6 +3,7 @@ import { TransactionType } from '@/core/transaction.ts';
 import { Account } from '@/models/account.ts';
 import { TransactionCategory } from '@/models/transaction_category.ts';
 import { TransactionTag } from '@/models/transaction_tag.ts';
+import { TransactionVendor } from '@/models/transaction_vendor.ts';
 import { TransactionPicture } from '@/models/transaction_picture_info.ts';
 import { Transaction } from '@/models/transaction.ts';
 
@@ -30,10 +31,11 @@ export interface SetTransactionOptions {
     amount?: number;
     destinationAmount?: number;
     tagIds?: string;
+    vendorId?: string;
     comment?: string;
 }
 
-export function setTransactionModelByTransaction(transaction: Transaction, transaction2: Transaction | null | undefined, allCategories: Record<number, TransactionCategory[]>, allCategoriesMap: Record<string, TransactionCategory>, allVisibleAccounts: Account[], allAccountsMap: Record<string, Account>, allTagsMap: Record<string, TransactionTag>, defaultAccountId: string, options: SetTransactionOptions, setContextData: boolean, convertContextTime: boolean): void {
+export function setTransactionModelByTransaction(transaction: Transaction, transaction2: Transaction | null | undefined, allCategories: Record<number, TransactionCategory[]>, allCategoriesMap: Record<string, TransactionCategory>, allVisibleAccounts: Account[], allAccountsMap: Record<string, Account>, allTagsMap: Record<string, TransactionTag>, allVendorsMap: Record<string, TransactionVendor>, defaultAccountId: string, options: SetTransactionOptions, setContextData: boolean, convertContextTime: boolean): void {
     if (isDefined(options.time)) {
         transaction.time = options.time;
     }
@@ -152,6 +154,15 @@ export function setTransactionModelByTransaction(transaction: Transaction, trans
         transaction.tagIds = finalTagIds;
     }
 
+    if (allVendorsMap && options.vendorId) {
+        const vendorId = options.vendorId;
+        const vendor = allVendorsMap[vendorId];
+
+        if (vendor) {
+            transaction.vendorId = vendor.id;
+        }
+    }
+
     if (options.comment) {
         transaction.comment = options.comment;
     }
@@ -200,6 +211,7 @@ export function setTransactionModelByTransaction(transaction: Transaction, trans
 
         transaction.hideAmount = transaction2.hideAmount;
         transaction.tagIds = transaction2.tagIds || [];
+        transaction.vendorId = transaction2.vendorId;
         transaction.setPictures(TransactionPicture.ofMulti(transaction2.pictures || []));
 
         transaction.comment = transaction2.comment;

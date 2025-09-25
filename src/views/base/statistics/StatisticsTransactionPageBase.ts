@@ -168,11 +168,13 @@ export function useStatisticsTransactionPageBase() {
     const totalAmountName = computed<string>(() => {
         if (query.value.chartDataType === ChartDataType.IncomeByAccount.type
             || query.value.chartDataType === ChartDataType.IncomeByPrimaryCategory.type
-            || query.value.chartDataType === ChartDataType.IncomeBySecondaryCategory.type) {
+            || query.value.chartDataType === ChartDataType.IncomeBySecondaryCategory.type
+            || query.value.chartDataType === ChartDataType.IncomeByVendor.type) {
             return tt('Total Income');
         } else if (query.value.chartDataType === ChartDataType.ExpenseByAccount.type
             || query.value.chartDataType === ChartDataType.ExpenseByPrimaryCategory.type
-            || query.value.chartDataType === ChartDataType.ExpenseBySecondaryCategory.type) {
+            || query.value.chartDataType === ChartDataType.ExpenseBySecondaryCategory.type
+            || query.value.chartDataType === ChartDataType.ExpenseByVendor.type) {
             return tt('Total Expense');
         } else if (query.value.chartDataType === ChartDataType.AccountTotalAssets.type) {
             return tt('Total Assets');

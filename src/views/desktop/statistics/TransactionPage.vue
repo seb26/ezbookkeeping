@@ -138,6 +138,9 @@
                                                         <v-list-item :prepend-icon="mdiFilterOutline"
                                                                      :title="tt('Filter Transaction Tags')"
                                                                      @click="showFilterTagDialog = true"></v-list-item>
+                                                        <v-list-item :prepend-icon="mdiFilterOutline"
+                                                                     :title="tt('Filter Transaction Vendors')"
+                                                                     @click="showFilterVendorDialog = true"></v-list-item>
                                                         <v-divider class="my-2"/>
                                                         <v-list-item :prepend-icon="mdiExport"
                                                                      :title="tt('Export Results')"
@@ -331,7 +334,12 @@
 
     <v-dialog width="800" v-model="showFilterTagDialog">
         <transaction-tag-filter-settings-card type="statisticsCurrent" :dialog-mode="true"
-                                              @settings:change="setTagFilter" />
+            @settings:change="setTagFilter" />
+    </v-dialog>
+
+    <v-dialog width="800" v-model="showFilterVendorDialog">
+        <transaction-vendor-filter-settings-card type="statisticsCurrent" :dialog-mode="true"
+            @settings:change="setVendorFilter" />
     </v-dialog>
 
     <export-dialog ref="exportDialog" />
@@ -345,6 +353,7 @@ import MonthlyTrendsChart from '@/components/desktop/MonthlyTrendsChart.vue';
 import AccountFilterSettingsCard from '@/views/desktop/common/cards/AccountFilterSettingsCard.vue';
 import CategoryFilterSettingsCard from '@/views/desktop/common/cards/CategoryFilterSettingsCard.vue';
 import TransactionTagFilterSettingsCard from '@/views/desktop/common/cards/TransactionTagFilterSettingsCard.vue';
+import TransactionVendorFilterSettingsCard from '@/views/desktop/common/cards/TransactionVendorFilterSettingsCard.vue';
 import ExportDialog from '@/views/desktop/statistics/transaction/dialogs/ExportDialog.vue';
 
 import { ref, computed, useTemplateRef, watch } from 'vue';
@@ -356,6 +365,7 @@ import { useStatisticsTransactionPageBase } from '@/views/base/statistics/Statis
 
 import { useAccountsStore } from '@/stores/account.ts';
 import { useTransactionCategoriesStore } from '@/stores/transactionCategory.ts';
+import { useTransactionVendorsStore } from '@/stores/transactionVendor.ts';
 import { type TransactionStatisticsPartialFilter, useStatisticsStore } from '@/stores/statistics.ts';
 
 import type { TypeAndDisplayName } from '@/core/base.ts';
@@ -414,6 +424,8 @@ interface TransactionStatisticsProps {
     initFilterCategoryIds?: string,
     initTagIds?: string,
     initTagFilterType?: string,
+    initVendorIds?: string,
+    initVendorFilterType?: string,
     initKeyword?: string;
     initSortingType?: string,
     initTrendDateAggregationType?: string
@@ -464,6 +476,7 @@ const {
 
 const accountsStore = useAccountsStore();
 const transactionCategoriesStore = useTransactionCategoriesStore();
+const transactionVendorsStore = useTransactionVendorsStore();
 const statisticsStore = useStatisticsStore();
 
 const snackbar = useTemplateRef<SnackBarType>('snackbar');
@@ -480,6 +493,7 @@ const showCustomMonthRangeDialog = ref<boolean>(false);
 const showFilterAccountDialog = ref<boolean>(false);
 const showFilterCategoryDialog = ref<boolean>(false);
 const showFilterTagDialog = ref<boolean>(false);
+const showFilterVendorDialog = ref<boolean>(false);
 
 const isDarkMode = computed<boolean>(() => theme.global.name.value === ThemeType.Dark);
 
@@ -542,11 +556,14 @@ const querySortingType = computed<number>({
 const statisticsTextColor = computed<string>(() => {
     if (query.value.chartDataType === ChartDataType.ExpenseByAccount.type ||
         query.value.chartDataType === ChartDataType.ExpenseByPrimaryCategory.type ||
-        query.value.chartDataType === ChartDataType.ExpenseBySecondaryCategory.type) {
+        query.value.chartDataType === ChartDataType.ExpenseBySecondaryCategory.type ||
+        query.value.chartDataType === ChartDataType.ExpenseByVendor.type
+    ) {
         return 'text-expense';
     } else if (query.value.chartDataType === ChartDataType.IncomeByAccount.type ||
         query.value.chartDataType === ChartDataType.IncomeByPrimaryCategory.type ||
-        query.value.chartDataType === ChartDataType.IncomeBySecondaryCategory.type) {
+        query.value.chartDataType === ChartDataType.IncomeBySecondaryCategory.type ||
+        query.value.chartDataType === ChartDataType.IncomeByVendor.type) {
         return 'text-income';
     } else {
         return 'text-default';
@@ -570,6 +587,8 @@ function init(initProps: TransactionStatisticsProps): void {
         filterCategoryIds: initProps.initFilterCategoryIds ? arrayItemToObjectField(initProps.initFilterCategoryIds.split(','), true) : {},
         tagIds: initProps.initTagIds,
         tagFilterType: initProps.initTagFilterType && parseInt(initProps.initTagFilterType) >= 0 ? parseInt(initProps.initTagFilterType) : undefined,
+        vendorIds: initProps.initVendorIds,
+        vendorFilterType: initProps.initVendorFilterType && parseInt(initProps.initVendorFilterType) >= 0 ? parseInt(initProps.initVendorFilterType) : undefined,
         keyword: initProps.initKeyword,
         sortingType: initProps.initSortingType ? parseInt(initProps.initSortingType) : undefined
     };
@@ -635,7 +654,8 @@ function init(initProps: TransactionStatisticsProps): void {
 
     Promise.all([
         accountsStore.loadAllAccounts({force: false}),
-        transactionCategoriesStore.loadAllCategories({force: false})
+        transactionCategoriesStore.loadAllCategories({force: false}),
+        transactionVendorsStore.loadAllVendors({force: false})
     ]).then(() => {
         if (analysisType.value === StatisticsAnalysisType.CategoricalAnalysis) {
             return statisticsStore.loadCategoricalAnalysis({
@@ -672,6 +692,8 @@ function reload(force: boolean): Promise<unknown> | null {
         query.value.chartDataType === ChartDataType.IncomeByAccount.type ||
         query.value.chartDataType === ChartDataType.IncomeByPrimaryCategory.type ||
         query.value.chartDataType === ChartDataType.IncomeBySecondaryCategory.type ||
+        query.value.chartDataType === ChartDataType.ExpenseByVendor.type ||
+        query.value.chartDataType === ChartDataType.IncomeByVendor.type ||
         query.value.chartDataType === ChartDataType.TotalExpense.type ||
         query.value.chartDataType === ChartDataType.TotalIncome.type ||
         query.value.chartDataType === ChartDataType.TotalBalance.type) {
@@ -926,6 +948,16 @@ function setTagFilter(changed: boolean): void {
     }
 }
 
+function setVendorFilter(changed: boolean): void {
+    showFilterVendorDialog.value = false;
+
+    if (changed) {
+        loading.value = true;
+        statisticsStore.updateTransactionStatisticsInvalidState(true);
+        router.push(getFilterLinkUrl());
+    }
+}
+
 function setKeywordFilter(keyword: string): void {
     if (query.value.keyword === keyword) {
         return;
@@ -1000,6 +1032,8 @@ onBeforeRouteUpdate((to) => {
             initFilterCategoryIds: (to.query['filterCategoryIds'] as string | null) || undefined,
             initTagIds: (to.query['tagIds'] as string | null) || undefined,
             initTagFilterType: (to.query['tagFilterType'] as string | null) || undefined,
+            initVendorIds: (to.query['vendorIds'] as string | null) || undefined,
+            initVendorFilterType: (to.query['vendorFilterType'] as string | null) || undefined,
             initKeyword: (to.query['keyword'] as string | null) || undefined,
             initSortingType: (to.query['sortingType'] as string | null) || undefined,
             initTrendDateAggregationType: (to.query['trendDateAggregationType'] as string | null) || undefined

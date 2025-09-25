@@ -23,6 +23,8 @@ import TransactionCategoryListPage from '@/views/desktop/categories/ListPage.vue
 
 import TransactionTagListPage from '@/views/desktop/tags/ListPage.vue';
 
+import TransactionVendorListPage from '@/views/desktop/vendors/ListPage.vue';
+
 import TransactionTemplateListPage from '@/views/desktop/templates/ListPage.vue';
 
 import UserSettingsPage from '@/views/desktop/user/UserSettingsPage.vue';
@@ -112,6 +114,7 @@ const router = createRouter({
                         initAccountIds: route.query['accountIds'],
                         initTagIds: route.query['tagIds'],
                         initTagFilterType: route.query['tagFilterType'],
+                        initVendorIds: route.query['vendorIds'],
                         initAmountFilter: route.query['amountFilter'],
                         initKeyword: route.query['keyword']
                     })
@@ -144,6 +147,11 @@ const router = createRouter({
                 {
                     path: '/category/list',
                     component: TransactionCategoryListPage,
+                    beforeEnter: checkLogin
+                },
+                {
+                    path: '/vendor/list',
+                    component: TransactionVendorListPage,
                     beforeEnter: checkLogin
                 },
                 {

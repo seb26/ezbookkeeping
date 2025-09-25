@@ -5,6 +5,7 @@ import { useSettingsStore } from './setting.ts';
 import { useUserStore } from './user.ts';
 import { useAccountsStore } from './account.ts';
 import { useTransactionCategoriesStore } from './transactionCategory.ts';
+import { useTransactionVendorsStore } from './transactionVendor.ts';
 import { useOverviewStore } from './overview.ts';
 import { useStatisticsStore } from './statistics.ts';
 import { useExchangeRatesStore } from './exchangeRates.ts';
@@ -71,6 +72,7 @@ export interface TransactionListPartialFilter {
     accountIds?: string;
     tagIds?: string;
     tagFilterType?: number;
+    vendorIds?: string;
     amountFilter?: string;
     keyword?: string;
 }
@@ -84,6 +86,7 @@ export interface TransactionListFilter extends TransactionListPartialFilter {
     accountIds: string;
     tagIds: string;
     tagFilterType: number;
+    vendorIds: string;
     amountFilter: string;
     keyword: string;
 }
@@ -110,6 +113,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
     const userStore = useUserStore();
     const accountsStore = useAccountsStore();
     const transactionCategoriesStore = useTransactionCategoriesStore();
+    const transactionVendorsStore = useTransactionVendorsStore();
     const overviewStore = useOverviewStore();
     const statisticsStore = useStatisticsStore();
     const exchangeRatesStore = useExchangeRatesStore();
@@ -124,6 +128,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
         categoryIds: '',
         accountIds: '',
         tagIds: '',
+        vendorIds: '',
         tagFilterType: TransactionTagFilterType.Default.type,
         amountFilter: '',
         keyword: ''
@@ -137,10 +142,12 @@ export const useTransactionsStore = defineStore('transactions', () => {
     const allFilterCategoryIds = computed<Record<string, boolean>>(() => splitItemsToMap(transactionsFilter.value.categoryIds, ','));
     const allFilterAccountIds = computed<Record<string, boolean>>(() => splitItemsToMap(transactionsFilter.value.accountIds, ','));
     const allFilterTagIds = computed<Record<string, boolean>>(() => splitItemsToMap(transactionsFilter.value.tagIds, ','));
+    const allFilterVendorIds = computed<Record<string, boolean>>(() => splitItemsToMap(transactionsFilter.value.vendorIds, ','));
 
     const allFilterCategoryIdsCount = computed<number>(() => countSplitItems(transactionsFilter.value.categoryIds, ','));
     const allFilterAccountIdsCount = computed<number>(() => countSplitItems(transactionsFilter.value.accountIds, ','));
     const allFilterTagIdsCount = computed<number>(() => countSplitItems(transactionsFilter.value.tagIds, ','));
+    const allFilterVendorIdsCount = computed<number>(() => countSplitItems(transactionsFilter.value.vendorIds, ','));
 
     const noTransaction = computed<boolean>(() => {
         for (const transactionMonthList of transactions.value) {
@@ -443,6 +450,10 @@ export const useTransactionsStore = defineStore('transactions', () => {
         if (transaction.categoryId) {
             transaction.setCategory(transactionCategoriesStore.allTransactionCategoriesMap[transaction.categoryId]);
         }
+
+        if (transaction.vendorId) {
+            transaction.setVendor(transactionVendorsStore.allTransactionVendorsMap[transaction.vendorId]);
+        }
     }
 
     function initTransactionDraft(): void {
@@ -453,7 +464,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
         }
     }
 
-    function isTransactionDraftModified(transaction?: Transaction, initAmount?: number, initCategoryId?: string, initAccountId?: string, initTagIds?: string, firstVisibleAccountId?: string): boolean {
+    function isTransactionDraftModified(transaction?: Transaction, initAmount?: number, initCategoryId?: string, initAccountId?: string, initTagIds?: string, initVendorId?: string, firstVisibleAccountId?: string): boolean {
         if (!transaction) {
             return false;
         }
@@ -506,6 +517,10 @@ export const useTransactionsStore = defineStore('transactions', () => {
             return !initTagIds || !isArray1SubsetOfArray2(transaction.tagIds, initTagIds.split(','));
         }
 
+        if (transaction.vendorId && transaction.vendorId !== '0' && transaction.vendorId !== initVendorId) {
+            return true;
+        }
+
         if (transaction.pictures && transaction.pictures.length > 0) {
             return true;
         }
@@ -517,7 +532,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
         return false;
     }
 
-    function saveTransactionDraft(transaction?: Transaction, initAmount?: number, initCategoryId?: string, initAccountId?: string, initTagIds?: string, firstVisibleAccountId?: string): void {
+    function saveTransactionDraft(transaction?: Transaction, initAmount?: number, initCategoryId?: string, initAccountId?: string, initTagIds?: string, initVendorId?: string, firstVisibleAccountId?: string): void {
         if (settingsStore.appSettings.autoSaveTransactionDraft !== 'enabled' && settingsStore.appSettings.autoSaveTransactionDraft !== 'confirmation') {
             clearTransactionDraft();
             return;
@@ -652,6 +667,12 @@ export const useTransactionsStore = defineStore('transactions', () => {
             transactionsFilter.value.tagFilterType = TransactionTagFilterType.Default.type;
         }
 
+        if (filter && isString(filter.vendorIds)) {
+            transactionsFilter.value.vendorIds = filter.vendorIds;
+        } else {
+            transactionsFilter.value.vendorIds = '';
+        }
+
         if (filter && isString(filter.amountFilter)) {
             transactionsFilter.value.amountFilter = filter.amountFilter;
         } else {
@@ -713,6 +734,11 @@ export const useTransactionsStore = defineStore('transactions', () => {
             changed = true;
         }
 
+        if (filter && isString(filter.vendorIds) && transactionsFilter.value.vendorIds !== filter.vendorIds) {
+            transactionsFilter.value.vendorIds = filter.vendorIds;
+            changed = true;
+        }
+
         if (filter && isString(filter.amountFilter) && transactionsFilter.value.amountFilter !== filter.amountFilter) {
             transactionsFilter.value.amountFilter = filter.amountFilter;
             changed = true;
@@ -749,6 +775,10 @@ export const useTransactionsStore = defineStore('transactions', () => {
 
         if (transactionsFilter.value.tagFilterType) {
             querys.push('tagFilterType=' + transactionsFilter.value.tagFilterType);
+        }
+
+        if (transactionsFilter.value.vendorIds) {
+            querys.push('vendorIds=' + transactionsFilter.value.vendorIds);
         }
 
         querys.push('dateType=' + transactionsFilter.value.dateType);
@@ -804,6 +834,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
                 accountIds: transactionsFilter.value.accountIds,
                 tagIds: transactionsFilter.value.tagIds,
                 tagFilterType: transactionsFilter.value.tagFilterType,
+                vendorIds: transactionsFilter.value.vendorIds,
                 amountFilter: transactionsFilter.value.amountFilter,
                 keyword: transactionsFilter.value.keyword
             }).then(response => {
@@ -884,6 +915,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
                 accountIds: transactionsFilter.value.accountIds,
                 tagIds: transactionsFilter.value.tagIds,
                 tagFilterType: transactionsFilter.value.tagFilterType,
+                vendorIds: transactionsFilter.value.vendorIds,
                 amountFilter: transactionsFilter.value.amountFilter,
                 keyword: transactionsFilter.value.keyword
             }).then(response => {
@@ -1373,9 +1405,11 @@ export const useTransactionsStore = defineStore('transactions', () => {
         allFilterCategoryIds,
         allFilterAccountIds,
         allFilterTagIds,
+        allFilterVendorIds,
         allFilterCategoryIdsCount,
         allFilterAccountIdsCount,
         allFilterTagIdsCount,
+        allFilterVendorIdsCount,
         noTransaction,
         hasMoreTransaction,
         // functions

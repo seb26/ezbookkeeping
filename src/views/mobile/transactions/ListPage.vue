@@ -595,6 +595,7 @@ import { useEnvironmentsStore } from '@/stores/environment.ts';
 import { useAccountsStore } from '@/stores/account.ts';
 import { useTransactionCategoriesStore } from '@/stores/transactionCategory.ts';
 import { useTransactionTagsStore } from '@/stores/transactionTag.ts';
+import { useTransactionVendorsStore } from '@/stores/transactionVendor.ts';
 import { type TransactionMonthList, useTransactionsStore } from '@/stores/transaction.ts';
 
 import { type TypeAndDisplayName, keys } from '@/core/base.ts';
@@ -704,6 +705,7 @@ const environmentsStore = useEnvironmentsStore();
 const accountsStore = useAccountsStore();
 const transactionCategoriesStore = useTransactionCategoriesStore();
 const transactionTagsStore = useTransactionTagsStore();
+const transactionVendorsStore = useTransactionVendorsStore();
 const transactionsStore = useTransactionsStore();
 
 const loadingError = ref<unknown | null>(null);
@@ -944,7 +946,8 @@ function reload(done?: () => void): void {
     Promise.all([
         accountsStore.loadAllAccounts({ force: false }),
         transactionCategoriesStore.loadAllCategories({ force: false }),
-        transactionTagsStore.loadAllTags({ force: false })
+        transactionTagsStore.loadAllTags({ force: false }),
+        transactionVendorsStore.loadAllVendors({ force: false })
     ]).then(() => {
         if (queryMonthlyData.value) {
             const currentMonthMinDate = parseDateTimeFromUnixTime(query.value.minTime);

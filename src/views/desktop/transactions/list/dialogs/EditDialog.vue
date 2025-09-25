@@ -288,7 +288,6 @@
                                         :disabled="loading || submitting"
                                         :clearable="true"
                                         :label="tt('Start Date')"
-                                        :no-data-text="tt('No limit')"
                                         v-model="transaction.scheduledStartDate" />
                                 </v-col>
                                 <v-col cols="12" md="6" v-if="type === TransactionEditPageType.Template && transaction instanceof TransactionTemplate && transaction.templateType === TemplateType.Schedule.type">
@@ -297,7 +296,6 @@
                                         :disabled="loading || submitting"
                                         :clearable="true"
                                         :label="tt('End Date')"
-                                        :no-data-text="tt('No limit')"
                                         v-model="transaction.scheduledEndDate" />
                                 </v-col>
                                 <v-col cols="12" md="12" v-if="type === TransactionEditPageType.Transaction">
@@ -321,6 +319,46 @@
                                             </v-list>
                                         </template>
                                     </v-select>
+                                </v-col>
+                                <v-col cols="12" md="12" v-if="transaction.type === TransactionType.Expense || transaction.type === TransactionType.Income">
+                                    <v-autocomplete
+                                        item-title="name"
+                                        item-value="id"
+                                        auto-select-first
+                                        persistent-placeholder
+                                        :readonly="mode === TransactionEditPageMode.View"
+                                        :disabled="loading || submitting"
+                                        :label="tt('Vendor')"
+                                        :placeholder="tt('None')"
+                                        :items="allVendors"
+                                        v-model="transaction.vendorId"
+                                        v-model:search="vendorSearchContent"
+                                    >
+                                        <template #selection="{ item }">
+                                            <span v-if="transaction.vendorId && item">{{ item.title }}</span>
+                                            <span v-else-if="transaction.type === TransactionType.Expense" class="text-disabled">{{ tt('Merchant or store') }}</span>
+                                            <span v-else-if="transaction.type === TransactionType.Income" class="text-disabled">{{ tt('Payer or organisation') }}</span>
+                                        </template>
+
+                                        <template #item="{ props, item }">
+                                            <v-list-item :value="item.value" v-bind="props" v-if="!item.raw.hidden">
+                                                <template #title>
+                                                    <v-list-item-title>
+                                                        <div class="d-flex align-center">
+                                                            <span>{{ item.title }}</span>
+                                                        </div>
+                                                    </v-list-item-title>
+                                                </template>
+                                            </v-list-item>
+                                        </template>
+
+                                        <template #no-data>
+                                            <v-list class="py-0">
+                                                <v-list-item v-if="vendorSearchContent" @click="saveNewVendor(vendorSearchContent)">{{ tt('format.misc.addNewVendor', { vendor: vendorSearchContent }) }}</v-list-item>
+                                                <v-list-item v-else-if="!vendorSearchContent">{{ tt('No available vendor') }}</v-list-item>
+                                            </v-list>
+                                        </template>
+                                    </v-autocomplete>
                                 </v-col>
                                 <v-col cols="12" md="12">
                                     <v-autocomplete
@@ -519,6 +557,7 @@ import { useUserStore } from '@/stores/user.ts';
 import { useAccountsStore } from '@/stores/account.ts';
 import { useTransactionCategoriesStore } from '@/stores/transactionCategory.ts';
 import { useTransactionTagsStore } from '@/stores/transactionTag.ts';
+import { useTransactionVendorsStore } from '@/stores/transactionVendor.ts';
 import { useTransactionsStore } from '@/stores/transaction.ts';
 import { useTransactionTemplatesStore } from '@/stores/transactionTemplate.ts';
 
@@ -530,6 +569,7 @@ import { KnownErrorCode } from '@/consts/api.ts';
 import { SUPPORTED_IMAGE_EXTENSIONS } from '@/consts/file.ts';
 
 import { TransactionTag } from '@/models/transaction_tag.ts';
+import { TransactionVendor } from '@/models/transaction_vendor.ts';
 import { TransactionTemplate } from '@/models/transaction_template.ts';
 import type { TransactionPictureInfoBasicResponse } from '@/models/transaction_picture_info.ts';
 import { Transaction } from '@/models/transaction.ts';
@@ -617,6 +657,8 @@ const {
     allCategoriesMap,
     allTags,
     allTagsMap,
+    allVendors,
+    allVendorsMap,
     firstVisibleAccountId,
     hasAvailableExpenseCategories,
     hasAvailableIncomeCategories,
@@ -648,6 +690,7 @@ const userStore = useUserStore();
 const accountsStore = useAccountsStore();
 const transactionCategoriesStore = useTransactionCategoriesStore();
 const transactionTagsStore = useTransactionTagsStore();
+const transactionVendorsStore = useTransactionVendorsStore();
 const transactionsStore = useTransactionsStore();
 const transactionTemplatesStore = useTransactionTemplatesStore();
 
@@ -662,12 +705,14 @@ const originalTransactionEditable = ref<boolean>(false);
 const noTransactionDraft = ref<boolean>(false);
 const geoMenuState = ref<boolean>(false);
 const tagSearchContent = ref<string>('');
+const vendorSearchContent = ref<string>('');
 const removingPictureId = ref<string>('');
 
 const initAmount = ref<number | undefined>(undefined);
 const initCategoryId = ref<string | undefined>(undefined);
 const initAccountId = ref<string | undefined>(undefined);
 const initTagIds = ref<string | undefined>(undefined);
+const initVendorId = ref<string | undefined>(undefined);
 
 let resolveFunc: ((response?: TransactionEditResponse) => void) | null = null;
 let rejectFunc: ((reason?: unknown) => void) | null = null;
@@ -703,7 +748,7 @@ const isAllFilteredTagHidden = computed<boolean>(() => {
 
 const isTransactionModified = computed<boolean>(() => {
     if (mode.value === TransactionEditPageMode.Add) {
-        return transactionsStore.isTransactionDraftModified(transaction.value, initAmount.value, initCategoryId.value, initAccountId.value, initTagIds.value, firstVisibleAccountId.value);
+        return transactionsStore.isTransactionDraftModified(transaction.value, initAmount.value, initCategoryId.value, initAccountId.value, initTagIds.value, initVendorId.value, firstVisibleAccountId.value);
     } else if (mode.value === TransactionEditPageMode.Edit) {
         return true;
     } else {
@@ -720,6 +765,7 @@ function setTransaction(newTransaction: Transaction | null, options: SetTransact
         allVisibleAccounts.value,
         allAccountsMap.value,
         allTagsMap.value,
+        allVendorsMap.value,
         defaultAccountId.value,
         {
             time: options.time,
@@ -730,6 +776,7 @@ function setTransaction(newTransaction: Transaction | null, options: SetTransact
             amount: options.amount,
             destinationAmount: options.destinationAmount,
             tagIds: options.tagIds,
+            vendorId: options.vendorId,
             comment: options.comment
         },
         setContextData,
@@ -753,6 +800,7 @@ function open(options: TransactionEditOptions): Promise<TransactionEditResponse 
     initCategoryId.value = options.categoryId;
     initAccountId.value = options.accountId;
     initTagIds.value = options.tagIds;
+    initVendorId.value = options.vendorId;
 
     const newTransaction = createNewTransactionModel(options.type);
     setTransaction(newTransaction, options, true, false);
@@ -760,7 +808,8 @@ function open(options: TransactionEditOptions): Promise<TransactionEditResponse 
     const promises: Promise<unknown>[] = [
         accountsStore.loadAllAccounts({ force: false }),
         transactionCategoriesStore.loadAllCategories({ force: false }),
-        transactionTagsStore.loadAllTags({ force: false })
+        transactionTagsStore.loadAllTags({ force: false }),
+        transactionVendorsStore.loadAllVendors({ force: false })
     ];
 
     if (props.type === TransactionEditPageType.Transaction) {
@@ -833,7 +882,7 @@ function open(options: TransactionEditOptions): Promise<TransactionEditResponse 
     }
 
     Promise.all(promises).then(function (responses) {
-        if (editId.value && !responses[3]) {
+        if (editId.value && !responses[4]) {
             if (rejectFunc) {
                 if (props.type === TransactionEditPageType.Transaction) {
                     rejectFunc('Unable to retrieve transaction');
@@ -845,12 +894,12 @@ function open(options: TransactionEditOptions): Promise<TransactionEditResponse 
             return;
         }
 
-        if (props.type === TransactionEditPageType.Transaction && options && options.id && responses[3] && responses[3] instanceof Transaction) {
-            const transaction: Transaction = responses[3];
+        if (props.type === TransactionEditPageType.Transaction && options && options.id && responses[4] && responses[4] instanceof Transaction) {
+            const transaction: Transaction = responses[4];
             setTransaction(transaction, options, true, true);
             originalTransactionEditable.value = transaction.editable;
-        } else if (props.type === TransactionEditPageType.Template && options && options.id && responses[3] && responses[3] instanceof TransactionTemplate) {
-            const template: TransactionTemplate = responses[3];
+        } else if (props.type === TransactionEditPageType.Template && options && options.id && responses[4] && responses[4] instanceof TransactionTemplate) {
+            const template: TransactionTemplate = responses[4];
             setTransaction(template, options, false, false);
 
             if (!(transaction.value instanceof TransactionTemplate)) {
@@ -1062,9 +1111,9 @@ function cancel(): void {
     }
 
     if (settingsStore.appSettings.autoSaveTransactionDraft === 'confirmation') {
-        if (transactionsStore.isTransactionDraftModified(transaction.value, initAmount.value, initCategoryId.value, initAccountId.value, initTagIds.value, firstVisibleAccountId.value)) {
+        if (transactionsStore.isTransactionDraftModified(transaction.value, initAmount.value, initCategoryId.value, initAccountId.value, initTagIds.value, initVendorId.value, firstVisibleAccountId.value)) {
             confirmDialog.value?.open('Do you want to save this transaction draft?').then(() => {
-                transactionsStore.saveTransactionDraft(transaction.value, initAmount.value, initCategoryId.value, initAccountId.value, initTagIds.value, firstVisibleAccountId.value);
+                transactionsStore.saveTransactionDraft(transaction.value, initAmount.value, initCategoryId.value, initAccountId.value, initTagIds.value, initVendorId.value, firstVisibleAccountId.value);
                 doClose();
             }).catch(() => {
                 transactionsStore.clearTransactionDraft();
@@ -1075,7 +1124,7 @@ function cancel(): void {
             doClose();
         }
     } else if (settingsStore.appSettings.autoSaveTransactionDraft === 'enabled') {
-        transactionsStore.saveTransactionDraft(transaction.value, initAmount.value, initCategoryId.value, initAccountId.value, initTagIds.value, firstVisibleAccountId.value);
+        transactionsStore.saveTransactionDraft(transaction.value, initAmount.value, initCategoryId.value, initAccountId.value, initTagIds.value, initVendorId.value, firstVisibleAccountId.value);
         doClose();
     } else {
         doClose();
@@ -1148,6 +1197,26 @@ function saveNewTag(tagName: string): void {
     }).catch(error => {
         submitting.value = false;
 
+        if (!error.processed) {
+            snackbar.value?.showError(error);
+        }
+    });
+}
+
+function saveNewVendor(vendorName: string): void {
+    submitting.value = true;
+
+    transactionVendorsStore.saveVendor({
+        vendor: TransactionVendor.createNewVendor(vendorName)
+    }).then(vendor => {
+        submitting.value = false;
+
+        if (vendor && vendor.id) {
+            transaction.value.vendorId = vendor.id;
+        }
+    }).catch(error => {
+        submitting.value = false;
+        
         if (!error.processed) {
             snackbar.value?.showError(error);
         }

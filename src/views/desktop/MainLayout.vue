@@ -68,6 +68,12 @@
                     </router-link>
                 </li>
                 <li class="nav-link">
+                    <router-link to="/vendor/list">
+                        <v-icon class="nav-item-icon" :icon="mdiStoreOutline"/>
+                        <span class="nav-item-title">{{ tt('Transaction Vendors') }}</span>
+                    </router-link>
+                </li>
+                <li class="nav-link">
                     <router-link to="/template/list">
                         <v-icon class="nav-item-icon" :icon="mdiClipboardTextOutline"/>
                         <span class="nav-item-title">{{ tt('Transaction Templates') }}</span>
@@ -225,6 +231,7 @@ import {
     mdiCreditCardOutline,
     mdiViewDashboardOutline,
     mdiTagOutline,
+    mdiStoreOutline,
     mdiClipboardTextOutline,
     mdiClipboardTextClockOutline,
     mdiChartPieOutline,
