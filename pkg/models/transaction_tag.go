@@ -1,5 +1,16 @@
 package models
 
+// TransactionTagFilterType represents transaction tag filter type
+type TransactionTagFilterType byte
+
+// Transaction tag filter types
+const (
+	TRANSACTION_TAG_FILTER_HAS_ANY     TransactionTagFilterType = 0
+	TRANSACTION_TAG_FILTER_HAS_ALL     TransactionTagFilterType = 1
+	TRANSACTION_TAG_FILTER_NOT_HAS_ANY TransactionTagFilterType = 2
+	TRANSACTION_TAG_FILTER_NOT_HAS_ALL TransactionTagFilterType = 3
+)
+
 // TransactionTag represents transaction tag data stored in database
 type TransactionTag struct {
 	TagId           int64  `xorm:"PK"`

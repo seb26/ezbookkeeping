@@ -43,6 +43,7 @@ type TransactionTemplate struct {
 	ScheduledAt                int16                            `xorm:"INDEX(IDX_transaction_template_deleted_type_freqtype_scheduled_time)"`
 	ScheduledTimezoneUtcOffset int16
 	TagIds                     string `xorm:"VARCHAR(255) NOT NULL"`
+	VendorId                   int64  `xorm:"DEFAULT 0"` // TODO: change to NOT NULL and use migrations to update existing user db's
 	Amount                     int64  `xorm:"NOT NULL"`
 	RelatedAccountId           int64  `xorm:"NOT NULL"`
 	RelatedAccountAmount       int64  `xorm:"NOT NULL"`
@@ -77,6 +78,7 @@ type TransactionTemplateCreateRequest struct {
 	DestinationAmount          int64                             `json:"destinationAmount" binding:"min=-99999999999,max=99999999999"`
 	HideAmount                 bool                              `json:"hideAmount"`
 	TagIds                     []string                          `json:"tagIds"`
+	VendorId                   int64                             `json:"vendorId,string" binding:"min=0"`
 	Comment                    string                            `json:"comment" binding:"max=255"`
 	ScheduledFrequencyType     *TransactionScheduleFrequencyType `json:"scheduledFrequencyType" binding:"omitempty"`
 	ScheduledFrequency         *string                           `json:"scheduledFrequency" binding:"omitempty"`
@@ -104,6 +106,7 @@ type TransactionTemplateModifyRequest struct {
 	DestinationAmount          int64                             `json:"destinationAmount" binding:"min=-99999999999,max=99999999999"`
 	HideAmount                 bool                              `json:"hideAmount"`
 	TagIds                     []string                          `json:"tagIds"`
+	VendorId                   int64                             `json:"vendorId,string" binding:"min=0"`
 	Comment                    string                            `json:"comment" binding:"max=255"`
 	ScheduledFrequencyType     *TransactionScheduleFrequencyType `json:"scheduledFrequencyType" binding:"omitempty"`
 	ScheduledFrequency         *string                           `json:"scheduledFrequency" binding:"omitempty"`
@@ -217,6 +220,7 @@ func (t *TransactionTemplate) toTransactionInfoResponse(utcOffset int16) *Transa
 		DestinationAmount:    t.RelatedAccountAmount,
 		HideAmount:           t.HideAmount,
 		TagIds:               tagIds,
+		VendorId:             t.VendorId,
 		Comment:              t.Comment,
 		GeoLocation:          nil,
 		Editable:             true,

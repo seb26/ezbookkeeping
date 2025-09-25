@@ -16,6 +16,7 @@ type DataStatisticsResponse struct {
 	TotalAccountCount              int64 `json:"totalAccountCount,string"`
 	TotalTransactionCategoryCount  int64 `json:"totalTransactionCategoryCount,string"`
 	TotalTransactionTagCount       int64 `json:"totalTransactionTagCount,string"`
+	TotalTransactionVendorCount    int64 `json:"totalTransactionVendorCount,string"`
 	TotalTransactionCount          int64 `json:"totalTransactionCount,string"`
 	TotalTransactionPictureCount   int64 `json:"totalTransactionPictureCount,string"`
 	TotalTransactionTemplateCount  int64 `json:"totalTransactionTemplateCount,string"`
@@ -24,13 +25,15 @@ type DataStatisticsResponse struct {
 
 // ExportTransactionDataRequest represents export transaction request
 type ExportTransactionDataRequest struct {
-	Type          TransactionType          `form:"type" binding:"min=0,max=4"`
-	CategoryIds   string                   `form:"category_ids"`
-	AccountIds    string                   `form:"account_ids"`
-	TagIds        string                   `form:"tag_ids"`
-	TagFilterType TransactionTagFilterType `form:"tag_filter_type" binding:"min=0,max=3"`
-	AmountFilter  string                   `form:"amount_filter" binding:"validAmountFilter"`
-	Keyword       string                   `form:"keyword"`
-	MaxTime       int64                    `form:"max_time" binding:"min=0"` // Unix timestamp in seconds
-	MinTime       int64                    `form:"min_time" binding:"min=0"` // Unix timestamp in seconds
+	Type             TransactionType             `form:"type" binding:"min=0,max=4"`
+	CategoryIds      string                      `form:"category_ids"`
+	AccountIds       string                      `form:"account_ids"`
+	TagIds           string                      `form:"tag_ids"`
+	TagFilterType    TransactionTagFilterType    `form:"tag_filter_type" binding:"min=0,max=3"`
+	VendorIds        string                      `form:"vendor_ids"`
+	VendorFilterType TransactionVendorFilterType `form:"vendor_filter_type" binding:"min=0,max=4"`
+	AmountFilter     string                      `form:"amount_filter" binding:"validAmountFilter"`
+	Keyword          string                      `form:"keyword"`
+	MaxTime          int64                       `form:"max_time" binding:"min=0"` // Unix timestamp in seconds
+	MinTime          int64                       `form:"min_time" binding:"min=0"` // Unix timestamp in seconds
 }

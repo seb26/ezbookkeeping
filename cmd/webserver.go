@@ -388,6 +388,14 @@ func startWebServer(c *core.CliContext) error {
 			apiV1Route.POST("/transaction/tags/move.json", bindApi(api.TransactionTags.TagMoveHandler))
 			apiV1Route.POST("/transaction/tags/delete.json", bindApi(api.TransactionTags.TagDeleteHandler))
 
+			// Transaction Vendors
+			apiV1Route.GET("/transaction/vendors/list.json", bindApi(api.TransactionVendors.VendorListHandler))
+			apiV1Route.GET("/transaction/vendors/get.json", bindApi(api.TransactionVendors.VendorGetHandler))
+			apiV1Route.POST("/transaction/vendors/add.json", bindApi(api.TransactionVendors.VendorCreateHandler))
+			apiV1Route.POST("/transaction/vendors/modify.json", bindApi(api.TransactionVendors.VendorModifyHandler))
+			apiV1Route.POST("/transaction/vendors/hide.json", bindApi(api.TransactionVendors.VendorHideHandler))
+			apiV1Route.POST("/transaction/vendors/delete.json", bindApi(api.TransactionVendors.VendorDeleteHandler))
+
 			// Transaction Templates
 			apiV1Route.GET("/transaction/templates/list.json", bindApi(api.TransactionTemplates.TemplateListHandler))
 			apiV1Route.GET("/transaction/templates/get.json", bindApi(api.TransactionTemplates.TemplateGetHandler))

@@ -31,6 +31,7 @@ type TransactionsApi struct {
 	transactions          *services.TransactionService
 	transactionCategories *services.TransactionCategoryService
 	transactionTags       *services.TransactionTagService
+	transactionVendors    *services.TransactionVendorService
 	transactionPictures   *services.TransactionPictureService
 	accounts              *services.AccountService
 	users                 *services.UserService
@@ -51,6 +52,7 @@ var (
 		transactions:          services.Transactions,
 		transactionCategories: services.TransactionCategories,
 		transactionTags:       services.TransactionTags,
+		transactionVendors:    services.TransactionVendors,
 		transactionPictures:   services.TransactionPictures,
 		accounts:              services.Accounts,
 		users:                 services.Users,
@@ -95,7 +97,14 @@ func (a *TransactionsApi) TransactionCountHandler(c *core.WebContext) (any, *err
 		}
 	}
 
-	totalCount, err := a.transactions.GetTransactionCount(c, uid, transactionCountReq.MaxTime, transactionCountReq.MinTime, transactionCountReq.Type, allCategoryIds, allAccountIds, allTagIds, noTags, transactionCountReq.TagFilterType, transactionCountReq.AmountFilter, transactionCountReq.Keyword)
+	allVendorIds, err := a.transactionVendors.GetVendorIds(transactionCountReq.VendorIds)
+
+	if err != nil {
+		log.Warnf(c, "[transactions.TransactionCountHandler] get transaction vendor ids error, because %s", err.Error())
+		return nil, errs.Or(err, errs.ErrOperationFailed)
+	}
+
+	totalCount, err := a.transactions.GetTransactionCount(c, uid, transactionCountReq.MaxTime, transactionCountReq.MinTime, transactionCountReq.Type, allCategoryIds, allAccountIds, allTagIds, noTags, transactionCountReq.TagFilterType, allVendorIds, transactionCountReq.VendorFilterType, transactionCountReq.AmountFilter, transactionCountReq.Keyword)
 
 	if err != nil {
 		log.Errorf(c, "[transactions.TransactionCountHandler] failed to get transaction count for user \"uid:%d\", because %s", uid, err.Error())
@@ -163,10 +172,17 @@ func (a *TransactionsApi) TransactionListHandler(c *core.WebContext) (any, *errs
 		}
 	}
 
+	allVendorIds, err := a.transactionVendors.GetVendorIds(transactionListReq.VendorIds)
+
+	if err != nil {
+		log.Warnf(c, "[transactions.TransactionListHandler] get transaction vendor ids error, because %s", err.Error())
+		return nil, errs.Or(err, errs.ErrOperationFailed)
+	}
+
 	var totalCount int64
 
 	if transactionListReq.WithCount {
-		totalCount, err = a.transactions.GetTransactionCount(c, uid, transactionListReq.MaxTime, transactionListReq.MinTime, transactionListReq.Type, allCategoryIds, allAccountIds, allTagIds, noTags, transactionListReq.TagFilterType, transactionListReq.AmountFilter, transactionListReq.Keyword)
+		totalCount, err = a.transactions.GetTransactionCount(c, uid, transactionListReq.MaxTime, transactionListReq.MinTime, transactionListReq.Type, allCategoryIds, allAccountIds, allTagIds, noTags, transactionListReq.TagFilterType, allVendorIds, transactionListReq.VendorFilterType, transactionListReq.AmountFilter, transactionListReq.Keyword)
 
 		if err != nil {
 			log.Errorf(c, "[transactions.TransactionListHandler] failed to get transaction count for user \"uid:%d\", because %s", uid, err.Error())
@@ -174,7 +190,7 @@ func (a *TransactionsApi) TransactionListHandler(c *core.WebContext) (any, *errs
 		}
 	}
 
-	transactions, err := a.transactions.GetTransactionsByMaxTime(c, uid, transactionListReq.MaxTime, transactionListReq.MinTime, transactionListReq.Type, allCategoryIds, allAccountIds, allTagIds, noTags, transactionListReq.TagFilterType, transactionListReq.AmountFilter, transactionListReq.Keyword, transactionListReq.Page, transactionListReq.Count, true, true)
+	transactions, err := a.transactions.GetTransactionsByMaxTime(c, uid, transactionListReq.MaxTime, transactionListReq.MinTime, transactionListReq.Type, allCategoryIds, allAccountIds, allTagIds, noTags, transactionListReq.TagFilterType, allVendorIds, transactionListReq.VendorFilterType, transactionListReq.AmountFilter, transactionListReq.Keyword, transactionListReq.Page, transactionListReq.Count, true, true)
 
 	if err != nil {
 		log.Errorf(c, "[transactions.TransactionListHandler] failed to get transactions earlier than \"%d\" for user \"uid:%d\", because %s", transactionListReq.MaxTime, uid, err.Error())
@@ -190,7 +206,7 @@ func (a *TransactionsApi) TransactionListHandler(c *core.WebContext) (any, *errs
 		transactions = transactions[:transactionListReq.Count]
 	}
 
-	transactionResult, err := a.getTransactionResponseListResult(c, user, transactions, utcOffset, transactionListReq.WithPictures, transactionListReq.TrimAccount, transactionListReq.TrimCategory, transactionListReq.TrimTag)
+	transactionResult, err := a.getTransactionResponseListResult(c, user, transactions, utcOffset, transactionListReq.WithPictures, transactionListReq.TrimAccount, transactionListReq.TrimCategory, transactionListReq.TrimTag, transactionListReq.TrimVendor)
 
 	if err != nil {
 		log.Errorf(c, "[transactions.TransactionListHandler] failed to assemble transaction result for user \"uid:%d\", because %s", uid, err.Error())
@@ -266,14 +282,21 @@ func (a *TransactionsApi) TransactionMonthListHandler(c *core.WebContext) (any, 
 		}
 	}
 
-	transactions, err := a.transactions.GetTransactionsInMonthByPage(c, uid, transactionListReq.Year, transactionListReq.Month, transactionListReq.Type, allCategoryIds, allAccountIds, allTagIds, noTags, transactionListReq.TagFilterType, transactionListReq.AmountFilter, transactionListReq.Keyword)
+	allVendorIds, err := a.transactionVendors.GetVendorIds(transactionListReq.VendorIds)
+
+	if err != nil {
+		log.Warnf(c, "[transactions.TransactionMonthListHandler] get transaction vendor ids error, because %s", err.Error())
+		return nil, errs.Or(err, errs.ErrOperationFailed)
+	}
+
+	transactions, err := a.transactions.GetTransactionsInMonthByPage(c, uid, transactionListReq.Year, transactionListReq.Month, transactionListReq.Type, allCategoryIds, allAccountIds, allTagIds, noTags, transactionListReq.TagFilterType, allVendorIds, transactionListReq.VendorFilterType, transactionListReq.AmountFilter, transactionListReq.Keyword)
 
 	if err != nil {
 		log.Errorf(c, "[transactions.TransactionMonthListHandler] failed to get transactions in month \"%d-%d\" for user \"uid:%d\", because %s", transactionListReq.Year, transactionListReq.Month, uid, err.Error())
 		return nil, errs.Or(err, errs.ErrOperationFailed)
 	}
 
-	transactionResult, err := a.getTransactionResponseListResult(c, user, transactions, utcOffset, transactionListReq.WithPictures, transactionListReq.TrimAccount, transactionListReq.TrimCategory, transactionListReq.TrimTag)
+	transactionResult, err := a.getTransactionResponseListResult(c, user, transactions, utcOffset, transactionListReq.WithPictures, transactionListReq.TrimAccount, transactionListReq.TrimCategory, transactionListReq.TrimTag, transactionListReq.TrimVendor)
 
 	if err != nil {
 		log.Errorf(c, "[transactions.TransactionMonthListHandler] failed to assemble transaction result for user \"uid:%d\", because %s", uid, err.Error())
@@ -425,11 +448,18 @@ func (a *TransactionsApi) TransactionStatisticsHandler(c *core.WebContext) (any,
 		}
 	}
 
-	uid := c.GetCurrentUid()
-	totalAmounts, err := a.transactions.GetAccountsAndCategoriesTotalIncomeAndExpense(c, uid, statisticReq.StartTime, statisticReq.EndTime, allTagIds, noTags, statisticReq.TagFilterType, statisticReq.Keyword, utcOffset, statisticReq.UseTransactionTimezone)
+	allVendorIds, err := a.transactionVendors.GetVendorIds(statisticReq.VendorIds)
 
 	if err != nil {
-		log.Errorf(c, "[transactions.TransactionStatisticsHandler] failed to get accounts and categories total income and expense for user \"uid:%d\", because %s", uid, err.Error())
+		log.Warnf(c, "[transactions.TransactionStatisticsHandler] get transaction vendor ids error, because %s", err.Error())
+		return nil, errs.Or(err, errs.ErrOperationFailed)
+	}
+
+	uid := c.GetCurrentUid()
+	totalAmounts, err := a.transactions.GetTransactionItemsTotalIncomeAndExpense(c, uid, statisticReq.StartTime, statisticReq.EndTime, allTagIds, noTags, statisticReq.TagFilterType, allVendorIds, statisticReq.VendorFilterType, statisticReq.Keyword, utcOffset, statisticReq.UseTransactionTimezone)
+
+	if err != nil {
+		log.Errorf(c, "[transactions.TransactionStatisticsHandler] failed to get transaction items total income and expense for user \"uid:%d\", because %s", uid, err.Error())
 		return nil, errs.Or(err, errs.ErrOperationFailed)
 	}
 
@@ -445,6 +475,7 @@ func (a *TransactionsApi) TransactionStatisticsHandler(c *core.WebContext) (any,
 		statisticResp.Items[i] = &models.TransactionStatisticResponseItem{
 			CategoryId:  totalAmountItem.CategoryId,
 			AccountId:   totalAmountItem.AccountId,
+			VendorId:    totalAmountItem.VendorId,
 			TotalAmount: totalAmountItem.Amount,
 		}
 	}
@@ -488,11 +519,18 @@ func (a *TransactionsApi) TransactionStatisticsTrendsHandler(c *core.WebContext)
 		}
 	}
 
-	uid := c.GetCurrentUid()
-	allMonthlyTotalAmounts, err := a.transactions.GetAccountsAndCategoriesMonthlyIncomeAndExpense(c, uid, startYear, startMonth, endYear, endMonth, allTagIds, noTags, statisticTrendsReq.TagFilterType, statisticTrendsReq.Keyword, utcOffset, statisticTrendsReq.UseTransactionTimezone)
+	allVendorIds, err := a.transactionVendors.GetVendorIds(statisticTrendsReq.VendorIds)
 
 	if err != nil {
-		log.Errorf(c, "[transactions.TransactionStatisticsTrendsHandler] failed to get accounts and categories total income and expense for user \"uid:%d\", because %s", uid, err.Error())
+		log.Warnf(c, "[transactions.TransactionStatisticsTrendsHandler] get transaction vendor ids error, because %s", err.Error())
+		return nil, errs.Or(err, errs.ErrOperationFailed)
+	}
+
+	uid := c.GetCurrentUid()
+	allMonthlyTotalAmounts, err := a.transactions.GetTransactionItemsMonthlyIncomeAndExpense(c, uid, startYear, startMonth, endYear, endMonth, allTagIds, noTags, statisticTrendsReq.TagFilterType, allVendorIds, statisticTrendsReq.VendorFilterType, statisticTrendsReq.Keyword, utcOffset, statisticTrendsReq.UseTransactionTimezone)
+
+	if err != nil {
+		log.Errorf(c, "[transactions.TransactionStatisticsTrendsHandler] failed to get transaction items total income and expense for user \"uid:%d\", because %s", uid, err.Error())
 		return nil, errs.Or(err, errs.ErrOperationFailed)
 	}
 
@@ -510,6 +548,7 @@ func (a *TransactionsApi) TransactionStatisticsTrendsHandler(c *core.WebContext)
 			monthlyStatisticResp.Items[i] = &models.TransactionStatisticResponseItem{
 				CategoryId:  totalAmountItem.CategoryId,
 				AccountId:   totalAmountItem.AccountId,
+				VendorId:    totalAmountItem.VendorId,
 				TotalAmount: totalAmountItem.Amount,
 			}
 		}
@@ -730,6 +769,7 @@ func (a *TransactionsApi) TransactionGetHandler(c *core.WebContext) (any, *errs.
 	}
 
 	var category *models.TransactionCategory
+	var vendor *models.TransactionVendor
 	var tagMap map[int64]*models.TransactionTag
 	var pictureInfos []*models.TransactionPictureInfo
 
@@ -738,6 +778,15 @@ func (a *TransactionsApi) TransactionGetHandler(c *core.WebContext) (any, *errs.
 
 		if err != nil {
 			log.Errorf(c, "[transactions.TransactionGetHandler] failed to get transactions category for user \"uid:%d\", because %s", uid, err.Error())
+			return nil, errs.Or(err, errs.ErrOperationFailed)
+		}
+	}
+
+	if !transactionGetReq.TrimVendor && transaction.VendorId != 0 {
+		vendor, err = a.transactionVendors.GetVendorByVendorId(c, uid, transaction.VendorId)
+
+		if err != nil {
+			log.Errorf(c, "[transactions.TransactionGetHandler] failed to get transactions vendor for user \"uid:%d\", because %s", uid, err.Error())
 			return nil, errs.Or(err, errs.ErrOperationFailed)
 		}
 	}
@@ -762,6 +811,7 @@ func (a *TransactionsApi) TransactionGetHandler(c *core.WebContext) (any, *errs.
 
 	transactionEditable := transaction.IsEditable(user, utcOffset, accountMap[transaction.AccountId], accountMap[transaction.RelatedAccountId])
 	transactionTagIds := allTransactionTagIds[transaction.TransactionId]
+
 	transactionResp := transaction.ToTransactionInfoResponse(transactionTagIds, transactionEditable)
 
 	if !transactionGetReq.TrimAccount {
@@ -778,6 +828,10 @@ func (a *TransactionsApi) TransactionGetHandler(c *core.WebContext) (any, *errs.
 		if category != nil {
 			transactionResp.Category = category.ToTransactionCategoryInfoResponse()
 		}
+	}
+
+	if !transactionGetReq.TrimVendor && vendor != nil {
+		transactionResp.Vendor = vendor.ToTransactionVendorInfoResponse()
 	}
 
 	if !transactionGetReq.TrimTag {
@@ -1010,6 +1064,7 @@ func (a *TransactionsApi) TransactionModifyHandler(c *core.WebContext) (any, *er
 		TransactionId:     transaction.TransactionId,
 		Uid:               uid,
 		CategoryId:        transactionModifyReq.CategoryId,
+		VendorId:          transactionModifyReq.VendorId,
 		TransactionTime:   utils.GetMinTransactionTimeFromUnixTime(transactionModifyReq.Time),
 		TimezoneUtcOffset: transactionModifyReq.UtcOffset,
 		AccountId:         transactionModifyReq.SourceAccountId,
@@ -1029,6 +1084,7 @@ func (a *TransactionsApi) TransactionModifyHandler(c *core.WebContext) (any, *er
 	}
 
 	if newTransaction.CategoryId == transaction.CategoryId &&
+		newTransaction.VendorId == transaction.VendorId &&
 		utils.GetUnixTimeFromTransactionTime(newTransaction.TransactionTime) == utils.GetUnixTimeFromTransactionTime(transaction.TransactionTime) &&
 		newTransaction.TimezoneUtcOffset == transaction.TimezoneUtcOffset &&
 		newTransaction.AccountId == transaction.AccountId &&
@@ -1682,11 +1738,12 @@ func (a *TransactionsApi) getTransactionTagInfoResponses(tagIds []int64, allTran
 	return allTags
 }
 
-func (a *TransactionsApi) getTransactionResponseListResult(c *core.WebContext, user *models.User, transactions []*models.Transaction, utcOffset int16, withPictures bool, trimAccount bool, trimCategory bool, trimTag bool) (models.TransactionInfoResponseSlice, error) {
+func (a *TransactionsApi) getTransactionResponseListResult(c *core.WebContext, user *models.User, transactions []*models.Transaction, utcOffset int16, withPictures bool, trimAccount bool, trimCategory bool, trimTag bool, trimVendor bool) (models.TransactionInfoResponseSlice, error) {
 	uid := user.Uid
 	transactionIds := make([]int64, len(transactions))
 	accountIds := make([]int64, 0, len(transactions)*2)
 	categoryIds := make([]int64, 0, len(transactions))
+	vendorIds := make([]int64, 0, len(transactions))
 
 	for i := 0; i < len(transactions); i++ {
 		transactionId := transactions[i].TransactionId
@@ -1703,6 +1760,10 @@ func (a *TransactionsApi) getTransactionResponseListResult(c *core.WebContext, u
 		}
 
 		categoryIds = append(categoryIds, transactions[i].CategoryId)
+
+		if transactions[i].VendorId != 0 {
+			vendorIds = append(vendorIds, transactions[i].VendorId)
+		}
 	}
 
 	allAccounts, err := a.accounts.GetAccountsByAccountIds(c, uid, utils.ToUniqueInt64Slice(accountIds))
@@ -1723,6 +1784,7 @@ func (a *TransactionsApi) getTransactionResponseListResult(c *core.WebContext, u
 
 	var categoryMap map[int64]*models.TransactionCategory
 	var tagMap map[int64]*models.TransactionTag
+	var vendorMap map[int64]*models.TransactionVendor
 	var pictureInfoMap map[int64][]*models.TransactionPictureInfo
 
 	if !trimCategory {
@@ -1739,6 +1801,15 @@ func (a *TransactionsApi) getTransactionResponseListResult(c *core.WebContext, u
 
 		if err != nil {
 			log.Errorf(c, "[transactions.getTransactionResponseListResult] failed to get transactions tags for user \"uid:%d\", because %s", uid, err.Error())
+			return nil, err
+		}
+	}
+
+	if !trimVendor && len(vendorIds) > 0 {
+		vendorMap, err = a.transactionVendors.GetVendorsByVendorIds(c, uid, utils.ToUniqueInt64Slice(vendorIds))
+
+		if err != nil {
+			log.Errorf(c, "[transactions.getTransactionResponseListResult] failed to get transactions vendors for user \"uid:%d\", because %s", uid, err.Error())
 			return nil, err
 		}
 	}
@@ -1781,6 +1852,12 @@ func (a *TransactionsApi) getTransactionResponseListResult(c *core.WebContext, u
 			}
 		}
 
+		if !trimVendor && transaction.VendorId != 0 {
+			if vendor := vendorMap[transaction.VendorId]; vendor != nil {
+				result[i].Vendor = vendor.ToTransactionVendorInfoResponse()
+			}
+		}
+
 		if !trimTag {
 			result[i].Tags = a.getTransactionTagInfoResponses(transactionTagIds, tagMap)
 		}
@@ -1816,6 +1893,7 @@ func (a *TransactionsApi) createNewTransactionModel(uid int64, transactionCreate
 		Uid:               uid,
 		Type:              transactionDbType,
 		CategoryId:        transactionCreateReq.CategoryId,
+		VendorId:          transactionCreateReq.VendorId,
 		TransactionTime:   utils.GetMinTransactionTimeFromUnixTime(transactionCreateReq.Time),
 		TimezoneUtcOffset: transactionCreateReq.UtcOffset,
 		AccountId:         transactionCreateReq.SourceAccountId,

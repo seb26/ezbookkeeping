@@ -256,6 +256,7 @@ func (a *TransactionTemplatesApi) TemplateModifyHandler(c *core.WebContext) (any
 		CategoryId:           templateModifyReq.CategoryId,
 		AccountId:            templateModifyReq.SourceAccountId,
 		TagIds:               strings.Join(templateModifyReq.TagIds, ","),
+		VendorId:             templateModifyReq.VendorId,
 		Amount:               templateModifyReq.SourceAmount,
 		RelatedAccountId:     templateModifyReq.DestinationAccountId,
 		RelatedAccountAmount: templateModifyReq.DestinationAmount,
@@ -303,6 +304,7 @@ func (a *TransactionTemplatesApi) TemplateModifyHandler(c *core.WebContext) (any
 		newTemplate.CategoryId == template.CategoryId &&
 		newTemplate.AccountId == template.AccountId &&
 		newTemplate.TagIds == template.TagIds &&
+		newTemplate.VendorId == template.VendorId &&
 		newTemplate.Amount == template.Amount &&
 		newTemplate.RelatedAccountId == template.RelatedAccountId &&
 		newTemplate.RelatedAccountAmount == template.RelatedAccountAmount &&
@@ -466,6 +468,7 @@ func (a *TransactionTemplatesApi) createNewTemplateModel(uid int64, templateCrea
 		CategoryId:           templateCreateReq.CategoryId,
 		AccountId:            templateCreateReq.SourceAccountId,
 		TagIds:               strings.Join(templateCreateReq.TagIds, ","),
+		VendorId:             templateCreateReq.VendorId,
 		Amount:               templateCreateReq.SourceAmount,
 		RelatedAccountId:     templateCreateReq.DestinationAccountId,
 		RelatedAccountAmount: templateCreateReq.DestinationAmount,

@@ -27,6 +27,7 @@ type DataManagementsApi struct {
 	transactions            *services.TransactionService
 	categories              *services.TransactionCategoryService
 	tags                    *services.TransactionTagService
+	vendors                 *services.TransactionVendorService
 	pictures                *services.TransactionPictureService
 	templates               *services.TransactionTemplateService
 	userCustomExchangeRates *services.UserCustomExchangeRatesService
@@ -44,6 +45,7 @@ var (
 		transactions:            services.Transactions,
 		categories:              services.TransactionCategories,
 		tags:                    services.TransactionTags,
+		vendors:                 services.TransactionVendors,
 		pictures:                services.TransactionPictures,
 		templates:               services.TransactionTemplates,
 		userCustomExchangeRates: services.UserCustomExchangeRates,
@@ -84,6 +86,13 @@ func (a *DataManagementsApi) DataStatisticsHandler(c *core.WebContext) (any, *er
 		return nil, errs.ErrOperationFailed
 	}
 
+	totalTransactionVendorCount, err := a.vendors.GetTotalVendorCountByUid(c, uid)
+
+	if err != nil {
+		log.Errorf(c, "[data_managements.DataStatisticsHandler] failed to get total transaction vendor count for user \"uid:%d\", because %s", uid, err.Error())
+		return nil, errs.ErrOperationFailed
+	}
+
 	totalTransactionCount, err := a.transactions.GetTotalTransactionCountByUid(c, uid)
 
 	if err != nil {
@@ -116,6 +125,7 @@ func (a *DataManagementsApi) DataStatisticsHandler(c *core.WebContext) (any, *er
 		TotalAccountCount:              totalAccountCount,
 		TotalTransactionCategoryCount:  totalTransactionCategoryCount,
 		TotalTransactionTagCount:       totalTransactionTagCount,
+		TotalTransactionVendorCount:    totalTransactionVendorCount,
 		TotalTransactionCount:          totalTransactionCount,
 		TotalTransactionPictureCount:   totalTransactionPictureCount,
 		TotalTransactionTemplateCount:  totalTransactionTemplateCount,
@@ -383,6 +393,17 @@ func (a *DataManagementsApi) getExportedFileContent(c *core.WebContext, fileType
 		}
 	}
 
+	var allVendorIds []int64
+
+	if exportTransactionDataReq.VendorIds != "none" {
+		allVendorIds, err = a.vendors.GetVendorIds(exportTransactionDataReq.VendorIds)
+
+		if err != nil {
+			log.Warnf(c, "[data_managements.ExportDataHandler] get transaction vendor ids error, because %s", err.Error())
+			return nil, "", errs.Or(err, errs.ErrOperationFailed)
+		}
+	}
+
 	maxTransactionTime := utils.GetMaxTransactionTimeFromUnixTime(time.Now().Unix())
 	minTransactionTime := int64(0)
 
@@ -394,7 +415,7 @@ func (a *DataManagementsApi) getExportedFileContent(c *core.WebContext, fileType
 		minTransactionTime = utils.GetMinTransactionTimeFromUnixTime(exportTransactionDataReq.MinTime)
 	}
 
-	allTransactions, err := a.transactions.GetAllSpecifiedTransactions(c, uid, maxTransactionTime, minTransactionTime, exportTransactionDataReq.Type, allCategoryIds, allAccountIds, allTagIds, noTags, exportTransactionDataReq.TagFilterType, exportTransactionDataReq.AmountFilter, exportTransactionDataReq.Keyword, pageCountForDataExport, true)
+	allTransactions, err := a.transactions.GetAllSpecifiedTransactions(c, uid, maxTransactionTime, minTransactionTime, exportTransactionDataReq.Type, allCategoryIds, allAccountIds, allTagIds, noTags, exportTransactionDataReq.TagFilterType, allVendorIds, exportTransactionDataReq.VendorFilterType, exportTransactionDataReq.AmountFilter, exportTransactionDataReq.Keyword, pageCountForDataExport, true)
 
 	if err != nil {
 		log.Errorf(c, "[data_managements.ExportDataHandler] failed to all transactions user \"uid:%d\", because %s", uid, err.Error())

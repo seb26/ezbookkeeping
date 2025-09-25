@@ -76,11 +76,11 @@ func (s *TransactionService) GetAllTransactions(c core.Context, uid int64, pageC
 
 // GetAllTransactionsByMaxTime returns all transactions before given time
 func (s *TransactionService) GetAllTransactionsByMaxTime(c core.Context, uid int64, maxTransactionTime int64, count int32, noDuplicated bool) ([]*models.Transaction, error) {
-	return s.GetTransactionsByMaxTime(c, uid, maxTransactionTime, 0, 0, nil, nil, nil, false, models.TRANSACTION_TAG_FILTER_HAS_ANY, "", "", 1, count, false, noDuplicated)
+	return s.GetTransactionsByMaxTime(c, uid, maxTransactionTime, 0, 0, nil, nil, nil, false, models.TRANSACTION_TAG_FILTER_HAS_ANY, nil, models.TRANSACTION_VENDOR_FILTER_ALL, "", "", 1, count, false, noDuplicated)
 }
 
 // GetAllSpecifiedTransactions returns all transactions that match given conditions
-func (s *TransactionService) GetAllSpecifiedTransactions(c core.Context, uid int64, maxTransactionTime int64, minTransactionTime int64, transactionType models.TransactionType, categoryIds []int64, accountIds []int64, tagIds []int64, noTags bool, tagFilterType models.TransactionTagFilterType, amountFilter string, keyword string, pageCount int32, noDuplicated bool) ([]*models.Transaction, error) {
+func (s *TransactionService) GetAllSpecifiedTransactions(c core.Context, uid int64, maxTransactionTime int64, minTransactionTime int64, transactionType models.TransactionType, categoryIds []int64, accountIds []int64, tagIds []int64, noTags bool, tagFilterType models.TransactionTagFilterType, vendorIds []int64, vendorFilterType models.TransactionVendorFilterType, amountFilter string, keyword string, pageCount int32, noDuplicated bool) ([]*models.Transaction, error) {
 	if maxTransactionTime <= 0 {
 		maxTransactionTime = utils.GetMaxTransactionTimeFromUnixTime(time.Now().Unix())
 	}
@@ -88,7 +88,7 @@ func (s *TransactionService) GetAllSpecifiedTransactions(c core.Context, uid int
 	var allTransactions []*models.Transaction
 
 	for maxTransactionTime > 0 {
-		transactions, err := s.GetTransactionsByMaxTime(c, uid, maxTransactionTime, minTransactionTime, transactionType, categoryIds, accountIds, tagIds, noTags, tagFilterType, amountFilter, keyword, 1, pageCount, false, noDuplicated)
+		transactions, err := s.GetTransactionsByMaxTime(c, uid, maxTransactionTime, minTransactionTime, transactionType, categoryIds, accountIds, tagIds, noTags, tagFilterType, vendorIds, vendorFilterType, amountFilter, keyword, 1, pageCount, false, noDuplicated)
 
 		if err != nil {
 			return nil, err
@@ -198,7 +198,7 @@ func (s *TransactionService) GetAllTransactionsWithAccountBalanceByMaxTime(c cor
 }
 
 // GetTransactionsByMaxTime returns transactions before given time
-func (s *TransactionService) GetTransactionsByMaxTime(c core.Context, uid int64, maxTransactionTime int64, minTransactionTime int64, transactionType models.TransactionType, categoryIds []int64, accountIds []int64, tagIds []int64, noTags bool, tagFilterType models.TransactionTagFilterType, amountFilter string, keyword string, page int32, count int32, needOneMoreItem bool, noDuplicated bool) ([]*models.Transaction, error) {
+func (s *TransactionService) GetTransactionsByMaxTime(c core.Context, uid int64, maxTransactionTime int64, minTransactionTime int64, transactionType models.TransactionType, categoryIds []int64, accountIds []int64, tagIds []int64, noTags bool, tagFilterType models.TransactionTagFilterType, vendorIds []int64, vendorFilterType models.TransactionVendorFilterType, amountFilter string, keyword string, page int32, count int32, needOneMoreItem bool, noDuplicated bool) ([]*models.Transaction, error) {
 	if uid <= 0 {
 		return nil, errs.ErrUserIdInvalid
 	}
@@ -232,9 +232,9 @@ func (s *TransactionService) GetTransactionsByMaxTime(c core.Context, uid int64,
 		actualCount++
 	}
 
-	condition, conditionParams := s.buildTransactionQueryCondition(uid, maxTransactionTime, minTransactionTime, transactionDbType, categoryIds, accountIds, tagIds, amountFilter, keyword, noDuplicated)
+	condition, conditionParams := s.buildTransactionQueryCondition(uid, maxTransactionTime, minTransactionTime, transactionDbType, categoryIds, accountIds, tagIds, vendorIds, amountFilter, keyword, noDuplicated)
 	sess := s.UserDataDB(uid).NewSession(c).Where(condition, conditionParams...)
-	sess = s.appendFilterTagIdsConditionToQuery(sess, uid, maxTransactionTime, minTransactionTime, tagIds, noTags, tagFilterType)
+	sess = s.appendFilterConditionsToQuery(sess, uid, maxTransactionTime, minTransactionTime, tagIds, noTags, tagFilterType, vendorIds, vendorFilterType)
 
 	err = sess.Limit(int(actualCount), int(count*(page-1))).OrderBy("transaction_time desc").Find(&transactions)
 
@@ -242,7 +242,7 @@ func (s *TransactionService) GetTransactionsByMaxTime(c core.Context, uid int64,
 }
 
 // GetTransactionsInMonthByPage returns all transactions in given year and month
-func (s *TransactionService) GetTransactionsInMonthByPage(c core.Context, uid int64, year int32, month int32, transactionType models.TransactionType, categoryIds []int64, accountIds []int64, tagIds []int64, noTags bool, tagFilterType models.TransactionTagFilterType, amountFilter string, keyword string) ([]*models.Transaction, error) {
+func (s *TransactionService) GetTransactionsInMonthByPage(c core.Context, uid int64, year int32, month int32, transactionType models.TransactionType, categoryIds []int64, accountIds []int64, tagIds []int64, noTags bool, tagFilterType models.TransactionTagFilterType, vendorIds []int64, vendorFilterType models.TransactionVendorFilterType, amountFilter string, keyword string) ([]*models.Transaction, error) {
 	if uid <= 0 {
 		return nil, errs.ErrUserIdInvalid
 	}
@@ -266,9 +266,9 @@ func (s *TransactionService) GetTransactionsInMonthByPage(c core.Context, uid in
 
 	var transactions []*models.Transaction
 
-	condition, conditionParams := s.buildTransactionQueryCondition(uid, maxTransactionTime, minTransactionTime, transactionDbType, categoryIds, accountIds, tagIds, amountFilter, keyword, true)
+	condition, conditionParams := s.buildTransactionQueryCondition(uid, maxTransactionTime, minTransactionTime, transactionDbType, categoryIds, accountIds, tagIds, vendorIds, amountFilter, keyword, true)
 	sess := s.UserDataDB(uid).NewSession(c).Where(condition, conditionParams...)
-	sess = s.appendFilterTagIdsConditionToQuery(sess, uid, maxTransactionTime, minTransactionTime, tagIds, noTags, tagFilterType)
+	sess = s.appendFilterConditionsToQuery(sess, uid, maxTransactionTime, minTransactionTime, tagIds, noTags, tagFilterType, vendorIds, vendorFilterType)
 
 	err = sess.OrderBy("transaction_time desc").Find(&transactions)
 
@@ -311,11 +311,11 @@ func (s *TransactionService) GetTransactionByTransactionId(c core.Context, uid i
 
 // GetAllTransactionCount returns total count of transactions
 func (s *TransactionService) GetAllTransactionCount(c core.Context, uid int64) (int64, error) {
-	return s.GetTransactionCount(c, uid, 0, 0, 0, nil, nil, nil, false, models.TRANSACTION_TAG_FILTER_HAS_ANY, "", "")
+	return s.GetTransactionCount(c, uid, 0, 0, 0, nil, nil, nil, false, models.TRANSACTION_TAG_FILTER_HAS_ANY, nil, models.TRANSACTION_VENDOR_FILTER_ALL, "", "")
 }
 
 // GetTransactionCount returns count of transactions
-func (s *TransactionService) GetTransactionCount(c core.Context, uid int64, maxTransactionTime int64, minTransactionTime int64, transactionType models.TransactionType, categoryIds []int64, accountIds []int64, tagIds []int64, noTags bool, tagFilterType models.TransactionTagFilterType, amountFilter string, keyword string) (int64, error) {
+func (s *TransactionService) GetTransactionCount(c core.Context, uid int64, maxTransactionTime int64, minTransactionTime int64, transactionType models.TransactionType, categoryIds []int64, accountIds []int64, tagIds []int64, noTags bool, tagFilterType models.TransactionTagFilterType, vendorIds []int64, vendorFilterType models.TransactionVendorFilterType, amountFilter string, keyword string) (int64, error) {
 	if uid <= 0 {
 		return 0, errs.ErrUserIdInvalid
 	}
@@ -331,9 +331,9 @@ func (s *TransactionService) GetTransactionCount(c core.Context, uid int64, maxT
 		}
 	}
 
-	condition, conditionParams := s.buildTransactionQueryCondition(uid, maxTransactionTime, minTransactionTime, transactionDbType, categoryIds, accountIds, tagIds, amountFilter, keyword, true)
+	condition, conditionParams := s.buildTransactionQueryCondition(uid, maxTransactionTime, minTransactionTime, transactionDbType, categoryIds, accountIds, tagIds, vendorIds, amountFilter, keyword, true)
 	sess := s.UserDataDB(uid).NewSession(c).Where(condition, conditionParams...)
-	sess = s.appendFilterTagIdsConditionToQuery(sess, uid, maxTransactionTime, minTransactionTime, tagIds, noTags, tagFilterType)
+	sess = s.appendFilterConditionsToQuery(sess, uid, maxTransactionTime, minTransactionTime, tagIds, noTags, tagFilterType, vendorIds, vendorFilterType)
 
 	return sess.Count(&models.Transaction{})
 }
@@ -867,6 +867,15 @@ func (s *TransactionService) ModifyTransaction(c core.Context, transaction *mode
 
 		if err != nil {
 			return err
+		}
+
+		// Get and verify vendor
+		if transaction.VendorId != oldTransaction.VendorId {
+			err = s.isVendorValid(sess, transaction, transaction.VendorId)
+			if err != nil {
+				return err
+			}
+			updateCols = append(updateCols, "vendor_id")
 		}
 
 		// Get and verify pictures
@@ -1583,8 +1592,8 @@ func (s *TransactionService) GetAccountsTotalIncomeAndExpense(c core.Context, ui
 	return incomeAmounts, expenseAmounts, nil
 }
 
-// GetAccountsAndCategoriesTotalIncomeAndExpense returns the every accounts and categories total income and expense amount by specific date range
-func (s *TransactionService) GetAccountsAndCategoriesTotalIncomeAndExpense(c core.Context, uid int64, startUnixTime int64, endUnixTime int64, tagIds []int64, noTags bool, tagFilterType models.TransactionTagFilterType, keyword string, utcOffset int16, useTransactionTimezone bool) ([]*models.Transaction, error) {
+// GetTransactionItemsTotalIncomeAndExpense returns the every accounts, categories and vendors total income and expense amount by specific date range
+func (s *TransactionService) GetTransactionItemsTotalIncomeAndExpense(c core.Context, uid int64, startUnixTime int64, endUnixTime int64, tagIds []int64, noTags bool, tagFilterType models.TransactionTagFilterType, vendorIds []int64, vendorFilterType models.TransactionVendorFilterType, keyword string, utcOffset int16, useTransactionTimezone bool) ([]*models.Transaction, error) {
 	if uid <= 0 {
 		return nil, errs.ErrUserIdInvalid
 	}
@@ -1637,8 +1646,8 @@ func (s *TransactionService) GetAccountsAndCategoriesTotalIncomeAndExpense(c cor
 			finalConditionParams = append(finalConditionParams, "%%"+keyword+"%%")
 		}
 
-		sess := s.UserDataDB(uid).NewSession(c).Select("category_id, account_id, transaction_time, timezone_utc_offset, amount").Where(finalCondition, finalConditionParams...)
-		sess = s.appendFilterTagIdsConditionToQuery(sess, uid, maxTransactionTime, minTransactionTime, tagIds, noTags, tagFilterType)
+		sess := s.UserDataDB(uid).NewSession(c).Select("category_id, account_id, vendor_id, transaction_time, timezone_utc_offset, amount").Where(finalCondition, finalConditionParams...)
+		sess = s.appendFilterConditionsToQuery(sess, uid, maxTransactionTime, minTransactionTime, tagIds, noTags, tagFilterType, vendorIds, vendorFilterType)
 
 		err := sess.Limit(pageCountForLoadTransactionAmounts, 0).OrderBy("transaction_time desc").Find(&transactions)
 
@@ -1672,13 +1681,14 @@ func (s *TransactionService) GetAccountsAndCategoriesTotalIncomeAndExpense(c cor
 			continue
 		}
 
-		groupKey := fmt.Sprintf("%d_%d", transaction.CategoryId, transaction.AccountId)
+		groupKey := fmt.Sprintf("%d_%d_%d", transaction.CategoryId, transaction.AccountId, transaction.VendorId)
 		totalAmounts, exists := transactionTotalAmountsMap[groupKey]
 
 		if !exists {
 			totalAmounts = &models.Transaction{
 				CategoryId: transaction.CategoryId,
 				AccountId:  transaction.AccountId,
+				VendorId:   transaction.VendorId,
 				Amount:     0,
 			}
 
@@ -1697,8 +1707,8 @@ func (s *TransactionService) GetAccountsAndCategoriesTotalIncomeAndExpense(c cor
 	return transactionTotalAmounts, nil
 }
 
-// GetAccountsAndCategoriesMonthlyIncomeAndExpense returns the every accounts monthly income and expense amount by specific date range
-func (s *TransactionService) GetAccountsAndCategoriesMonthlyIncomeAndExpense(c core.Context, uid int64, startYear int32, startMonth int32, endYear int32, endMonth int32, tagIds []int64, noTags bool, tagFilterType models.TransactionTagFilterType, keyword string, utcOffset int16, useTransactionTimezone bool) (map[int32][]*models.Transaction, error) {
+// GetTransactionItemsMonthlyIncomeAndExpense returns the every accounts, categories and vendors monthly income and expense amount by specific date range
+func (s *TransactionService) GetTransactionItemsMonthlyIncomeAndExpense(c core.Context, uid int64, startYear int32, startMonth int32, endYear int32, endMonth int32, tagIds []int64, noTags bool, tagFilterType models.TransactionTagFilterType, vendorIds []int64, vendorFilterType models.TransactionVendorFilterType, keyword string, utcOffset int16, useTransactionTimezone bool) (map[int32][]*models.Transaction, error) {
 	if uid <= 0 {
 		return nil, errs.ErrUserIdInvalid
 	}
@@ -1722,13 +1732,6 @@ func (s *TransactionService) GetAccountsAndCategoriesMonthlyIncomeAndExpense(c c
 			return nil, errs.ErrSystemError
 		}
 	}
-
-	condition := "uid=? AND deleted=? AND (type=? OR type=?)"
-	conditionParams := make([]any, 0, 4)
-	conditionParams = append(conditionParams, uid)
-	conditionParams = append(conditionParams, false)
-	conditionParams = append(conditionParams, models.TRANSACTION_DB_TYPE_INCOME)
-	conditionParams = append(conditionParams, models.TRANSACTION_DB_TYPE_EXPENSE)
 
 	minTransactionTime := startTransactionTime
 	maxTransactionTime := endTransactionTime
@@ -1756,8 +1759,8 @@ func (s *TransactionService) GetAccountsAndCategoriesMonthlyIncomeAndExpense(c c
 			finalConditionParams = append(finalConditionParams, "%%"+keyword+"%%")
 		}
 
-		sess := s.UserDataDB(uid).NewSession(c).Select("category_id, account_id, transaction_time, timezone_utc_offset, amount").Where(finalCondition, finalConditionParams...)
-		sess = s.appendFilterTagIdsConditionToQuery(sess, uid, maxTransactionTime, minTransactionTime, tagIds, noTags, tagFilterType)
+		sess := s.UserDataDB(uid).NewSession(c).Select("category_id, account_id, vendor_id, transaction_time, timezone_utc_offset, amount").Where(finalCondition, finalConditionParams...)
+		sess = s.appendFilterTagIdsConditionToQuery(sess, uid, maxTransactionTime, minTransactionTime, tagIds, noTags, tagFilterType, vendorIds, vendorFilterType)
 
 		err := sess.Limit(pageCountForLoadTransactionAmounts, 0).OrderBy("transaction_time desc").Find(&transactions)
 
@@ -1794,13 +1797,14 @@ func (s *TransactionService) GetAccountsAndCategoriesMonthlyIncomeAndExpense(c c
 			continue
 		}
 
-		groupKey := fmt.Sprintf("%d_%d_%d", yearMonth, transaction.CategoryId, transaction.AccountId)
+		groupKey := fmt.Sprintf("%d_%d_%d_%d", yearMonth, transaction.CategoryId, transaction.AccountId, transaction.VendorId)
 		transactionAmounts, exists := transactionsMonthlyAmountsMap[groupKey]
 
 		if !exists {
 			transactionAmounts = &models.Transaction{
 				CategoryId: transaction.CategoryId,
 				AccountId:  transaction.AccountId,
+				VendorId:   transaction.VendorId,
 			}
 			transactionsMonthlyAmountsMap[groupKey] = transactionAmounts
 		}
@@ -1882,6 +1886,13 @@ func (s *TransactionService) doCreateTransaction(c core.Context, database *datas
 
 	// Get and verify tags
 	err = s.isTagsValid(sess, transaction, transactionTagIndexes, tagIds)
+
+	if err != nil {
+		return err
+	}
+
+	// Get and verify vendor
+	err = s.isVendorValid(sess, transaction, transaction.VendorId)
 
 	if err != nil {
 		return err
@@ -2101,7 +2112,7 @@ func (s *TransactionService) doCreateTransaction(c core.Context, database *datas
 	return err
 }
 
-func (s *TransactionService) buildTransactionQueryCondition(uid int64, maxTransactionTime int64, minTransactionTime int64, transactionDbType models.TransactionDbType, categoryIds []int64, accountIds []int64, tagIds []int64, amountFilter string, keyword string, noDuplicated bool) (string, []any) {
+func (s *TransactionService) buildTransactionQueryCondition(uid int64, maxTransactionTime int64, minTransactionTime int64, transactionDbType models.TransactionDbType, categoryIds []int64, accountIds []int64, tagIds []int64, vendorIds []int64, amountFilter string, keyword string, noDuplicated bool) (string, []any) {
 	condition := "uid=? AND deleted=?"
 	conditionParams := make([]any, 0, 16)
 	conditionParams = append(conditionParams, uid)
@@ -2197,6 +2208,25 @@ func (s *TransactionService) buildTransactionQueryCondition(uid int64, maxTransa
 		conditionParams = append(conditionParams, accountIdConditionParams...)
 	}
 
+	if len(vendorIds) > 0 {
+		var conditions strings.Builder
+
+		for i := 0; i < len(vendorIds); i++ {
+			if i > 0 {
+				conditions.WriteString(",")
+			}
+
+			conditions.WriteString("?")
+			conditionParams = append(conditionParams, vendorIds[i])
+		}
+
+		if conditions.Len() > 1 {
+			condition = condition + " AND vendor_id IN (" + conditions.String() + ")"
+		} else {
+			condition = condition + " AND vendor_id = " + conditions.String()
+		}
+	}
+
 	if amountFilter != "" {
 		amountFilterItems := strings.Split(amountFilter, ":")
 
@@ -2257,7 +2287,7 @@ func (s *TransactionService) buildTransactionQueryCondition(uid int64, maxTransa
 	return condition, conditionParams
 }
 
-func (s *TransactionService) appendFilterTagIdsConditionToQuery(sess *xorm.Session, uid int64, maxTransactionTime int64, minTransactionTime int64, tagIds []int64, noTags bool, tagFilterType models.TransactionTagFilterType) *xorm.Session {
+func (s *TransactionService) appendFilterConditionsToQuery(sess *xorm.Session, uid int64, maxTransactionTime int64, minTransactionTime int64, tagIds []int64, noTags bool, tagFilterType models.TransactionTagFilterType, vendorIds []int64, vendorFilterType models.TransactionVendorFilterType) *xorm.Session {
 	subQueryCondition := builder.And(builder.Eq{"uid": uid}, builder.Eq{"deleted": false})
 
 	if maxTransactionTime > 0 {
@@ -2268,27 +2298,43 @@ func (s *TransactionService) appendFilterTagIdsConditionToQuery(sess *xorm.Sessi
 		subQueryCondition = subQueryCondition.And(builder.Gte{"transaction_time": minTransactionTime})
 	}
 
+	if len(tagIds) < 1 && vendorFilterType == models.TRANSACTION_VENDOR_FILTER_ALL {
+		return sess
+	}
+
 	if noTags {
 		subQuery := builder.Select("transaction_id").From("transaction_tag_index").Where(subQueryCondition)
 		sess.NotIn("transaction_id", subQuery).NotIn("related_id", subQuery)
-		return sess
+
+		if vendorFilterType == models.TRANSACTION_VENDOR_FILTER_ALL {
+			return sess
+		}
 	}
 
-	if len(tagIds) < 1 {
-		return sess
+	if len(tagIds) > 0 {
+		subQueryCondition = subQueryCondition.And(builder.In("tag_id", tagIds))
+		subQuery := builder.Select("transaction_id").From("transaction_tag_index").Where(subQueryCondition)
+
+		if tagFilterType == models.TRANSACTION_TAG_FILTER_HAS_ALL || tagFilterType == models.TRANSACTION_TAG_FILTER_NOT_HAS_ALL {
+			subQuery = subQuery.GroupBy("transaction_id").Having(fmt.Sprintf("COUNT(DISTINCT tag_id) >= %d", len(tagIds)))
+		}
+
+		if tagFilterType == models.TRANSACTION_TAG_FILTER_HAS_ANY || tagFilterType == models.TRANSACTION_TAG_FILTER_HAS_ALL {
+			sess.And(builder.Or(builder.In("transaction_id", subQuery), builder.In("related_id", subQuery)))
+		} else if tagFilterType == models.TRANSACTION_TAG_FILTER_NOT_HAS_ANY || tagFilterType == models.TRANSACTION_TAG_FILTER_NOT_HAS_ALL {
+			sess.NotIn("transaction_id", subQuery).NotIn("related_id", subQuery)
+		}
 	}
 
-	subQueryCondition = subQueryCondition.And(builder.In("tag_id", tagIds))
-	subQuery := builder.Select("transaction_id").From("transaction_tag_index").Where(subQueryCondition)
-
-	if tagFilterType == models.TRANSACTION_TAG_FILTER_HAS_ALL || tagFilterType == models.TRANSACTION_TAG_FILTER_NOT_HAS_ALL {
-		subQuery = subQuery.GroupBy("transaction_id").Having(fmt.Sprintf("COUNT(DISTINCT tag_id) >= %d", len(tagIds)))
-	}
-
-	if tagFilterType == models.TRANSACTION_TAG_FILTER_HAS_ANY || tagFilterType == models.TRANSACTION_TAG_FILTER_HAS_ALL {
-		sess.And(builder.Or(builder.In("transaction_id", subQuery), builder.In("related_id", subQuery)))
-	} else if tagFilterType == models.TRANSACTION_TAG_FILTER_NOT_HAS_ANY || tagFilterType == models.TRANSACTION_TAG_FILTER_NOT_HAS_ALL {
-		sess.NotIn("transaction_id", subQuery).NotIn("related_id", subQuery)
+	switch vendorFilterType {
+	case models.TRANSACTION_VENDOR_FILTER_HAS_VENDOR:
+		sess.And(builder.Neq{"vendor_id": models.TRANSACTION_VENDOR_NOT_SET})
+	case models.TRANSACTION_VENDOR_FILTER_NO_VENDOR:
+		sess.And(builder.Eq{"vendor_id": models.TRANSACTION_VENDOR_NOT_SET})
+	case models.TRANSACTION_VENDOR_FILTER_INCLUDE_VENDORS:
+		sess.And(builder.In("vendor_id", vendorIds))
+	case models.TRANSACTION_VENDOR_FILTER_EXCLUDE_VENDORS:
+		sess.And(builder.NotIn("vendor_id", vendorIds))
 	}
 
 	return sess
@@ -2529,6 +2575,22 @@ func (s *TransactionService) isTagsValid(sess *xorm.Session, transaction *models
 				return errs.ErrTransactionTagNotFound
 			}
 		}
+	}
+
+	return nil
+}
+
+func (s *TransactionService) isVendorValid(sess *xorm.Session, transaction *models.Transaction, vendorId int64) error {
+	if vendorId != 0 {
+		vendor := &models.TransactionVendor{}
+		has, err := sess.ID(vendorId).Where("uid=? AND deleted=?", transaction.Uid, false).Get(vendor)
+
+		if err != nil {
+			return err
+		} else if !has {
+			return errs.ErrTransactionVendorNotFound
+		}
+
 	}
 
 	return nil
