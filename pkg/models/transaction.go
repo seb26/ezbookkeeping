@@ -92,7 +92,7 @@ type Transaction struct {
 	Type                 TransactionDbType `xorm:"INDEX(IDX_transaction_uid_deleted_type_time) INDEX(IDX_transaction_uid_deleted_type_account_id_time) NOT NULL"`
 	CategoryId           int64             `xorm:"INDEX(IDX_transaction_uid_deleted_category_id_time) NOT NULL"`
 	AccountId            int64             `xorm:"INDEX(IDX_transaction_uid_deleted_account_id_time) INDEX(IDX_transaction_uid_deleted_type_account_id_time) NOT NULL"`
-	VendorId             int64             `xorm:"INDEX(IDX_transaction_uid_deleted_vendor_id_time) DEFAULT 0"` // TODO: change to NOT NULL and use migrations to update existing user db's
+	VendorId             int64             `xorm:"INDEX(IDX_transaction_uid_deleted_vendor_id_time) INDEX(IDX_transaction_uid_deleted_vendor_id_category_account_time) NOT NULL DEFAULT 0"`
 	TransactionTime      int64             `xorm:"UNIQUE(UQE_transaction_uid_time) INDEX(IDX_transaction_uid_deleted_time) INDEX(IDX_transaction_uid_deleted_type_time) INDEX(IDX_transaction_uid_deleted_type_account_id_time) INDEX(IDX_transaction_uid_deleted_category_id_time) INDEX(IDX_transaction_uid_deleted_account_id_time) NOT NULL"`
 	TimezoneUtcOffset    int16             `xorm:"NOT NULL"`
 	Amount               int64             `xorm:"NOT NULL"`
@@ -244,7 +244,7 @@ type TransactionStatisticRequest struct {
 	TagFilterType          TransactionTagFilterType    `form:"tag_filter_type" binding:"min=0,max=3"`
 	VendorIds              string                      `form:"vendor_ids"`
 	VendorFilterType       TransactionVendorFilterType `form:"vendor_filter_type" binding:"min=0,max=4"`
-	Keyword                string                   `form:"keyword"`
+	Keyword                string                      `form:"keyword"`
 	UseTransactionTimezone bool                        `form:"use_transaction_timezone"`
 }
 
@@ -255,7 +255,7 @@ type TransactionStatisticTrendsRequest struct {
 	TagFilterType          TransactionTagFilterType    `form:"tag_filter_type" binding:"min=0,max=3"`
 	VendorIds              string                      `form:"vendor_ids"`
 	VendorFilterType       TransactionVendorFilterType `form:"vendor_filter_type" binding:"min=0,max=4"`
-	Keyword                string                   `form:"keyword"`
+	Keyword                string                      `form:"keyword"`
 	UseTransactionTimezone bool                        `form:"use_transaction_timezone"`
 }
 

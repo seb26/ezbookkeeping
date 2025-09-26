@@ -43,7 +43,7 @@ type TransactionTemplate struct {
 	ScheduledAt                int16                            `xorm:"INDEX(IDX_transaction_template_deleted_type_freqtype_scheduled_time)"`
 	ScheduledTimezoneUtcOffset int16
 	TagIds                     string `xorm:"VARCHAR(255) NOT NULL"`
-	VendorId                   int64  `xorm:"DEFAULT 0"` // TODO: change to NOT NULL and use migrations to update existing user db's
+	VendorId                   int64  `xorm:"NOT NULL DEFAULT 0"`
 	Amount                     int64  `xorm:"NOT NULL"`
 	RelatedAccountId           int64  `xorm:"NOT NULL"`
 	RelatedAccountAmount       int64  `xorm:"NOT NULL"`
