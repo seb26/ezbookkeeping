@@ -45,7 +45,7 @@ export class ImportTransaction implements ImportTransactionResponse {
         this.destinationAmount = response.destinationAmount || 0;
         this.tagIds = response.tagIds || [];
         this.originalTagNames = response.originalTagNames || [];
-        this.vendorId = response.vendorId;
+        this.vendorId = response.vendorId || '';
         this.comment = response.comment;
         this.geoLocation = response.geoLocation;
 
@@ -121,6 +121,7 @@ export interface ImportTransactionRequestItem {
     readonly destinationAmount?: string;
     readonly geoLocation?: string;
     readonly tagNames?: string;
+    readonly vendorName?: string;
     readonly comment?: string;
 }
 

@@ -25,7 +25,7 @@ export class Transaction implements TransactionInfoResponse {
     public destinationAmount: number;
     public hideAmount: boolean;
     public tagIds: string[];
-    public vendorId: string = '';
+    public vendorId: string;
     public comment: string;
     public editable: boolean;
 
@@ -542,6 +542,7 @@ export interface TransactionListByMaxTimeRequest {
     readonly tagIds: string;
     readonly tagFilterType: number;
     readonly vendorIds: string;
+    readonly vendorFilterType: number;
     readonly amountFilter: string;
     readonly keyword: string;
 }
@@ -555,6 +556,7 @@ export interface TransactionListInMonthByPageRequest {
     readonly tagIds: string;
     readonly tagFilterType: number;
     readonly vendorIds: string;
+    readonly vendorFilterType: number;
     readonly amountFilter: string;
     readonly keyword: string;
 }

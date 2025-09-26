@@ -6,6 +6,8 @@ export interface ExportTransactionDataRequest {
     readonly accountIds: string;
     readonly tagIds: string;
     readonly tagFilterType: number;
+    readonly vendorIds: string;
+    readonly vendorFilterType: number;
     readonly amountFilter: string;
     readonly keyword: string;
 }

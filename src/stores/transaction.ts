@@ -13,7 +13,7 @@ import { useExchangeRatesStore } from './exchangeRates.ts';
 import { type BeforeResolveFunction, itemAndIndex, entries, keys } from '@/core/base.ts';
 import { type TextualYearMonth, DateRange } from '@/core/datetime.ts';
 import { CategoryType } from '@/core/category.ts';
-import { TransactionType, TransactionTagFilterType } from '@/core/transaction.ts';
+import { TransactionType, TransactionTagFilterType, TransactionVendorFilterType } from '@/core/transaction.ts';
 import { TRANSACTION_MIN_AMOUNT, TRANSACTION_MAX_AMOUNT } from '@/consts/transaction.ts';
 import {
     type TransactionDraft,
@@ -73,6 +73,7 @@ export interface TransactionListPartialFilter {
     tagIds?: string;
     tagFilterType?: number;
     vendorIds?: string;
+    vendorFilterType?: number;
     amountFilter?: string;
     keyword?: string;
 }
@@ -87,6 +88,7 @@ export interface TransactionListFilter extends TransactionListPartialFilter {
     tagIds: string;
     tagFilterType: number;
     vendorIds: string;
+    vendorFilterType: number;
     amountFilter: string;
     keyword: string;
 }
@@ -128,8 +130,9 @@ export const useTransactionsStore = defineStore('transactions', () => {
         categoryIds: '',
         accountIds: '',
         tagIds: '',
-        vendorIds: '',
         tagFilterType: TransactionTagFilterType.Default.type,
+        vendorIds: '',
+        vendorFilterType: TransactionVendorFilterType.Default.type,
         amountFilter: '',
         keyword: ''
     });
@@ -517,7 +520,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
             return !initTagIds || !isArray1SubsetOfArray2(transaction.tagIds, initTagIds.split(','));
         }
 
-        if (transaction.vendorId && transaction.vendorId !== '0' && transaction.vendorId !== initVendorId) {
+        if (transaction.vendorId && transaction.vendorId !== initVendorId) {
             return true;
         }
 
@@ -604,6 +607,8 @@ export const useTransactionsStore = defineStore('transactions', () => {
         transactionsFilter.value.accountIds = '';
         transactionsFilter.value.tagIds = '';
         transactionsFilter.value.tagFilterType = TransactionTagFilterType.Default.type;
+        transactionsFilter.value.vendorIds = '';
+        transactionsFilter.value.vendorFilterType = TransactionVendorFilterType.Default.type;
         transactionsFilter.value.amountFilter = '';
         transactionsFilter.value.keyword = '';
         transactions.value = [];
@@ -673,6 +678,12 @@ export const useTransactionsStore = defineStore('transactions', () => {
             transactionsFilter.value.vendorIds = '';
         }
 
+        if (filter && isNumber(filter.vendorFilterType)) {
+            transactionsFilter.value.vendorFilterType = filter.vendorFilterType;
+        } else {
+            transactionsFilter.value.vendorFilterType = TransactionVendorFilterType.Default.type;
+        }
+
         if (filter && isString(filter.amountFilter)) {
             transactionsFilter.value.amountFilter = filter.amountFilter;
         } else {
@@ -739,6 +750,11 @@ export const useTransactionsStore = defineStore('transactions', () => {
             changed = true;
         }
 
+        if (filter && isNumber(filter.vendorFilterType) && transactionsFilter.value.vendorFilterType !== filter.vendorFilterType) {
+            transactionsFilter.value.vendorFilterType = filter.vendorFilterType;
+            changed = true;
+        }
+
         if (filter && isString(filter.amountFilter) && transactionsFilter.value.amountFilter !== filter.amountFilter) {
             transactionsFilter.value.amountFilter = filter.amountFilter;
             changed = true;
@@ -781,6 +797,10 @@ export const useTransactionsStore = defineStore('transactions', () => {
             querys.push('vendorIds=' + transactionsFilter.value.vendorIds);
         }
 
+        if (transactionsFilter.value.vendorFilterType) {
+            querys.push('vendorFilterType=' + transactionsFilter.value.vendorFilterType);
+        }
+
         querys.push('dateType=' + transactionsFilter.value.dateType);
 
         if (DateRange.isBillingCycle(transactionsFilter.value.dateType) || transactionsFilter.value.dateType === DateRange.Custom.type) {
@@ -808,6 +828,8 @@ export const useTransactionsStore = defineStore('transactions', () => {
             accountIds: transactionsFilter.value.accountIds,
             tagIds: transactionsFilter.value.tagIds,
             tagFilterType: transactionsFilter.value.tagFilterType,
+            vendorIds: transactionsFilter.value.vendorIds,
+            vendorFilterType: transactionsFilter.value.vendorFilterType,
             amountFilter: transactionsFilter.value.amountFilter,
             keyword: transactionsFilter.value.keyword
         };
@@ -835,6 +857,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
                 tagIds: transactionsFilter.value.tagIds,
                 tagFilterType: transactionsFilter.value.tagFilterType,
                 vendorIds: transactionsFilter.value.vendorIds,
+                vendorFilterType: transactionsFilter.value.vendorFilterType,
                 amountFilter: transactionsFilter.value.amountFilter,
                 keyword: transactionsFilter.value.keyword
             }).then(response => {
@@ -916,6 +939,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
                 tagIds: transactionsFilter.value.tagIds,
                 tagFilterType: transactionsFilter.value.tagFilterType,
                 vendorIds: transactionsFilter.value.vendorIds,
+                vendorFilterType: transactionsFilter.value.vendorFilterType,
                 amountFilter: transactionsFilter.value.amountFilter,
                 keyword: transactionsFilter.value.keyword
             }).then(response => {
