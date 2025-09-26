@@ -85,14 +85,6 @@ func updateAllDatabaseTablesStructure(c *core.CliContext) error {
 
 	log.BootInfof(c, "[database.updateAllDatabaseTablesStructure] account table maintained successfully")
 
-	err = datastore.Container.UserDataStore.SyncStructs(new(models.TransactionVendor))
-
-	if err != nil {
-		return err
-	}
-
-	log.BootInfof(c, "[database.updateAllDatabaseTablesStructure] transaction vendor table maintained successfully")
-
 	err = datastore.Container.UserDataStore.SyncStructs(new(models.Transaction))
 
 	if err != nil {
@@ -124,6 +116,14 @@ func updateAllDatabaseTablesStructure(c *core.CliContext) error {
 	}
 
 	log.BootInfof(c, "[database.updateAllDatabaseTablesStructure] transaction tag index table maintained successfully")
+
+	err = datastore.Container.UserDataStore.SyncStructs(new(models.TransactionVendor))
+
+	if err != nil {
+		return err
+	}
+
+	log.BootInfof(c, "[database.updateAllDatabaseTablesStructure] transaction vendor table maintained successfully")
 
 	err = datastore.Container.UserDataStore.SyncStructs(new(models.TransactionTemplate))
 
